@@ -16,6 +16,7 @@ import 'package:biblebookapp/view/screens/dashboard/constants.dart';
 import 'package:biblebookapp/view/screens/dashboard/home_screen.dart';
 import 'package:biblebookapp/view/screens/dashboard/remove_add-screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -95,10 +96,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Future<void> _buyProduct(ProductDetails prod) async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult[0] == ConnectivityResult.none) {
+    // Check connectivity FIRST before showing loader
+    final hasInternet = await InternetConnection().hasInternetAccess;
+    if (!hasInternet) {
       Constants.showToast("Check your Internet connection");
+      return; // Return early - don't show loader or proceed
     }
+    
     if (!userTap) {
       debugPrint("Buy Product");
       try {
@@ -1246,6 +1250,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   /// 🔹 Trigger restore (iOS only)
   Future<void> _restorePurchases(DashBoardController controller) async {
+    // Check connectivity FIRST before showing loader
+    final hasInternet = await InternetConnection().hasInternetAccess;
+    if (!hasInternet) {
+      Constants.showToast("Check your Internet connection");
+      return; // Return early - don't show loader or proceed
+    }
+    
     // if (!Platform.isIOS) {
     //   Constants.showToast("Restore is only available on iOS");
     //   return;

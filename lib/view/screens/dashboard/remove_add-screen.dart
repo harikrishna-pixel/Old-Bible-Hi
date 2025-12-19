@@ -8,6 +8,7 @@ import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
 import 'package:biblebookapp/view/screens/dashboard/constants.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:biblebookapp/controller/api_service.dart';
@@ -137,10 +138,13 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
   }
 
   Future<void> _buyProduct(ProductDetails prod) async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult[0] == ConnectivityResult.none) {
+    // Check connectivity FIRST before showing loader
+    final hasInternet = await InternetConnection().hasInternetAccess;
+    if (!hasInternet) {
       Constants.showToast("Check your Internet connection");
+      return; // Return early - don't show loader or proceed
     }
+    
     if (!userTap) {
       log("Buy Product");
       try {

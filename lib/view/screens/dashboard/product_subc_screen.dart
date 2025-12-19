@@ -112,6 +112,13 @@ class _SubscriptionPlanPageState extends State<SubscriptionPlanPage> {
   }
 
   Future<void> _buyProduct(ProductDetails productDetails) async {
+    // Check connectivity FIRST before showing loader
+    final hasInternet = await InternetConnection().hasInternetAccess;
+    if (!hasInternet) {
+      Constants.showToast("Check your Internet connection");
+      return; // Return early - don't show loader or proceed
+    }
+    
     EasyLoading.show(status: "Loading...");
     setState(() {
       _loading = true;
