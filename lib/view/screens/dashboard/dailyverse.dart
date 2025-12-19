@@ -1,0 +1,782 @@
+import 'dart:io';
+import 'package:biblebookapp/constant/size_config.dart';
+import 'package:biblebookapp/controller/dashboard_controller.dart';
+import 'package:biblebookapp/core/notifiers/download.notifier.dart';
+import 'package:biblebookapp/utils/custom_share.dart';
+import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/share_preferences.dart';
+import 'package:biblebookapp/view/constants/theme_provider.dart';
+import 'package:biblebookapp/view/screens/dashboard/constants.dart';
+import 'package:biblebookapp/view/screens/dashboard/home_screen.dart';
+import 'package:biblebookapp/view/screens/dashboard/preference_selection_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:get/get.dart';
+import 'package:html/parser.dart';
+import 'package:html/parser.dart' as html;
+import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../Model/dailyVerseList.dart';
+import '../../constants/constant.dart';
+import '../../constants/images.dart';
+import 'package:biblebookapp/services/statsig/statsig_service.dart';
+
+class DailyVerse extends StatefulWidget {
+  const DailyVerse({super.key});
+
+  @override
+  State<DailyVerse> createState() => _DailyVerseState();
+}
+
+class _DailyVerseState extends State<DailyVerse> {
+  List<DailyVerseList> dailyVerseList = [];
+  OverlayEntry? _overlayEntry;
+  late List<GlobalKey> itemKeys;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  //   // Load data in microtask to avoid context issues
+  //   //  Future.microtask(() {
+
+  //   loaddata(); // call after provider loads data
+  //   //  });
+  // }
+
+  // void loaddata() async {
+  //   Future.microtask(() async {
+  //     await Provider.of<DownloadProvider>(context, listen: false)
+  //         .loadDailyVerses();
+  //   });
+  //   final provider = Provider.of<DownloadProvider>(context, listen: false);
+  //   final todayOnly = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+  //   final allVerses = provider.dailyVerseList;
+
+  //   dailyVerseList = allVerses.where((verse) {
+  //     try {
+  //       final verseDate = DateTime.parse(verse.date.toString());
+  //       final verseDateOnly = DateFormat('yyyy-MM-dd').format(verseDate);
+  //       return verseDateOnly.compareTo(todayOnly) <= 0; // today or past
+  //     } catch (e) {
+  //       return false;
+  //     }
+  //   }).toList();
+  // }
+
+  double fontSize = Sizecf.scrnWidth! > 450 ? 25.0 : 15.0;
+  var fontSizeS = "";
+  var selectedFontFamily = "";
+  Future<void> getFont() async {
+    fontSizeS =
+        await SharPreferences.getString(SharPreferences.selectedFontSize) ??
+            "${Sizecf.scrnWidth! > 450 ? 25.0 : 15.0}";
+    fontSize = double.parse(fontSizeS);
+    selectedFontFamily =
+        await SharPreferences.getString(SharPreferences.selectedFontFamily) ??
+            "Arial";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loaddata();
+    getFont();
+    // Track Daily Verses event
+    StatsigService.trackDailyVerses();
+  }
+
+  void loaddata() async {
+    final provider = Provider.of<DownloadProvider>(context, listen: false);
+
+    // Ensure the verses are loaded
+    await provider.loadDailyVerses();
+
+    final todayOnly = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final allVerses = provider.dailyVerseList;
+
+    dailyVerseList = allVerses
+        .where((verse) {
+          try {
+            final verseDate = DateTime.parse(verse.date.toString());
+            final verseDateOnly = DateFormat('yyyy-MM-dd').format(verseDate);
+            return verseDateOnly.compareTo(todayOnly) <= 0; // today or past
+          } catch (e) {
+            return false;
+          }
+        })
+        .toSet()
+        .toList();
+
+    // dailyVerseList.sort((a, b) {
+    //   final dateA = DateTime.parse(a.date.toString());
+    //   final dateB = DateTime.parse(b.date.toString());
+    //   return dateB.compareTo(dateA);
+    // });
+
+    // if (mounted) setState(() {});
+  }
+
+  void _showOverlay(BuildContext buttonContext, category) {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    // final overlay = Overlay.of(context);
+    // // final RenderBox renderBox =
+    // //     iconKey.currentContext!.findRenderObject() as RenderBox;
+    // // final position = renderBox.localToGlobal(Offset.zero);
+    // final renderBox = context.findRenderObject() as RenderBox;
+    // final position = renderBox.localToGlobal(Offset.zero);
+    final renderBox = buttonContext.findRenderObject();
+    if (renderBox is RenderBox) {
+      final position = renderBox.localToGlobal(Offset.zero);
+      final size = renderBox.size;
+
+      final overlay = Overlay.of(buttonContext);
+      _overlayEntry = OverlayEntry(
+        builder: (context) => Positioned(
+          // top: position.dy + 50,
+          // right: 20,
+          top: position.dy + size.height,
+          right: 20,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3E3E3E),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              child: Text.rich(
+                TextSpan(
+                  text: 'Category: ',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: category ?? 'Faith',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      overlay.insert(_overlayEntry!);
+    }
+
+    Future.delayed(const Duration(seconds: 2), () {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    });
+  }
+
+  @override
+  void dispose() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    void showModalBottomSheetDaily(DailyVerseList data) {
+      showModalBottomSheet(
+        enableDrag: true,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20))),
+            // height: MediaQuery.of(context).size.height*0.3,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    height: 3,
+                    width: 45,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        color: CommanColor.lightDarkPrimary(context)),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  HtmlWidget(
+                    '''${data.verse}''',
+                    textStyle: CommanStyle.black15400,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                          "${data.book} ${data.chapter! + 1}: ${data.verseNum! + 1}",
+                          textAlign: TextAlign.right,
+                          style: CommanStyle.black15400),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: () async {
+                          await Clipboard.setData(ClipboardData(
+                              text:
+                                  "${parse(data.verse).body?.text} \n${data.book} ${data.chapter! + 1}:${data.verseNum! + 1}"));
+                          Constants.showToast("Copied");
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: CommanColor.lightDarkPrimary(context),
+                                  width: 1.4,
+                                ),
+                              ),
+                              child: Image.asset(
+                                "assets/Bookmark icons/Frame 3630.png",
+                                height: 28,
+                                color: CommanColor.lightDarkPrimary(context),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Text(
+                              "Copy",
+                              style: CommanStyle.bothPrimary14500(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 30,
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          // debugPrint(
+                          //   "bookid - ${int.parse(data.bookId.toString())} chapter - ${1 + int.parse(data.chapter.toString())} verseno - ${1 + int.parse(data.verseNum.toString())} book - ${data.book.toString()}  vcontent - ${parse(data.verse).body?.text.toString()} ",
+                          // );
+
+                          await SharPreferences.setString(
+                              SharPreferences.selectedBook,
+                              data.book.toString());
+
+                          await SharPreferences.setString(
+                              SharPreferences.selectedChapter,
+                              "${1 + int.parse(data.chapter.toString())}");
+                          await SharPreferences.setString(
+                              SharPreferences.selectedBookNum,
+                              "${int.parse(data.bookId.toString())}");
+                          Get.offAll(
+                              () => HomeScreen(
+                                  From: "Daily",
+                                  selectedBookForRead:
+                                      int.parse(data.bookId.toString()),
+                                  selectedChapterForRead:
+                                      1 + int.parse(data.chapter.toString()),
+                                  selectedVerseNumForRead:
+                                      1 + int.parse(data.verseNum.toString()),
+                                  selectedBookNameForRead: data.book.toString(),
+                                  selectedVerseForRead:
+                                      parse(data.verse).body?.text.toString()),
+                              transition: Transition.cupertinoDialog,
+                              duration: const Duration(milliseconds: 300));
+                          // await SharPreferences.setString(
+                          //     SharPreferences.selectedBookNum,
+                          //     ((data.bookId ?? 1) - 1).toString());
+                          // await SharPreferences.setString(
+                          //     SharPreferences.selectedChapter,
+                          //     data.chapter?.toString() ?? '');
+                          // await SharPreferences.setString(
+                          //     SharPreferences.selectedBook,
+                          //     data.book.toString());
+                          // Get.offAll(
+                          //     () => HomeScreen(
+                          //         From: "Read",
+                          //         selectedBookForRead:
+                          //             int.parse(data.bookId.toString()),
+                          //         selectedChapterForRead:
+                          //             int.parse(data.chapter.toString()),
+                          //         selectedVerseNumForRead:
+                          //             int.parse(data.verseNum.toString()),
+                          //         selectedBookNameForRead: data.book.toString(),
+                          //         selectedVerseForRead:
+                          //             parse(data.verse).body?.text.toString()),
+                          //     transition: Transition.cupertinoDialog,
+                          //     duration: const Duration(milliseconds: 300));
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                                padding: const EdgeInsets.all(8),
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: CommanColor.lightDarkPrimary(
+                                            context),
+                                        width: 1.2),
+                                    borderRadius: BorderRadius.circular(3)),
+                                child: Image.asset(
+                                  "assets/reading_book.png",
+                                  height: 25,
+                                  width: 15,
+                                  color: CommanColor.lightDarkPrimary(context),
+                                )),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Text("Read",
+                                style: CommanStyle.bothPrimary14500(context)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 30,
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          // final appPackageName =
+                          //     (await PackageInfo.fromPlatform()).packageName;
+                          // String message =
+                          //     ''; // Declare the message variable outside the if-else block
+                          // String appid;
+                          // appid = BibleInfo.apple_AppId;
+                          // if (Platform.isAndroid) {
+                          //   message =
+                          //       "${parse(data.verse).body?.text} \n${data.book} ${data.chapter}:${data.verseNum} \nYou can read more at App \nhttps://play.google.com/store/apps/details?id=$appPackageName";
+                          // } else if (Platform.isIOS) {
+                          //   message =
+                          //       "${parse(data.verse).body?.text} \n${data.book} ${data.chapter}:${data.verseNum} \nYou can read more at App \nhttps://itunes.apple.com/app/id$appid"; // Example iTunes URL
+                          // }
+
+                          // if (message.isNotEmpty) {
+                          //   Share.share(message,
+                          //       sharePositionOrigin: Rect.fromPoints(
+                          //           const Offset(2, 2), const Offset(3, 3)));
+                          // } else {
+                          //   print('Message is empty or undefined');
+                          // }
+
+                          return showDialog(
+                            context: context,
+                            builder: (context) => ShareAlertBox(
+                              verseTitle:
+                                  " ${data.book} ${int.parse(data.chapter.toString()) + 1}:${int.parse(data.verseNum.toString()) + 1}",
+                              onShareAsText: () async {
+                                Navigator.of(context).pop();
+                                // Your logic here
+                                final appPackageName =
+                                    (await PackageInfo.fromPlatform())
+                                        .packageName;
+                                String message =
+                                    ''; // Declare the message variable outside the if-else block
+                                String appid;
+                                appid = BibleInfo.apple_AppId;
+                                if (Platform.isAndroid) {
+                                  message =
+                                      "${html.parse("${data.verse}").body?.text ?? ''}. \n   You can read more at:\nhttps://play.google.com/store/apps/details?id=$appPackageName";
+                                } else if (Platform.isIOS) {
+                                  message =
+                                      '${html.parse("${data.verse}").body?.text ?? ''}.\n ${data.book} ${data.chapter! + 1}:${data.verseNum! + 1} \n You can read more at:\nhttps://itunes.apple.com/app/id$appid'; // Example iTunes URL
+                                }
+
+                                if (message.isNotEmpty) {
+                                  Share.share(message,
+                                      sharePositionOrigin: Rect.fromPoints(
+                                          const Offset(2, 2),
+                                          const Offset(3, 3)));
+                                } else {
+                                  debugPrint('Message is empty or undefined');
+                                }
+                              },
+                              onShareAsImage: () async {
+                                Navigator.of(context).pop();
+                                final controller = DashBoardController();
+                                await showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  context: context,
+                                  builder: (context) {
+                                    return ImageBottomSheets(
+                                      controller: controller,
+                                      content: data.verse.toString(),
+                                      selectedBook: data.book.toString(),
+                                      selectedChapter:
+                                          "${int.parse(data.chapter.toString()) + 1}",
+                                      selectedVerseView:
+                                          "${int.parse(data.verseNum.toString()) + 1}",
+                                      // data.verseNum.toString(),
+                                    );
+                                  },
+                                );
+
+                                // Your logic here
+                                // Navigator.pop(context);
+                              },
+                            ),
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            Image.asset("assets/share.png",
+                                height: 40,
+                                color: CommanColor.lightDarkPrimary(context)),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Text("Share",
+                                style: CommanStyle.bothPrimary14500(context)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    double screenWidth = MediaQuery.of(context).size.width;
+    debugPrint("sz current width - $screenWidth ");
+    final provider = Provider.of<DownloadProvider>(context, listen: true);
+    // dailyVerseList = dailyVerseList.reversed.toList();
+
+    return Scaffold(
+      body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: Provider.of<ThemeProvider>(context).currentCustomTheme ==
+                  AppCustomTheme.vintage
+              ? BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage(Images.bgImage(context)),
+                      fit: BoxFit.fill))
+              : null,
+          child: SafeArea(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 5,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Get.back();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 15.0),
+                        child: Icon(
+                          Icons.arrow_back_ios,
+                          size: screenWidth > 450 ? 30 : 20,
+                          color: CommanColor.whiteBlack(context),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Text(
+                        "Daily Verse",
+                        style: CommanStyle.appBarStyle(context).copyWith(
+                            fontSize: screenWidth > 450
+                                ? BibleInfo.fontSizeScale * 30
+                                : BibleInfo.fontSizeScale * 18,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    ),
+                    SizedBox(),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Expanded(
+                  child: provider.isLoadingDailyVerse
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          //   crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Align(
+                              alignment: Alignment.center,
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                      height: 50,
+                                      width: 50,
+                                      child:
+                                          CircularProgressIndicator.adaptive()),
+                                  Text("loading...")
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : dailyVerseList.isNotEmpty
+                          ? ListView.builder(
+                              physics: const ScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: dailyVerseList.length,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              itemBuilder: (context, index) {
+                                List<DailyVerseList> reversedDailyVerseList =
+                                    dailyVerseList.toList();
+                                //  dailyVerseList.reversed.toList();
+                                // debugPrint(
+                                //     "reversedDailyVerseList - ${reversedDailyVerseList[0].date}, ${reversedDailyVerseList[1].date}");
+                                var data = reversedDailyVerseList[index];
+                                DateTime date =
+                                    DateTime.parse(data.date.toString());
+                                String currentDate = DateFormat("dd-MM-yyyy")
+                                    .format(DateTime.now());
+                                String yesterdayDate = DateFormat("dd-MM-yyyy")
+                                    .format(DateTime.now()
+                                        .subtract(Duration(days: 1)));
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(10.0),
+                                    margin: const EdgeInsets.only(bottom: 10.0),
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color:
+                                                CommanColor.whiteBlack(context),
+                                            width: 1.3),
+                                        borderRadius: BorderRadius.circular(8)),
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              DateFormat("dd-MM-yyyy")
+                                                          .format(date) ==
+                                                      yesterdayDate
+                                                  ? "Yesterday"
+                                                  : DateFormat("dd-MM-yyyy")
+                                                              .format(date) ==
+                                                          currentDate
+                                                      ? "Today"
+                                                      : DateFormat("dd-MM-yyyy")
+                                                          .format(date),
+                                              style: CommanStyle.bw16500(
+                                                      context)
+                                                  .copyWith(
+                                                      fontSize: fontSize,
+                                                      // screenWidth >
+                                                      //         450
+                                                      //     ? BibleInfo
+                                                      //             .fontSizeScale *
+                                                      //         20
+                                                      //     : BibleInfo
+                                                      //             .fontSizeScale *
+                                                      //         16,
+                                                      color: CommanColor
+                                                          .whiteBlack(context)),
+                                            ),
+                                            Row(
+                                              children: [
+                                                Builder(builder: (context1) {
+                                                  return GestureDetector(
+                                                    // key: iconKey.toString(),
+                                                    onTap: () {
+                                                      _showOverlay(context1,
+                                                          data.categoryName);
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 4),
+                                                      child: Icon(
+                                                        Icons.info_outline,
+                                                        color: CommanColor
+                                                            .whiteBlack(
+                                                                context),
+                                                        //  color: Colors.black87,
+                                                        size: 26,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                                InkWell(
+                                                    onTap: () {
+                                                      showModalBottomSheetDaily(
+                                                          data);
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              0.0),
+                                                      child: Icon(
+                                                        Icons.more_vert,
+                                                        color: CommanColor
+                                                            .whiteBlack(
+                                                                context),
+                                                        size: 24,
+                                                      ),
+                                                    )),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 2,
+                                        ),
+                                        GestureDetector(
+                                            onTap: () {
+                                              showModalBottomSheetDaily(data);
+                                            },
+                                            child: HtmlWidget(
+                                              data.verse ?? '',
+                                              textStyle: CommanStyle.bw14400(
+                                                      context)
+                                                  .copyWith(
+                                                      fontSize: fontSize,
+                                                      // screenWidth >
+                                                      //         450
+                                                      //     ? BibleInfo
+                                                      //             .fontSizeScale *
+                                                      //         19
+                                                      //     : BibleInfo
+                                                      //             .fontSizeScale *
+                                                      //         14,
+                                                      color: CommanColor
+                                                          .whiteBlack(context)),
+                                            )),
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              "${data.book} ${data.chapter! + 1}:${data.verseNum! + 1}",
+                                              style: CommanStyle.bw14400(
+                                                      context)
+                                                  .copyWith(
+                                                      fontSize: fontSize,
+                                                      //  screenWidth >
+                                                      //         450
+                                                      //     ? BibleInfo
+                                                      //             .fontSizeScale *
+                                                      //         19
+                                                      //     : BibleInfo
+                                                      //             .fontSizeScale *
+                                                      //         14,
+                                                      color: CommanColor
+                                                          .whiteBlack(context)),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Choose your preferred verse topics",
+                                    style: TextStyle(
+                                      fontSize: screenWidth > 600 ? 20 : 17,
+                                      color: CommanColor.whiteBlack(context),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Get.to(() => PreferenceSelectionScreen(
+                                            isSetting: true,
+                                            from: true,
+                                          ));
+                                    },
+                                    child: Container(
+                                      width: screenWidth > 600 ? 130 : 100,
+                                      height: screenWidth > 600 ? 65 : 40,
+                                      decoration: BoxDecoration(
+                                          color: Provider.of<ThemeProvider>(
+                                                          context,
+                                                          listen: false)
+                                                      .themeMode ==
+                                                  ThemeMode.dark
+                                              ? CommanColor.backgrondcolor
+                                              : const Color(0xFF8B5E3C),
+                                          borderRadius: BorderRadius.circular(
+                                              9) // Brown color
+                                          ),
+                                      child: Center(
+                                        child: Text(
+                                          "Continue",
+                                          style: TextStyle(
+                                              fontSize:
+                                                  screenWidth > 600 ? 20 : 17,
+                                              color: Provider.of<ThemeProvider>(
+                                                              context,
+                                                              listen: false)
+                                                          .themeMode ==
+                                                      ThemeMode.dark
+                                                  ? CommanColor.darkPrimaryColor
+                                                  : CommanColor.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                )
+              ],
+            ),
+          )),
+    );
+  }
+}

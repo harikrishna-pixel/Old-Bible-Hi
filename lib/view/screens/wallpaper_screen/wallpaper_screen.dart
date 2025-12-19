@@ -1,0 +1,123 @@
+import 'package:biblebookapp/services/statsig/statsig_service.dart';
+import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/images.dart';
+import 'package:biblebookapp/view/constants/theme_provider.dart';
+import 'package:biblebookapp/view/screens/wallpaper_screen/bloc/wallpaper_category_bloc.dart';
+import 'package:biblebookapp/view/widget/category_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:get/get.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:provider/provider.dart' as p;
+
+class WallpaperScreen extends HookConsumerWidget {
+  const WallpaperScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallpaperCategoryState =
+        ref.watch(wallpaperCategoryBloc).wallpaperCategoryState;
+    useMemoized(() {
+      WidgetsBinding.instance.addPostFrameCallback((callback) {
+        ref.read(wallpaperCategoryBloc).getWallpaperCategory();
+        // Track Wallpaper event
+        StatsigService.trackWallpaper();
+      });
+    });
+    return Scaffold(
+        body: Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      decoration: p.Provider.of<ThemeProvider>(context).currentCustomTheme ==
+              AppCustomTheme.vintage
+          ? BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage(Images.bgImage(context)), fit: BoxFit.fill))
+          : null,
+      child: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 12,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  onTap: () {
+                    Get.back();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 15.0),
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      size: 20,
+                      color: CommanColor.whiteBlack(context),
+                    ),
+                  ),
+                ),
+                Text("Wallpapers", style: CommanStyle.appBarStyle(context)),
+                const SizedBox(width: 20)
+              ],
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            Expanded(
+              child: wallpaperCategoryState.when(
+                data: (data) {
+                  return GridView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: data.length,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            mainAxisSpacing: 6,
+                            crossAxisSpacing: 6,
+                            childAspectRatio: 1.4,
+                            crossAxisCount: 2),
+                    itemBuilder: (context, index) => CategoryWidget(
+                      category: data[index],
+                      isWallpaper: true,
+                    ),
+                  );
+                },
+                error: (error, st) {
+                  return Center(
+                    child: Text(
+                      'Check your Internet connection',
+                    ),
+                  );
+                },
+                loading: () => Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  //   crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 50,
+                            width: 50,
+                            child: CircularProgressIndicator.adaptive(),
+                          ),
+                          Text(
+                            "Loading...",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // const Center(
+              //     child: CircularProgressIndicator.adaptive())),
+            )
+          ],
+        ),
+      ),
+    ));
+  }
+}

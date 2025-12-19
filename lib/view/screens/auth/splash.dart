@@ -1,0 +1,1540 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
+import 'dart:math' hide log;
+
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'package:biblebookapp/services/wallet_service.dart';
+import 'package:biblebookapp/view/screens/onboard_faith_screen.dart';
+import 'package:biblebookapp/view/screens/welcome_screen.dart';
+import 'package:biblebookapp/view/screens/notification_info_screen.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:upgrader/upgrader.dart';
+
+import 'package:biblebookapp/Model/bookMarkModel.dart';
+import 'package:biblebookapp/Model/highLightContentModal.dart';
+import 'package:biblebookapp/Model/mainBookListModel.dart';
+import 'package:biblebookapp/Model/saveNotesModel.dart';
+import 'package:biblebookapp/controller/dashboard_controller.dart';
+import 'package:biblebookapp/core/notifiers/download.notifier.dart';
+import 'package:biblebookapp/initialization_helper.dart';
+import 'package:biblebookapp/services/paywall_preload_service.dart';
+import 'package:biblebookapp/view/constants/assets_constants.dart';
+import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/theme_provider.dart';
+import 'package:biblebookapp/view/screens/calendar_screen/model/calendar_model.dart';
+import 'package:biblebookapp/view/screens/dashboard/constants.dart';
+import 'package:biblebookapp/view/widget/notification_service.dart';
+
+import '../../../Model/dailyVersesMainListModel.dart';
+import '../../../Model/verseBookContentModel.dart';
+import '../../../controller/dpProvider.dart';
+import '../../constants/images.dart';
+import '../../constants/share_preferences.dart';
+import '../dashboard/home_screen.dart';
+
+Future<List<MainBookListModel>> _parseAndPrepareBooks(String jsonString) async {
+  final data = json.decode(jsonString);
+  return List.from(data)
+      .map<MainBookListModel>((item) => MainBookListModel.fromJson(item))
+      .toList();
+}
+
+Future<List<VerseBookContentModel>> _parseVerseContent(
+    String jsonString) async {
+  final data = json.decode(jsonString);
+  return List.from(data)
+      .map<VerseBookContentModel>(
+        (item) => VerseBookContentModel.fromJson(item),
+      )
+      .toList();
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+
+  late String selecteDailyVerses;
+  int appLaunchCount = 0;
+  int appLaunchCountoffer = 0;
+  AppOpenAd? _appOpenAd;
+
+  double _progress = 0;
+  final bool _isLoading = true;
+  String _loaderMessage = "Please wait...";
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+
+  void showSnack(String text) {
+    if (_scaffoldKey.currentContext != null) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+          .showSnackBar(SnackBar(content: Text(text)));
+    }
+  }
+
+  late StreamSubscription<List<ConnectivityResult>> connectivitySubscription;
+
+  get developer => null;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+    // Request app tracking permission after splash screen is visible for 1-2 seconds
+    _requestTrackingPermission();
+  }
+
+  loadOpenAd() async {
+    final trackingAllowed = await isTrackingAllowed();
+    debugPrint('ad pop loadOpenAd -  ${!trackingAllowed}');
+    bool? isAdEnabledFromApi =
+        await SharPreferences.getBoolean(SharPreferences.isAdsEnabledApi);
+    if (isAdEnabledFromApi ?? true) {
+      String? openAdUnitId =
+          await SharPreferences.getString(SharPreferences.openAppId);
+      AppOpenAd.load(
+        adUnitId: openAdUnitId ?? '',
+        request: await AdConsentManager.getAdRequest(),
+        //orientation: 1,
+        adLoadCallback: AppOpenAdLoadCallback(
+          onAdLoaded: (ad) {
+            _appOpenAd = ad;
+
+            _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+                _appOpenAd = null;
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                ad.dispose();
+                _appOpenAd = null;
+              },
+            );
+
+            _appOpenAd!.show();
+          },
+          onAdFailedToLoad: (error) {
+            debugPrint('AppOpenAd failed to load: $error');
+            SharPreferences.setBoolean(SharPreferences.isAdsEnabled, false);
+          },
+        ),
+      );
+    }
+    await Future.delayed(const Duration(seconds: 3));
+  }
+
+  Future<void> initAppOpen() async {
+    await SharPreferences.getString('test').then((value) async {
+      if (value != null) {
+        await SharPreferences.getString(SharPreferences.isRewardAdViewTime)
+            .then((re) async {
+          if (re != null) {
+            DateTime CurrentDateTime = DateTime.now();
+            DateTime SaveTime = DateTime.parse(re.toString());
+            var diff = CurrentDateTime.difference(SaveTime).inDays;
+            log('Diff: $diff');
+            if (!diff.isNegative) {
+              SharPreferences.setBoolean(SharPreferences.isAdsEnabled, true);
+              // bool dta = Provider.of<DownloadProvider>(context, listen: false)
+              //     .isopenAdEnabled;
+              // final checkad = await SharPreferences.getString('OpenAd') ?? "1";
+              // final data2 = await SharPreferences.getString('bottom') ?? '0';
+
+              final data = await SharPreferences.getBoolean(
+                      SharPreferences.isAdsEnabled) ??
+                  true;
+              // debugPrint("Open ad tigger and $checkad and && $dta");
+              if (data) {
+                loadOpenAd();
+              }
+              setState(() {});
+            } else {
+              SharPreferences.setBoolean(SharPreferences.isAdsEnabled, false);
+            }
+          } else {
+            // bool dta = Provider.of<DownloadProvider>(context, listen: false)
+            //     .isopenAdEnabled;
+            // final checkad = await SharPreferences.getString('OpenAd') ?? "1";
+            // final data2 = await SharPreferences.getString('bottom') ?? '0';
+
+            final data = await SharPreferences.getBoolean(
+                    SharPreferences.isAdsEnabled) ??
+                true;
+            // debugPrint("Open ad tigger and $checkad and && $dta");
+            if (data) {
+              loadOpenAd();
+            }
+            setState(() {});
+          }
+        });
+        await Future.delayed(const Duration(seconds: 1));
+      } else {
+        await SharPreferences.setString('test', 'test');
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    });
+  }
+
+  int saveDay = 320;
+
+  Future<void> _initialize() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final password = dotenv.env[AssetsConstants.dbPasswordKey]!;
+      try {
+        // Only do essential initialization that's required before navigation
+        // APIs are already loading in background via BackgroundApiService
+        
+        // Essential: Database migration
+        await DBMigrationHelper.migrateToEncryptedDatabase(password);
+        
+        // Essential: Ad consent (non-blocking, can run in background)
+        AdConsentManager.initAppFlow(); // Don't await - let it run in background
+        
+        // Essential: Reset purchase flags
+        await SharPreferences.setBoolean('restorepurches', false);
+        await SharPreferences.setBoolean('startpurches', false);
+        
+        // Initialize wallet (gives 100 free credits to new users)
+        await WalletService.initializeWallet();
+        
+        // Preload Paywall Screen data in background (non-blocking)
+        PaywallPreloadService.preloadPaywallData();
+        
+        // Essential: Check app count and load daily verses
+        await checkappcount();
+        
+        // Essential: Load local data (books, verses from DB)
+        await loadBookList();
+        await loadBookContent();
+        await loadDailyVerseData();
+        await loadLocal();
+        
+        // Essential: Set default book if not set
+        await DBHelper().db.then((db) async {
+          if (db != null) {
+            final result = await db.rawQuery(
+              "SELECT * FROM book WHERE book_num = ?",
+              [int.parse("0")],
+            );
+
+            if (result.isNotEmpty && result[0]["title"] != null) {
+              final title = result[0]["title"].toString();
+              final data = await SharPreferences.getString(
+                    SharPreferences.selectedBook,
+                  ) ??
+                  "";
+              if (data.isEmpty) {
+                await SharPreferences.setString(
+                  SharPreferences.selectedBook,
+                  title,
+                );
+              }
+            } else {
+              debugPrint("testapp No book found with book_num = 0");
+            }
+          } else {
+            debugPrint("testapp Database instance is null");
+          }
+        });
+        
+        // Essential: Update local DB
+        await updateLocalDB();
+        await deleteFiles();
+
+        // Ensure splash screen is visible for at least 1-2 seconds before navigation
+        // This gives users time to see the splash screen
+        await Future.delayed(const Duration(seconds: 2));
+
+        // Navigate after splash screen has been visible - APIs are loading in background
+        // They will be ready by the time user reaches home screen
+        await handleNavigation();
+      } catch (e) {
+        debugPrint("error intit - $e");
+        // Even if there's an error, try to navigate
+        await handleNavigation();
+      }
+    });
+  }
+
+  Future loadLocal() async {
+    final downloadProvider =
+        Provider.of<DownloadProvider>(context, listen: false);
+
+    try {
+      // downloadProvider.setIsLoading(true); // Start loading
+
+      final prefs = await SharedPreferences.getInstance();
+
+      final db = await DBHelper().db;
+
+      // Load and parse verses
+      final verseRaw = await db!.rawQuery("SELECT * FROM verse");
+      final parsedVerses = await compute(parseVerses, verseRaw);
+      final splitVersesMap = await compute(splitVerses, parsedVerses);
+
+      // Load and parse books
+      final bookRaw = await db.rawQuery("SELECT * FROM book");
+      final parsedBooks = await compute(parseBooks, bookRaw);
+      final splitBooksMap = await compute(splitBooks, parsedBooks);
+
+      // Set provider data
+      downloadProvider.setData(
+        allVerses: parsedVerses,
+        otVerses: splitVersesMap['ot']!,
+        ntVerses: splitVersesMap['nt']!,
+        allBooks: parsedBooks,
+        otBooks: splitBooksMap['ot']!,
+        ntBooks: splitBooksMap['nt']!,
+      );
+
+      // setState(() {
+      //   oTBookList = downloadProvider.otBookList;
+      //   nTBookList = downloadProvider.ntBookList;
+      //   allVersesContent = downloadProvider.verseList;
+      //   bookList = downloadProvider.bookList;
+      // });
+
+// ✅ Save to SharedPreferences
+      await SharPreferences.setBoolean('restorepurches', false);
+      await SharPreferences.setBoolean('startpurches', false);
+      await prefs.setString(
+        'otBookList',
+        jsonEncode(downloadProvider.otBookList.map((e) => e.toJson()).toList()),
+      );
+      await prefs.setString(
+        'ntBookList',
+        jsonEncode(downloadProvider.ntBookList.map((e) => e.toJson()).toList()),
+      );
+      await prefs.setString(
+        'bookList',
+        jsonEncode(downloadProvider.bookList.map((e) => e.toJson()).toList()),
+      );
+    } catch (e) {
+      debugPrint('Error loading local data: $e');
+    }
+  }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _initialize();
+  //   // Request app tracking permission after splash screen is visible for 1-2 seconds
+  //   _requestTrackingPermission();
+  // }
+
+  Future<void> _requestTrackingPermission() async {
+    // Wait a few seconds after splash screen appears before showing ATT
+    await Future.delayed(const Duration(seconds: 4));
+    
+    if (Platform.isIOS) {
+      try {
+        final status = await AppTrackingTransparency.requestTrackingAuthorization();
+        debugPrint('App Tracking Permission Status: $status');
+      } on PlatformException catch (e) {
+        debugPrint('App Tracking Permission Error: ${e.message}');
+      }
+    }
+  }
+
+  void _updateProgress(double progress, String message) {
+    setState(() {
+      _progress = progress;
+      _loaderMessage = "Please wait...";
+    });
+  }
+
+  checkappcount() async {
+    await Provider.of<DownloadProvider>(context, listen: false)
+        .loadDailyVerses();
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      appLaunchCount = prefs.getInt('launchCount') ?? 0;
+      appLaunchCountoffer = prefs.getInt('launchCountoffer') ?? 0;
+
+      appLaunchCount++;
+      appLaunchCountoffer++;
+      await prefs.setString("showopenad", "true");
+      await prefs.setInt('launchCount', appLaunchCount);
+      await prefs.setInt('launchCountoffer', appLaunchCountoffer);
+    } catch (e) {
+      debugPrint("launchCount error - $e");
+    }
+  }
+
+  handleNavigation() async {
+    final isOnboardingCompleted =
+        await SharPreferences.getBoolean(SharPreferences.onboarding);
+
+    // First launch: show welcome -> onboarding questions
+    if (isOnboardingCompleted == null || !isOnboardingCompleted) {
+      Get.offAll(() => const WelcomeScreen());
+    } else {
+      Future.delayed(
+        const Duration(seconds: 1),
+        () {
+          SharPreferences.setBoolean(SharPreferences.isLoadBookContent, true);
+          Get.offAll(() => HomeScreen(
+              From: "splash",
+              selectedVerseNumForRead: "",
+              selectedBookForRead: "",
+              selectedChapterForRead: "",
+              selectedBookNameForRead: "",
+              selectedVerseForRead: ""));
+        },
+      );
+    }
+  }
+
+  loadBookContent() async {
+    final db = await DBHelper().db;
+    if (db == null) {
+      debugPrint("testapp: Database is null.");
+      return;
+    }
+
+    final result = await db.rawQuery("SELECT COUNT(*) as count FROM verse");
+    final count = Sqflite.firstIntValue(result) ?? 0;
+
+    if (count == 0) {
+      //   try {
+      //     // Extract JSON from zip (I/O bound, can be made async-friendly)
+      //     final String response = await ExtractZipJson.extractFile(
+      //       AssetsConstants.verseJSONPath,
+      //       AssetsConstants.versePasswordKey,
+      //     );
+
+      //     // Parse JSON in background isolate
+      //     final tempList = await compute(_parseVerseContent, response);
+
+      //     // Store in memory
+      //     versesContent = tempList;
+
+      //     // Insert into DB using batch
+      //     await db.transaction((txn) async {
+      //       final batch = txn.batch();
+      //       for (final verse in tempList) {
+      //         batch.insert('verse', {
+      //           "book_num": verse.bookNum,
+      //           "chapter_num": verse.chapterNum,
+      //           "verse_num": verse.verseNum,
+      //           "content": verse.content,
+      //           "is_bookmarked": verse.isBookmarked,
+      //           "is_highlighted": verse.isHighlighted,
+      //           "is_noted": verse.isNoted,
+      //           "is_read": verse.isRead,
+      //           "is_underlined": verse.isUnderlined,
+      //         });
+      //       }
+      //       final isUpload = await batch.commit();
+      //       if (isUpload.isNotEmpty) {
+      //         debugPrint("testapp: Verse content inserted into DB.");
+      //       }
+      //     });
+
+      //     await SharPreferences.setBoolean(
+      //         SharPreferences.isLoadBookContent, true);
+      //   } catch (e, st) {
+      //     debugPrint("testapp: Error loading verse content → $e\n$st");
+      //   }
+      // } else {
+      //   final verseRows = await db.rawQuery("SELECT * FROM verse LIMIT 1");
+      //   if (verseRows.isEmpty) {
+      //     debugPrint("testapp: Verse table has $count rows but none returned.");
+      //   }
+    }
+  }
+
+  Future<void> deleteFiles() async {
+    try {
+      // Get the application documents directory
+      final directory = await getApplicationDocumentsDirectory();
+
+      // Define file paths
+      final file1 = File('${directory.path}/book.json');
+      final file2 = File('${directory.path}/verse_json.json');
+
+      // Check and delete file1
+      if (await file1.exists()) {
+        await file1.delete();
+        debugPrint('file1.txt deleted successfully');
+      } else {
+        debugPrint('file1.txt does not exist');
+      }
+
+      // Check and delete file2
+      if (await file2.exists()) {
+        await file2.delete();
+        debugPrint('file2.txt deleted successfully');
+      } else {
+        debugPrint('file2.txt does not exist');
+      }
+
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final oldDbFile = File(p.join(dir.path, 'bible.db'));
+        if (await oldDbFile.exists()) {
+          await oldDbFile.delete();
+          debugPrint('Deleted old unencrypted DB: bible.db');
+        }
+
+        final dotDbFile = File(p.join(dir.path, '.bible.db'));
+        if (await dotDbFile.exists()) {
+          await dotDbFile.delete();
+          debugPrint('Deleted old encrypted DB: .bible.db');
+        }
+        final dotDbFile2 = File(p.join(dir.path, 'bible2.db'));
+        if (await dotDbFile2.exists()) {
+          await dotDbFile2.delete();
+          debugPrint('Deleted old encrypted DB: bible2.db');
+        }
+      } catch (e) {
+        debugPrint('Error deleting old DB files: $e');
+      }
+    } catch (e) {
+      debugPrint('Error deleting files: $e');
+    }
+  }
+
+  loadBookList() async {
+    final db = await DBHelper().db;
+    if (db == null) {
+      debugPrint("testapp: Database is null.");
+      return;
+    }
+
+    final result = await db.rawQuery("SELECT COUNT(*) as count FROM book");
+    final count = Sqflite.firstIntValue(result) ?? 0;
+
+    if (count == 0) {
+      // try {
+      //   // Extract file (still runs on main isolate, but it’s mostly I/O bound)
+      //   final String response = await ExtractZipJson.extractFile(
+      //     AssetsConstants.booksJSONPath,
+      //     AssetsConstants.bookPasswordKey,
+      //   );
+
+      //   // Parse JSON in background isolate
+      //   final tempBookList = await compute(_parseAndPrepareBooks, response);
+
+      //   // Update UI after parsing
+      //   bookList = tempBookList;
+
+      //   // Insert into DB in a transaction
+      //   await db.transaction((txn) async {
+      //     final batch = txn.batch();
+      //     for (final book in tempBookList) {
+      //       batch.insert('book', {
+      //         "book_num": book.bookNum,
+      //         "chapter_count": book.chapterCount,
+      //         "title": book.title,
+      //         "short_title": book.shortTitle,
+      //         "read_per": book.readPer,
+      //       });
+      //     }
+      //     final isUpload = await batch.commit();
+      //     if (isUpload.isNotEmpty) {
+      //       debugPrint("testapp: Books inserted into DB.");
+      //     }
+      //   });
+
+      //   await SharPreferences.setBoolean(SharPreferences.isLoadBookList, true);
+      // } catch (e, st) {
+      //   debugPrint("testapp: Error loading book list: $e\n$st");
+      // }
+    } else {
+      // Book table is not empty, just log one item
+      final bookRows = await db.rawQuery("SELECT * FROM book LIMIT 1");
+      if (bookRows.isEmpty) {
+        debugPrint("testapp: Book table has count but no rows returned.");
+      }
+    }
+  }
+
+  // loadDailyVerseData() async {
+  //   await DBHelper().db.then((db) async {
+  //     final dailyVersesMainList =
+  //         await db!.rawQuery("SELECT * From dailyVersesMainList");
+
+  //     if (dailyVersesMainList.isEmpty) {
+  //       final String dailyVerseResponse =
+  //           await rootBundle.loadString('assets/jsonFile/dailyVerse.json');
+  //       final dailyVerseData = await json.decode(dailyVerseResponse);
+
+  //       setState(() {
+  //         dailyVerseDataList = List.from(dailyVerseData)
+  //             .map<DailyVersesMainListModel>(
+  //                 (item) => DailyVersesMainListModel.fromJson(item))
+  //             .toList();
+
+  //         DBHelper().db.then((value) {
+  //           value!.transaction((txn) async {
+  //             var batch = txn.batch();
+  //             for (int i = 0; i < dailyVerseDataList.length; i++) {
+  //               var insertData = {
+  //                 "Category_Name": dailyVerseDataList[i].mainCategory,
+  //                 "Category_Id": dailyVerseDataList[i].categoryId,
+  //                 "Book": dailyVerseDataList[i].book,
+  //                 "Book_Id": dailyVerseDataList[i].bookId,
+  //                 "Chapter": dailyVerseDataList[i].chapter,
+  //                 "Verse": dailyVerseDataList[i].verse,
+  //               };
+  //               batch.insert('dailyVersesMainList', insertData);
+  //             }
+  //             List<Object?> isUpload = await batch.commit();
+  //             if (isUpload.isEmpty) {
+  //             } else {
+  //               debugPrint("testapp 1e");
+  //             }
+  //           });
+  //         }).whenComplete(() {
+  //           Future.delayed(
+  //             Duration(milliseconds: 500),
+  //             () {
+  //               DBHelper().db.then((dailyVersesMainList) {
+  //                 dailyVersesMainList!
+  //                     .rawQuery("SELECT * From dailyVersesMainList")
+  //                     .then((dailyVersesMainData) async {
+  //                   for (var i = 0; i < 20; i++) {
+  //                     var selectedVersesMainData = DailyVersesMainListModel(
+  //                       verse: dailyVersesMainData[i]["Verse"]
+  //                                   .toString()
+  //                                   .length ==
+  //                               2
+  //                           ? int.parse(dailyVersesMainData[i]["Verse"]
+  //                                   .toString()) -
+  //                               1
+  //                           : int.parse(dailyVersesMainData[i]["Verse"]
+  //                                   .toString()
+  //                                   .split("-")
+  //                                   .first) -
+  //                               1,
+  //                       book: "${dailyVersesMainData[i]["Book"]}",
+  //                       bookId: int.parse(
+  //                               dailyVersesMainData[i]["Book_Id"].toString()) -
+  //                           1,
+  //                       categoryId: int.parse(
+  //                           dailyVersesMainData[i]["Category_Id"].toString()),
+  //                       categoryName:
+  //                           "${dailyVersesMainData[i]["Category_Name"]}",
+  //                       chapter: int.parse(
+  //                               dailyVersesMainData[i]["Chapter"].toString()) -
+  //                           1,
+  //                     );
+
+  //                     dailyVersesMainList
+  //                         .rawQuery(
+  //                             "SELECT * From verse WHERE book_num ='${int.parse(selectedVersesMainData.bookId.toString())}' AND chapter_num ='${int.parse(selectedVersesMainData.chapter.toString())}' AND verse_num ='${int.parse(selectedVersesMainData.verse.toString())}'")
+  //                         .then((selectedDailyVersesResponse) async {
+  //                       if (selectedDailyVersesResponse.isNotEmpty) {
+  //                         dailyVersesMainList.transaction((txn) async {
+  //                           var batch = txn.batch();
+  //                           var Date = DateTime.now()
+  //                               .subtract(Duration(days: saveDay));
+  //                           var insertData = {
+  //                             "Category_Name": dailyVersesMainData[i]
+  //                                 ["Category_Name"],
+  //                             "Category_Id": dailyVersesMainData[i]
+  //                                 ["Category_Id"],
+  //                             "Book": dailyVersesMainData[i]["Book"],
+  //                             "Book_Id": dailyVersesMainData[i]["Book_Id"],
+  //                             "Chapter": dailyVersesMainData[i]["Chapter"],
+  //                             "Verse": selectedDailyVersesResponse[0]
+  //                                 ["content"],
+  //                             "Date": "$Date",
+  //                             "Verse_Num": dailyVersesMainData[i]["Verse"]
+  //                                         .toString()
+  //                                         .length ==
+  //                                     2
+  //                                 ? int.parse(dailyVersesMainData[i]["Verse"]
+  //                                     .toString())
+  //                                 : int.parse(dailyVersesMainData[i]["Verse"]
+  //                                     .toString()
+  //                                     .split("-")
+  //                                     .first),
+  //                           };
+  //                           saveDay = saveDay - 1;
+  //                           batch.insert('dailyVerses', insertData);
+  //                           List<Object?> isUpload = await batch.commit();
+  //                           if (isUpload.isEmpty) {
+  //                           } else {
+  //                             debugPrint("testapp 2e");
+  //                           }
+  //                         });
+  //                       }
+  //                     });
+  //                   }
+  //                 });
+  //               }).then((value) {
+  //                 SharPreferences.setString(
+  //                     SharPreferences.selectedDailyVerse, "11");
+  //                 var currentDate = DateTime.now();
+  //                 SharPreferences.setString(
+  //                     SharPreferences.dailyVerseUpdateTime,
+  //                     currentDate.toString());
+  //               });
+  //             },
+  //           );
+  //         });
+  //       });
+  //     } else {
+  //       await SharPreferences.getString(SharPreferences.dailyVerseUpdateTime)
+  //           .then((saveTime) async {
+  //         final saveDateTime = DateTime.parse(saveTime.toString());
+  //         final currentDateTime = DateTime.now();
+  //         final difference = daysBetween(saveDateTime, currentDateTime);
+  //         if (difference >= 1) {
+  //           await SharPreferences.getBoolean(SharPreferences.isLoadBookContent)
+  //               .then((value) async {
+  //             if (value != null || value != false) {
+  //               DBHelper().db.then((dailyVersesMainList) {
+  //                 dailyVersesMainList!
+  //                     .rawQuery("SELECT * From dailyVersesMainList")
+  //                     .then((dailyVersesMainData) async {
+  //                   selecteDailyVerses = await SharPreferences.getString(
+  //                           SharPreferences.selectedDailyVerse) ??
+  //                       "11";
+  //                   var selectedVersesMainData = DailyVersesMainListModel(
+  //                     verse: dailyVersesMainData[int.parse(selecteDailyVerses.toString())]
+  //                                     ["Verse"]
+  //                                 .toString()
+  //                                 .length ==
+  //                             2
+  //                         ? int.parse(dailyVersesMainData[int.parse(
+  //                                     selecteDailyVerses.toString())]["Verse"]
+  //                                 .toString()) -
+  //                             1
+  //                         : int.parse(dailyVersesMainData[
+  //                                         int.parse(selecteDailyVerses.toString())]
+  //                                     ["Verse"]
+  //                                 .toString()
+  //                                 .split("-")
+  //                                 .first) -
+  //                             1,
+  //                     book:
+  //                         "${dailyVersesMainData[int.parse(selecteDailyVerses.toString())]["Book"]}",
+  //                     bookId: int.parse(dailyVersesMainData[
+  //                                     int.parse(selecteDailyVerses.toString())]
+  //                                 ["Book_Id"]
+  //                             .toString()) -
+  //                         1,
+  //                     categoryId: int.parse(dailyVersesMainData[
+  //                                 int.parse(selecteDailyVerses.toString())]
+  //                             ["Category_Id"]
+  //                         .toString()),
+  //                     categoryName:
+  //                         "${dailyVersesMainData[int.parse(selecteDailyVerses.toString())]["Category_Name"]}",
+  //                     chapter: int.parse(dailyVersesMainData[
+  //                                     int.parse(selecteDailyVerses.toString())]
+  //                                 ["Chapter"]
+  //                             .toString()) -
+  //                         1,
+  //                   );
+  //                   dailyVersesMainList
+  //                       .rawQuery(
+  //                           "SELECT * From verse WHERE book_num ='${int.parse(selectedVersesMainData.bookId.toString())}' AND chapter_num ='${int.parse(selectedVersesMainData.chapter.toString())}' AND verse_num ='${int.parse(selectedVersesMainData.verse.toString())}'")
+  //                       .then((selectedDailyVersesResponse) {
+  //                     if (selectedDailyVersesResponse.isNotEmpty) {
+  //                       dailyVersesMainList.transaction((txn) async {
+  //                         var batch = txn.batch();
+  //                         var Date = DateTime.now();
+  //                         var insertData = {
+  //                           "Category_Name": dailyVersesMainData[
+  //                                   int.parse(selecteDailyVerses.toString())]
+  //                               ["Category_Name"],
+  //                           "Category_Id": dailyVersesMainData[
+  //                                   int.parse(selecteDailyVerses.toString())]
+  //                               ["Category_Id"],
+  //                           "Book": dailyVersesMainData[
+  //                                   int.parse(selecteDailyVerses.toString())]
+  //                               ["Book"],
+  //                           "Book_Id": dailyVersesMainData[
+  //                                   int.parse(selecteDailyVerses.toString())]
+  //                               ["Book_Id"],
+  //                           "Chapter": dailyVersesMainData[
+  //                                   int.parse(selecteDailyVerses.toString())]
+  //                               ["Chapter"],
+  //                           "Verse": selectedDailyVersesResponse[0]["content"],
+  //                           "Date": "$Date",
+  //                           "Verse_Num": dailyVersesMainData[
+  //                                               int.parse(selecteDailyVerses.toString())]
+  //                                           ["Verse"]
+  //                                       .toString()
+  //                                       .length ==
+  //                                   2
+  //                               ? int.parse(dailyVersesMainData[
+  //                                           int.parse(selecteDailyVerses.toString())]
+  //                                       ["Verse"]
+  //                                   .toString())
+  //                               : int.parse(dailyVersesMainData[
+  //                                           int.parse(selecteDailyVerses.toString())]
+  //                                       ["Verse"]
+  //                                   .toString()
+  //                                   .split("-")
+  //                                   .first),
+  //                         };
+  //                         batch.insert('dailyVerses', insertData);
+  //                         List<Object?> isUpload = await batch.commit();
+  //                         if (isUpload.isEmpty) {
+  //                         } else {
+  //                           debugPrint("testapp 3e");
+  //                         }
+  //                       });
+  //                     }
+  //                   });
+  //                 });
+  //               }).then((value) {
+  //                 Future.delayed(
+  //                   Duration(seconds: 1),
+  //                   () {
+  //                     if (kDebugMode) {
+  //                       print(selecteDailyVerses.toString());
+  //                     }
+  //                     SharPreferences.setString(
+  //                         SharPreferences.selectedDailyVerse,
+  //                         "${int.parse(selecteDailyVerses.toString()) + 1}");
+  //                     SharPreferences.setString(
+  //                         SharPreferences.dailyVerseUpdateTime,
+  //                         currentDateTime.toString());
+  //                   },
+  //                 );
+  //               });
+  //             }
+  //           });
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
+
+  Future<void> loadDailyVerseData() async {
+    final db = await DBHelper().db;
+
+    final List<Map<String, dynamic>> dailyVersesMainList =
+        await db!.rawQuery("SELECT * FROM dailyVersesMainList");
+
+    if (dailyVersesMainList.isEmpty) {
+      final String dailyVerseResponse =
+          await rootBundle.loadString('assets/jsonFile/dailyVerse.json');
+      // Use compute for parsing
+      final List<DailyVersesMainListModel> dataList =
+          await compute(parseDailyVerseJsond, dailyVerseResponse);
+
+      // Update your state only here
+      setState(() {
+        dailyVerseDataList = dataList;
+      });
+
+      // Insert data into DB using transaction and batch
+      await db.transaction((txn) async {
+        final batch = txn.batch();
+        for (final item in dataList) {
+          batch.insert('dailyVersesMainList', {
+            "Category_Name": item.mainCategory,
+            "Category_Id": item.categoryId,
+            "Book": item.book,
+            "Book_Id": item.bookId,
+            "Chapter": item.chapter,
+            "Verse": item.verse,
+          });
+        }
+        await batch.commit();
+      });
+
+      // Insert daily verses for the first 20 items
+      int saveDay = 0; // Make sure to manage this appropriately
+      final newMainList =
+          await db.rawQuery("SELECT * FROM dailyVersesMainList");
+      for (var i = 0; i < 20 && i < newMainList.length; i++) {
+        final m = newMainList[i];
+
+        final int verseNum = m["Verse"].toString().length == 2
+            ? int.parse(m["Verse"].toString()) - 1
+            : int.parse(m["Verse"].toString().split("-").first) - 1;
+
+        final selectedVerse = await db.rawQuery(
+          "SELECT * FROM verse WHERE book_num ='${int.parse(m["Book_Id"].toString()) - 1}' AND "
+          "chapter_num ='${int.parse(m["Chapter"].toString()) - 1}' "
+          "AND verse_num ='$verseNum'",
+        );
+
+        if (selectedVerse.isNotEmpty) {
+          await db.transaction((txn) async {
+            final batch = txn.batch();
+            final date = DateTime.now().subtract(Duration(days: saveDay));
+            batch.insert('dailyVerses', {
+              "Category_Name": m["Category_Name"],
+              "Category_Id": m["Category_Id"],
+              "Book": m["Book"],
+              "Book_Id": m["Book_Id"],
+              "Chapter": m["Chapter"],
+              "Verse": selectedVerse[0]["content"],
+              "Date": "$date",
+              "Verse_Num": m["Verse"].toString().length == 2
+                  ? int.parse(m["Verse"].toString())
+                  : int.parse(m["Verse"].toString().split("-").first),
+            });
+            saveDay = saveDay - 1;
+            await batch.commit();
+          });
+        }
+      }
+
+      await SharPreferences.setString(SharPreferences.selectedDailyVerse, "11");
+      await SharPreferences.setString(
+          SharPreferences.dailyVerseUpdateTime, DateTime.now().toString());
+    } else {
+      // Already populated, check if new daily verse needs to be added
+      final saveTime =
+          await SharPreferences.getString(SharPreferences.dailyVerseUpdateTime);
+      final saveDateTime =
+          DateTime.parse(saveTime ?? DateTime.now().toString());
+      final currentDateTime = DateTime.now();
+      final difference = daysBetween(saveDateTime, currentDateTime);
+
+      if (difference >= 1) {
+        final isLoadBookContent =
+            await SharPreferences.getBoolean(SharPreferences.isLoadBookContent);
+
+        if (isLoadBookContent != null && isLoadBookContent == true) {
+          final mainList =
+              await db.rawQuery("SELECT * FROM dailyVersesMainList");
+          String selecteDailyVerses = await SharPreferences.getString(
+                  SharPreferences.selectedDailyVerse) ??
+              "11";
+          int idx = int.parse(selecteDailyVerses);
+
+          final m = mainList[idx];
+
+          final int verseNum = m["Verse"].toString().length == 2
+              ? int.parse(m["Verse"].toString()) - 1
+              : int.parse(m["Verse"].toString().split("-").first) - 1;
+
+          final selectedVerse = await db.rawQuery(
+            "SELECT * FROM verse WHERE book_num ='${int.parse(m["Book_Id"].toString()) - 1}' AND "
+            "chapter_num ='${int.parse(m["Chapter"].toString()) - 1}' "
+            "AND verse_num ='$verseNum'",
+          );
+
+          if (selectedVerse.isNotEmpty) {
+            await db.transaction((txn) async {
+              final batch = txn.batch();
+              final date = DateTime.now();
+              batch.insert('dailyVerses', {
+                "Category_Name": m["Category_Name"],
+                "Category_Id": m["Category_Id"],
+                "Book": m["Book"],
+                "Book_Id": m["Book_Id"],
+                "Chapter": m["Chapter"],
+                "Verse": selectedVerse[0]["content"],
+                "Date": "$date",
+                "Verse_Num": m["Verse"].toString().length == 2
+                    ? int.parse(m["Verse"].toString())
+                    : int.parse(m["Verse"].toString().split("-").first),
+              });
+              await batch.commit();
+            });
+          }
+
+          // Update preference after delay
+          Future.delayed(const Duration(seconds: 1), () async {
+            if (kDebugMode) print(selecteDailyVerses);
+            await SharPreferences.setString(
+                SharPreferences.selectedDailyVerse, "${idx + 1}");
+            await SharPreferences.setString(
+                SharPreferences.dailyVerseUpdateTime,
+                currentDateTime.toString());
+          });
+        }
+      }
+    }
+  }
+
+  int daysBetween(DateTime from, DateTime to) {
+    from = DateTime(from.year, from.month, from.day);
+    to = DateTime(to.year, to.month, to.day);
+    return (to.difference(from).inHours / 24).round();
+  }
+
+  List<MainBookListModel> bookList = [];
+  List<DailyVersesMainListModel> dailyVerseDataList = [];
+  List<VerseBookContentModel> versesContent = [];
+
+  Future<void> updateLocalDB() async {
+    final dbHelper = DBHelper();
+
+    // 1. Load all data from local database
+    final List<BookMarkModel> bookmarks = await dbHelper.getBookMark();
+    final List<HighLightContentModal> highlights =
+        await dbHelper.getHighlight();
+    final List<BookMarkModel> underlines = await dbHelper.getUnderLine();
+    final List<SaveNotesModel> notesList = await dbHelper.getNotes();
+    //final List<ImageModel> imageList = await dbHelper.getSavedImages();
+    final List<CalendarModel> calendarList = await dbHelper.getCalendarData();
+
+    // 2. Process Bookmarks
+    for (var e in bookmarks) {
+      // // await dbHelper.insertBookmark(e);
+      // await dbHelper.updateVersesDataByContent(
+      //     e.content.toString(), 'is_bookmarked', 'yes');
+      // await dbHelper.updateVersesData(
+      //     int.parse(e.plaincontent.toString()), 'is_bookmarked', 'yes');
+      await DBHelper().updateVersesDataByContentnew(
+          e.content.toString(), 'is_bookmarked', 'yes');
+    }
+
+    // 3. Process Highlights
+    for (var e in highlights) {
+      //  await dbHelper.insertIntoHighLight(e);
+      await DBHelper().updateVersesDataByContentnewcheck(
+          e.content.toString(), 'is_highlighted', '${e.color}');
+    }
+
+    // 4. Process Underlines
+    for (var e in underlines) {
+      await DBHelper().updateVersesDataByContentnew(
+          e.content.toString(), 'is_underlined', 'yes');
+    }
+
+    // 5. Process Notes
+    for (var e in notesList) {
+      //  await dbHelper.insertNotes(e);
+      await DBHelper().updateVersesDataByContentnew(
+          e.content.toString(), 'is_noted', '${e.notes}');
+    }
+
+    // 6. Process Saved Images
+    // for (var e in imageList) {
+    //   await dbHelper.saveImage(e);
+    // }
+
+    // 7. Process Calendar
+    for (var e in calendarList) {
+      await dbHelper.saveCalendarData(e);
+    }
+    debugPrint("db updated");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: Provider.of<ThemeProvider>(context).currentCustomTheme ==
+                  AppCustomTheme.vintage
+              ? BoxDecoration(
+                  // color: Color(0x80605749),
+                  image: DecorationImage(
+                      image: AssetImage(Images.bgImage(context)),
+                      fit: BoxFit.fill))
+              : null,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Center(
+                child: Image.asset(
+                  "assets/Icon-1024.png",
+                  height: 220,
+                  width: 220,
+                ),
+              ),
+              Positioned(
+                  bottom: 50,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      CircularProgressIndicator.adaptive(),
+                      const SizedBox(height: 12),
+                      Text(
+                        _loaderMessage,
+                        style: TextStyle(
+                            // color: Colors.black,
+                            ),
+                      ),
+                    ],
+                  ))
+            ],
+          )),
+    );
+  }
+}
+
+class SupportDialogContent extends StatelessWidget {
+  const SupportDialogContent({super.key});
+
+  double getResponsiveFontSize(BuildContext context, double baseSize) {
+    final width = MediaQuery.of(context).size.width;
+
+    if (width < 380) {
+      // Small phones
+      return 14.2;
+    } else if (width < 480) {
+      // Medium phones
+      return baseSize;
+    } else {
+      // Large phones and tablets
+      return baseSize * 1.15;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              BibleInfo.thankyoutitle,
+              style: TextStyle(
+                fontSize: getResponsiveFontSize(context, 22),
+                color: CommanColor.black,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              " 📲 To keep this Bible app free, we show a few ads. \n\n ✅ Allowing tracking helps us show ads that match your faith and interests, like Christian books & family tools. \n\n ❌ If you don’t allow, ads will still appear but may be less relevant. \n\n  🔐 We respect your privacy and never share personal data. \n",
+              style: TextStyle(
+                fontSize: getResponsiveFontSize(context, 16),
+                color: CommanColor.black,
+              ),
+              textAlign: TextAlign.left,
+            ),
+            Text(
+              " “Let your light shine before others...” \n          – Matthew 5:16 ",
+              style: TextStyle(
+                fontSize: getResponsiveFontSize(context, 16),
+                color: CommanColor.black,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 15),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+
+                // await AdConsentManager.initAppFlow();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: CommanColor.darkPrimaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 9),
+              ),
+              child: Text(
+                'Continue',
+                style: TextStyle(
+                  fontSize: getResponsiveFontSize(context, 15),
+                  color: CommanColor.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AdConsentManager {
+  static bool _canRequestAds = false;
+  static bool _privacyOptionsRequired = false;
+  static const String _prefsDontTrack = "user_dont_track_ads";
+  static final _initializationHelper = InitializationHelper();
+
+  /// Main initialization flow
+  static Future<bool> initAppFlow() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Wait a few seconds after splash screen before showing ATT
+    await Future.delayed(const Duration(seconds: 3));
+    
+    try {
+      final status1 =
+          await AppTrackingTransparency.requestTrackingAuthorization();
+      debugPrint('ATT Status: $status1');
+      if (status1 == TrackingStatus.denied) {
+        // User refused — store flag and exit
+        await prefs.setBool(_prefsDontTrack, true);
+        debugPrint("ATT denied 1 — storing 'Don't track' and skipping");
+      } else {
+        await prefs.setBool(_prefsDontTrack, false);
+      }
+      // Notification initialization will be called after notification info screen
+      // await NotificationsServices().initialiseNotifications();
+    } on PlatformException catch (e) {
+      debugPrint('ATT Error: ${e.message}');
+    }
+    debugPrint("ATT denied 2 — storing 'Don't track' and skipping");
+    //  Early exit if "Don't track" flag already set
+    if (prefs.getBool(_prefsDontTrack) ?? true) {
+      debugPrint("User opted out — skipping consent flow");
+      _canRequestAds = false;
+      debugPrint("ATT denied 3 — storing 'Don't track' and skipping");
+      return false;
+    } else {
+      try {
+        debugPrint("ATT denied 4 — storing 'Don't track' and skipping");
+        //  await _handleConsentFlow();
+        await _initializationHelper.initialize();
+        return _canRequestAds;
+      } catch (e) {
+        debugPrint('Ad init failed: $e');
+        return false;
+      }
+    }
+  }
+
+  /// Handles UMP consent and iOS ATT
+  static Future<void> _handleConsentFlow() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // If user previously opted out, skip everything
+    if (prefs.getBool(_prefsDontTrack) ?? false) {
+      debugPrint(
+          "Skipping consent flow — user previously selected 'Don't track'");
+      _canRequestAds = false;
+      return;
+    }
+
+    late TrackingStatus status;
+    final consentStatus = await ConsentInformation.instance.getConsentStatus();
+    if (consentStatus != ConsentStatus.obtained) {
+      _canRequestAds = false;
+    }
+
+    // iOS ATT request
+    if (Platform.isIOS) {
+      try {
+        debugPrint("ATT denied 5 — storing 'Don't track' and skipping");
+        status = await AppTrackingTransparency.requestTrackingAuthorization();
+        debugPrint('ATT Status: $status');
+        await NotificationsServices().initialiseNotifications();
+      } on PlatformException catch (e) {
+        debugPrint('ATT Error: ${e.message}');
+      }
+
+      if (status == TrackingStatus.denied) {
+        // User refused — store flag and exit
+        await prefs.setBool(_prefsDontTrack, true);
+        debugPrint("ATT denied — storing 'Don't track' and skipping");
+        return;
+      }
+    }
+
+    // Request UMP consent info
+    final params = ConsentRequestParameters();
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      params,
+      () async {
+        _canRequestAds = await ConsentInformation.instance.canRequestAds();
+        _privacyOptionsRequired = await _isPrivacyOptionsRequired();
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (!_canRequestAds) {
+          final formShown = await _loadAndShowConsentForm();
+          _canRequestAds = await ConsentInformation.instance.canRequestAds();
+
+          if (!_canRequestAds) {
+            await prefs.setBool(_prefsDontTrack, true);
+            debugPrint("User denied in Consent Form — storing 'Don't track'");
+          }
+        }
+
+        await _initializeAdNetworks();
+      },
+      (FormError error) => throw Exception("Consent error: ${error.message}"),
+    );
+  }
+
+  /// Loads & shows consent form if needed
+  static Future<bool> _loadAndShowConsentForm() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Extra safeguard: Skip if opted out
+    if (prefs.getBool(_prefsDontTrack) ?? false) {
+      debugPrint("Skipping form load — user opted out");
+      return false;
+    }
+
+    try {
+      await ConsentForm.loadAndShowConsentFormIfRequired((error) {
+        if (error != null) throw Exception("Form error: ${error.message}");
+      });
+      return true;
+    } catch (e) {
+      debugPrint('Consent form failed: $e');
+      return false;
+    }
+  }
+
+  /// Checks if privacy options required
+  static Future<bool> _isPrivacyOptionsRequired() async {
+    return await ConsentInformation.instance
+            .getPrivacyOptionsRequirementStatus() ==
+        PrivacyOptionsRequirementStatus.required;
+  }
+
+  /// Shows privacy options form (manual user request)
+  static Future<void> showPrivacyOptionsForm() async {
+    try {
+      await ConsentForm.showPrivacyOptionsForm((error) {
+        if (error != null) {
+          throw Exception("Privacy form error: ${error.message}");
+        }
+      });
+    } catch (e) {
+      debugPrint('Privacy form failed: $e');
+    }
+  }
+
+  /// Initialize ad networks
+  static Future<void> _initializeAdNetworks() async {
+    MobileAds.instance.updateRequestConfiguration(
+      RequestConfiguration(
+        tagForChildDirectedTreatment: TagForChildDirectedTreatment.unspecified,
+        tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.unspecified,
+        maxAdContentRating: MaxAdContentRating.g,
+      ),
+    );
+  }
+
+  /// Returns appropriate AdRequest
+  static Future<AdRequest> getAdRequest() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Always non-personalized if opted out
+    if (prefs.getBool(_prefsDontTrack) ?? false) {
+      debugPrint("User opted out. Using fallback (NPA) ads.");
+      _canRequestAds = false;
+      return _createNonPersonalizedRequest();
+    }
+
+    final hasConsent = await _checkBasicConsent();
+    if (!hasConsent) {
+      debugPrint('No valid consent - using fallback NPA');
+      _canRequestAds = false;
+      return _createNonPersonalizedRequest();
+    }
+
+    final trackingAllowed = _canRequestAds &&
+        (Platform.isAndroid ||
+            await AppTrackingTransparency.trackingAuthorizationStatus ==
+                TrackingStatus.authorized);
+
+    return trackingAllowed
+        ? AdRequest() // Personalized
+        : _createNonPersonalizedRequest();
+  }
+
+  /// Checks if we have minimum consent
+  static Future<bool> _checkBasicConsent() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_prefsDontTrack) ?? false) return false;
+
+    final status = await AppTrackingTransparency.requestTrackingAuthorization();
+    if (status == TrackingStatus.denied) return false;
+
+    final consentStatus = await ConsentInformation.instance.getConsentStatus();
+    return consentStatus == ConsentStatus.obtained;
+  }
+
+  /// Create NPA (non-personalized ad request)
+  static AdRequest _createNonPersonalizedRequest() {
+    return AdRequest(
+      nonPersonalizedAds: true,
+      keywords: _getNonPersonalizedKeywords(),
+    );
+  }
+
+  static List<String> _getNonPersonalizedKeywords() => [
+        'bible',
+        'christian',
+        'faith',
+        'prayer',
+        'church',
+        'devotional',
+        'scripture'
+      ];
+}
+
+class UpgradeCheckWrapper extends StatefulWidget {
+  final Widget child;
+  final String? check;
+  const UpgradeCheckWrapper({super.key, required this.child, this.check});
+
+  @override
+  State<UpgradeCheckWrapper> createState() => _UpgradeCheckWrapperState();
+}
+
+class _UpgradeCheckWrapperState extends State<UpgradeCheckWrapper> {
+  bool shouldShowAd = false;
+  AppOpenAd? _appOpenAd;
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() async {
+      final upgrader = Upgrader(
+        debugLogging: true,
+        durationUntilAlertAgain: const Duration(days: 1),
+      );
+
+      final updateAvailable = upgrader.isUpdateAvailable();
+
+      final prefs = await SharedPreferences.getInstance();
+
+      final data = prefs.getString('showopenad');
+      // debugPrint(
+      //     'upgrader is  ${upgrader.versionInfo} ${upgrader.releaseNotes} $data');
+      if (!updateAvailable && data == "true") {
+        setState(() => shouldShowAd = true);
+        // OpenAdService.showAd(); // ✅ Show open ad only if no update available
+        //  if (widget.check == "show") {
+        await initAppOpen();
+        await prefs.setString("showopenad", "false");
+        // }
+      } else {
+        await Future.delayed(Duration(seconds: 7));
+        debugPrint('Update is available. Skipping open ad.');
+      }
+    });
+  }
+
+  loadOpenAd() async {
+    final trackingAllowed = await isTrackingAllowed();
+    debugPrint('ad pop loadOpenAd -  ${!trackingAllowed}');
+    bool? isAdEnabledFromApi =
+        await SharPreferences.getBoolean(SharPreferences.isAdsEnabledApi);
+    if (isAdEnabledFromApi ?? true) {
+      String? openAdUnitId =
+          await SharPreferences.getString(SharPreferences.openAppId);
+      AppOpenAd.load(
+        adUnitId: openAdUnitId ?? '',
+        request: await AdConsentManager.getAdRequest(),
+        //orientation: 1,
+        adLoadCallback: AppOpenAdLoadCallback(
+          onAdLoaded: (ad) {
+            _appOpenAd = ad;
+
+            _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+                _appOpenAd = null;
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                ad.dispose();
+                _appOpenAd = null;
+              },
+            );
+
+            _appOpenAd!.show();
+          },
+          onAdFailedToLoad: (error) {
+            debugPrint('AppOpenAd failed to load: $error');
+            SharPreferences.setBoolean(SharPreferences.isAdsEnabled, false);
+          },
+        ),
+      );
+    }
+    await Future.delayed(const Duration(seconds: 3));
+  }
+
+  Future<void> initAppOpen() async {
+    await SharPreferences.getString('test').then((value) async {
+      if (value != null) {
+        await SharPreferences.getString(SharPreferences.isRewardAdViewTime)
+            .then((re) async {
+          if (re != null) {
+            DateTime CurrentDateTime = DateTime.now();
+            DateTime SaveTime = DateTime.parse(re.toString());
+            var diff = CurrentDateTime.difference(SaveTime).inDays;
+            log('Diff: $diff');
+            if (!diff.isNegative) {
+              SharPreferences.setBoolean(SharPreferences.isAdsEnabled, true);
+              // bool dta = Provider.of<DownloadProvider>(context, listen: false)
+              //     .isopenAdEnabled;
+              // final checkad = await SharPreferences.getString('OpenAd') ?? "1";
+              // final data2 = await SharPreferences.getString('bottom') ?? '0';
+
+              final data = await SharPreferences.getBoolean(
+                      SharPreferences.isAdsEnabled) ??
+                  true;
+              // debugPrint("Open ad tigger and $checkad and && $dta");
+              if (data) {
+                loadOpenAd();
+              }
+              setState(() {});
+            } else {
+              SharPreferences.setBoolean(SharPreferences.isAdsEnabled, false);
+            }
+          } else {
+            // bool dta = Provider.of<DownloadProvider>(context, listen: false)
+            //     .isopenAdEnabled;
+            // final checkad = await SharPreferences.getString('OpenAd') ?? "1";
+            // final data2 = await SharPreferences.getString('bottom') ?? '0';
+
+            final data = await SharPreferences.getBoolean(
+                    SharPreferences.isAdsEnabled) ??
+                true;
+            // debugPrint("Open ad tigger and $checkad and && $dta");
+            if (data) {
+              loadOpenAd();
+            }
+            setState(() {});
+          }
+        });
+        await Future.delayed(const Duration(seconds: 1));
+      } else {
+        await SharPreferences.setString('test', 'test');
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return UpgradeAlert(
+      child: widget.child,
+    );
+  }
+}
+
+// Helper function for background isolate JSON parsing:
+List<DailyVersesMainListModel> parseDailyVerseJsond(String jsonString) {
+  final List<dynamic> decoded = json.decode(jsonString);
+  return decoded
+      .map((item) => DailyVersesMainListModel.fromJson(item))
+      .toList();
+}

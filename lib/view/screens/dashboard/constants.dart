@@ -1,0 +1,78 @@
+class BibleInfo {
+  static String apple_AppId = "6460891065";
+
+  // 6484270584  //6459793603
+  static String ios_Bundle_Id = "com.balaklrapps.genevabible";
+  static String bible_shortName = "Geneva Bible";
+  static String current_Version = "1.0.69";
+  static String android_Package_Name = "com.whitebibles.amplifiedbible";
+  static String appID = '11656bd4-ed0c-11ef-b28e-fa163e8c011b';
+  //static int surveyAppId = 3;
+
+//IAP
+  static String sixMonthPlanid =
+      'com.balaklrapps.amplifiedbible.sixmonthadsfree';
+  static String oneYearPlanid = 'com.balaklrapps.amplifiedbible.oneyearadsfree';
+  static String lifeTimePlanid =
+      'com.balaklrapps.amplifiedbible.lifetimeadsfree';
+
+  static bool enableIAP = true;
+
+  // enable-> true or disable-> false e-products here
+  static bool enableEShop = false;
+
+  // AD Enable - Set to true to enable ads, false to disable
+  static bool enableAds = true;
+
+  // Ads IDs - Android
+  static String adsGoogleBannerIdAndroid = "";
+  static String adsGoogleBannerId_2Android = "";
+  static String adsGoogleBannerId_3Android = "";
+  static String adsGoogleInterstitialIdAndroid = "";
+  static String adsGoogleRewardIdAndroid = "";
+  static String adsGoogleOpenAppIdAndroid = "";
+  static String adsGoogleNativeIdAndroid = "";
+  static String adsGoogleRewardInterstitialIdAndroid = "";
+
+  // Ads IDs - iOS
+  static String adsGoogleBannerIdIos = "ca-app-pub-4194577750257069/3829303484";
+  static String adsGoogleBannerId_2Ios = "";
+  static String adsGoogleBannerId_3Ios = "";
+  static String adsGoogleInterstitialIdIos = "ca-app-pub-4194577750257069/8121554676";
+  static String adsGoogleRewardIdIos = "ca-app-pub-4194577750257069/3146777206";
+  static String adsGoogleOpenAppIdIos = "ca-app-pub-4194577750257069/6808473007";
+  static String adsGoogleNativeIdIos = "ca-app-pub-4194577750257069/5043409277";
+  static String adsGoogleRewardInterstitialIdIos = "";
+
+// add folder names here  assets/zipped/
+  static List<String> folders = [
+    "Geneva Bible"
+    // "Bengali Bible",
+  ];
+
+  static String emailVerify = "0";
+
+  static int appcount = 5;
+
+  static String thankyoucontent = "";
+
+  static String thankyoutitle = " 🙏 Help Us Keep the Bible App Free ";
+
+  static int old_testament_count =
+      39; //book count 65 - olt 39, book count 72 - olt 45
+  static String new_testament_count = "27";
+
+  static String exportText =
+      'Save your Bookmarked verses, Highlights, Notes and Verse Images directly to your device. This option stores a backup file locally, which can be transferred or accessed later. You can import this file into the app whenever needed, even on another device.';
+  static String importText = 'Please select the file you exported last time.';
+
+  static String termsandConditionURL =
+      "https://bibleoffice.com/terms_conditions.html";
+  static String privacyPolicyURL =
+      "https://bibleoffice.com/privacy_policy.html";
+
+  static int imageMaxLines = 7;
+
+  static const double fontSizeScale = 1.0;
+  static const double letterSpacing = 0.4;
+}

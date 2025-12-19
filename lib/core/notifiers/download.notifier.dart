@@ -1,0 +1,1019 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:biblebookapp/Model/dailyVerseList.dart';
+import 'package:biblebookapp/Model/mainBookListModel.dart';
+import 'package:biblebookapp/Model/product_details_model.dart';
+import 'package:biblebookapp/Model/verseBookContentModel.dart';
+import 'package:biblebookapp/controller/dashboard_controller.dart';
+import 'package:biblebookapp/controller/dpProvider.dart';
+import 'package:biblebookapp/core/notifiers/cache.notifier.dart';
+import 'package:biblebookapp/utils/custom_alert.dart';
+import 'package:biblebookapp/utils/debugprint.dart';
+import 'package:biblebookapp/view/constants/share_preferences.dart';
+import 'package:biblebookapp/view/screens/auth/splash.dart';
+import 'package:biblebookapp/view/screens/dashboard/constants.dart';
+import 'package:biblebookapp/view/widget/home_content_edit_bottom_sheet.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class DownloadProvider with ChangeNotifier {
+  DownloadProvider() {
+    _loadShownStatus();
+    _loadData();
+    DashBoardController().loadApi();
+    debugPrint(" Api is called now ");
+  }
+
+  //! eshop
+
+  static const _downloadsKey = 'downloaded_books';
+  static const _planKey = 'subscription_plan';
+  static const _usedFreeDownloadKey = 'used_free_download1';
+  static const _usedLimitKey = 'used_download_count';
+
+  String? _plan;
+  int _usedLimit = 0;
+  bool isbookLoading = false;
+  String? get plan => _plan;
+  int get usedLimit => _usedLimit;
+  bool get isPlanActive => _isActive(_plan);
+
+  static final _usedLimitController = StreamController<int>.broadcast();
+
+//  static Stream<int> getUsedLimitStream() => _usedLimitController.stream;
+  Stream<bool> isPlanActiveStream() async* {
+    final plan = await getSubscriptionPlan();
+    yield ['platinum', 'gold', 'silver'].contains(plan?.toLowerCase());
+  }
+
+  // Future<void> updateUsedLimit(int value) async {
+  //   _usedLimitController.add(value);
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setInt(_usedLimitKey, value);
+  // }
+
+  Future<void> markFreeDownloadUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_usedFreeDownloadKey, true);
+    notifyListeners();
+  }
+
+  checkbookloading() {
+    notifyListeners();
+    return isbookLoading;
+  }
+
+  setkbookloading(loading) {
+    isbookLoading = loading;
+    notifyListeners();
+  }
+  // static Future<void> loadUsedLimitFromPrefs() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   _usedLimitController.add(prefs.getInt("usedLimit") ?? 0);
+  // }
+
+  Future<String?> getSubscriptionPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_planKey);
+  }
+
+  // Check if user has used free download
+  Future<bool> hasUsedFreeDownload() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_usedFreeDownloadKey) ?? false;
+  }
+
+  // // Check if user has used free download
+  // Future<bool> usedFreeDownload() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.setBool(_usedFreeDownloadKey, false);
+  // }
+
+  static Stream<int> getUsedLimitStream() async* {
+    // First yield the saved value from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    yield prefs.getInt(_usedLimitKey) ?? 0;
+
+    // Then yield updates from the controller
+    yield* _usedLimitController.stream;
+  }
+
+  getusedlimit() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_usedLimitKey) ?? 0;
+  }
+
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _plan = prefs.getString(_planKey);
+    _usedLimit = prefs.getInt(_usedLimitKey) ?? 0;
+    _usedLimitController.add(_usedLimit);
+    notifyListeners();
+  }
+
+  // Set subscription plan
+  Future<void> setSubscriptionPlan(String plan) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_planKey, plan);
+    _plan = plan;
+    notifyListeners();
+  }
+
+  // // Set used limit directly
+  // Future<void> setUsedLimit(int count) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setInt(_usedLimitKey, count);
+  //   _usedLimit = count;
+  //   notifyListeners();
+  // }
+
+  // Increment used limit
+  Future<void> incrementUsedLimit() async {
+    // _usedLimit++;
+
+    // final usedFree = await hasUsedFreeDownload();
+    // if (!usedFree) {
+    //   await markFreeDownloadUsed();
+    // }
+    final prefs = await SharedPreferences.getInstance();
+    // await prefs.setInt(_usedLimitKey, _usedLimit);
+    int current = prefs.getInt(_usedLimitKey) ?? 0;
+    await prefs.setInt(_usedLimitKey, current + 1);
+    _usedLimit = prefs.getInt(_usedLimitKey) ?? 0;
+    _usedLimitController.add(_usedLimit);
+    notifyListeners();
+  }
+
+  //   static Future<void> incrementUsedLimit() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     int current = prefs.getInt(_usedLimitKey) ?? 0;
+//     await prefs.setInt(_usedLimitKey, current + 1);
+//   }
+
+  // Reset used limit
+  Future<void> resetUsedLimit() async {
+    _usedLimit = 0;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_usedLimitKey, 0);
+    await prefs.setString(_planKey, '');
+    notifyListeners();
+  }
+
+  // Check if a user can download more books
+  Future<bool> canDownloadMore() async {
+    final prefs = await SharedPreferences.getInstance();
+    // final usedFree = await hasUsedFreeDownload();
+    final downloads = await getDownloadedBooks();
+    final plan = await getSubscriptionPlan();
+    int current = prefs.getInt(_usedLimitKey) ?? 0;
+    debugPrint("check download $plan ${downloads.length}  $current");
+    // Allow 1st download if free not used
+    // if (usedFree == false) {
+    //   return true;
+    // } else
+    if (plan != null && plan.isNotEmpty) {
+      if (_plan == 'platinum') {
+        return true;
+      } else if (_plan == 'gold') {
+        return current < 12;
+      } else if (_plan == 'silver') {
+        return current < 4;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  // Downloaded books storage
+
+  Map<String, dynamic> createBook(String name, String imageUrl) {
+    return {
+      "name": name,
+      "imageUrl": imageUrl,
+    };
+  }
+
+  Future<List<String>> getDownloadedBooks() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_downloadsKey) ?? [];
+  }
+
+  Future<void> setDownloadedBooks(List<String> books) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_downloadsKey, books);
+    notifyListeners();
+  }
+
+  //   /// Get downloaded books as a list of maps
+  // Future<List<Map<String, dynamic>>> getDownloadedBooks() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final bookStrings = prefs.getStringList(_downloadsKey) ?? [];
+  //   return bookStrings
+  //       .map((str) => jsonDecode(str) as Map<String, dynamic>)
+  //       .toList();
+  // }
+
+  // /// Save list of downloaded books
+  // Future<void> setDownloadedBooks(List<Map<String, dynamic>> books) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final bookStrings = books.map((book) => jsonEncode(book)).toList();
+  //   await prefs.setStringList(_downloadsKey, bookStrings);
+  //   notifyListeners();
+  // }
+
+  // /// Add a single book (name + image)
+  // Future<void> addDownloadedBook(String name, String imageUrl) async {
+  //   final books = await getDownloadedBooks();
+  //   books.add(createBook(name, imageUrl));
+  //   await setDownloadedBooks(books);
+  // }
+
+  Future<bool> trackDownload(String bookId) async {
+    final current = await getDownloadedBooks();
+    if (current.contains(bookId)) return false;
+//     if (current.contains(bookId)) return false;
+
+    // // If first-time free, mark it
+    // final usedFree = await hasUsedFreeDownload();
+    // if (usedFree == false && current.isEmpty) {
+    //   return true;
+    // }
+    final isfree = await hasUsedFreeDownload();
+
+    if (isfree == true) {
+      return true;
+    }
+
+//     // current.add(bookId);
+//     // debugPrint("list of book d - $current");
+//     // await setDownloadedBooks(current);
+//     // await prefs.setStringList(_downloadsKey, current);
+    // current.add(bookId);
+    // await setDownloadedBooks(current);
+    // await incrementUsedLimit();
+
+    return true;
+  }
+
+  static bool _isActive(String? plan) {
+    if (plan == null) return false;
+    return ['platinum', 'gold', 'silver'].contains(plan.toLowerCase());
+  }
+
+// end eshop
+
+  static const String _key = 'appCount';
+  int _appCount = 100;
+  // final int _appCountper = 0;
+
+  int get appCount => _appCount;
+
+  bool _adEnabled = false;
+  int _adCount = 0;
+
+  int get adCount => _adCount;
+
+  InterstitialAd? _interstitialAd;
+
+  bool get adEnabled => _adEnabled;
+
+// count for one time
+  int _bookmarkCount = 0;
+  bool _hasShown = false;
+
+  bool get hasShown => _hasShown;
+
+  // ad
+  static const _pdkey = 'product_details_list';
+
+  // Save list of ProductDetails
+  Future<void> saveProductList(List<ProductDetails> products) async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> jsonList =
+        products.map((product) => jsonEncode(product.toJson())).toList();
+    await prefs.setStringList(_pdkey, jsonList);
+  }
+
+  bool isLoading = false;
+
+  Future<void> saveInBackground({
+    required List<String> selectedCategories,
+  }) async {
+    isLoading = true;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('dataIsChanged', true);
+    debugPrint("dailyVersesnew is start");
+    final dbClient = await DBHelper().db;
+    if (dbClient == null) return;
+
+    // 1. Save categories
+    // final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'selected_categories', selectedCategories.toSet().toList());
+
+    // 2. Load all data
+    final rawData =
+        await dbClient.rawQuery("SELECT * FROM dailyVersesMainList");
+
+    // 3. Filter data in background isolate
+    final filteredData = await compute(_filterVerses, {
+      'data': rawData,
+      'selectedCategories': selectedCategories.toSet().toList(),
+    });
+
+    // 4. Clear old entries
+    await dbClient.execute("DELETE FROM dailyVersesnew");
+
+    // 5. Insert new entries
+    DateTime currentDate = DateTime.now();
+    // for (final data in filteredData) {
+    //   final bookId = int.parse(data["Book_Id"].toString());
+    //   final chapter = int.parse(data["Chapter"].toString());
+    //   final verse = int.parse(
+    //     data["Verse"].toString().contains("-")
+    //         ? data["Verse"].toString().split("-").first
+    //         : data["Verse"].toString(),
+    //   );
+
+    //   final verseResult = await dbClient.rawQuery(
+    //     "SELECT * FROM verse WHERE book_num = ? AND chapter_num = ? AND verse_num = ?",
+    //     [bookId, chapter, verse],
+    //   );
+
+    //   if (verseResult.isNotEmpty) {
+    //     final insertData = {
+    //       "Category_Name": data["Category_Name"],
+    //       "Category_Id": data["Category_Id"],
+    //       "Book": data["Book"],
+    //       "Book_Id": bookId,
+    //       "Chapter": chapter,
+    //       "Verse": verseResult[0]["content"],
+    //       "Date": "$currentDate",
+    //       "Verse_Num": verse,
+    //     };
+
+    //     await dbClient.transaction((txn) async {
+    //       final batch = txn.batch();
+    //       batch.insert('dailyVersesnew', insertData);
+    //       await batch.commit(noResult: true);
+    //     });
+
+    //     currentDate = currentDate.add(const Duration(days: 1));
+    //   }
+    // }
+    for (final data in filteredData) {
+      final bookId = int.tryParse(data["Book_Id"].toString());
+
+      final chapterStr = data["Chapter"]?.toString().trim();
+      final verseStr = data["Verse"]?.toString().trim();
+
+      // ✅ Skip if Chapter or Verse is null/empty
+      if (chapterStr == null ||
+          chapterStr.isEmpty ||
+          verseStr == null ||
+          verseStr.isEmpty) {
+        continue;
+      }
+
+      final chapter = int.tryParse(chapterStr);
+      final verse = int.tryParse(
+        verseStr.contains("-") ? verseStr.split("-").first : verseStr,
+      );
+
+      // ✅ Skip if parsing failed
+      if (bookId == null || chapter == null || verse == null) {
+        continue;
+      }
+
+      final verseResult = await dbClient.rawQuery(
+        "SELECT * FROM verse WHERE book_num = ? AND chapter_num = ? AND verse_num = ?",
+        [bookId, chapter, verse],
+      );
+
+      if (verseResult.isNotEmpty) {
+        final insertData = {
+          "Category_Name": data["Category_Name"],
+          "Category_Id": data["Category_Id"],
+          "Book": data["Book"],
+          "Book_Id": bookId,
+          "Chapter": chapter,
+          "Verse": verseResult[0]["content"],
+          "Date": "$currentDate",
+          "Verse_Num": verse,
+        };
+
+        await dbClient.transaction((txn) async {
+          final batch = txn.batch();
+          batch.insert('dailyVersesnew', insertData);
+          await batch.commit(noResult: true);
+        });
+
+        currentDate = currentDate.add(const Duration(days: 1));
+      }
+    }
+
+    debugPrint("dailyVersesnew is sucess");
+    isLoading = false;
+    notifyListeners();
+  }
+
+// download limit
+  int clickCount = 0;
+  bool isAdReady = false;
+
+  bool _isopenAdEnabled = true;
+
+  bool get isopenAdEnabled => _isopenAdEnabled;
+
+  void enableAd() {
+    _isopenAdEnabled = true;
+    notifyListeners();
+  }
+
+  void disableAd() {
+    _isopenAdEnabled = false;
+    Future.delayed(Duration.zero, () {
+      notifyListeners(); // ✅ Safe
+    });
+  }
+
+  void toggleAd() {
+    _isopenAdEnabled = !_isopenAdEnabled;
+    notifyListeners();
+  }
+
+  // Future<void> requestConsentInfo() async {
+  //   final params = ConsentRequestParameters();
+  //   final consentInfo = ConsentInformation.instance;
+
+  //   consentInfo.requestConsentInfoUpdate(
+  //     params,
+  //     () async {
+  //       // Consent info updated successfully.
+  //       await loadAndShowConsentFormIfRequired();
+  //     },
+  //     (FormError error) {
+  //       // Handle the error.
+  //       debugPrint('Consent info update failed: ${error.message}');
+  //     },
+  //   );
+  // }
+
+  // Future<void> loadAndShowConsentFormIfRequired() async {
+  //   await ConsentForm.loadAndShowConsentFormIfRequired(
+  //     (FormError? formError) {
+  //       if (formError != null) {
+  //         // Handle the error.
+  //         debugPrint('Consent form load/show failed: ${formError.message}');
+  //       } else {
+  //         // Consent form was shown successfully.
+  //         debugPrint('Consent form displayed.');
+  //       }
+  //     },
+  //   );
+  // }
+
+  void _loadShownStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hasShown = prefs.getBool('hasShownAlert') ?? false;
+    notifyListeners();
+  }
+
+  void incrementBookmarkCount(BuildContext context) async {
+    if (_hasShown) return;
+    CacheNotifier cacheNotifier = CacheNotifier();
+    final data = await cacheNotifier.readCache(key: 'user');
+
+    if (data == null) {
+      _bookmarkCount++;
+
+      if (_bookmarkCount >= BibleInfo.appcount) {
+        _bookmarkCount = 0;
+        if (context.mounted) {
+          // Show Alert
+          showDialog(
+            context: context,
+            builder: (_) => const BibleAlertBox(),
+          );
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('hasShownAlert', true);
+          _hasShown = true;
+          notifyListeners();
+        }
+      }
+    }
+  }
+
+  // Future<void> checkConsentAndLoadAds() async {
+  //   final consentInfo = ConsentInformation.instance;
+  //   final canRequestAds = await consentInfo.canRequestAds();
+
+  //   if (canRequestAds) {
+  //     // Load and display ads.
+  //   } else {
+  //     // Do not load ads.
+  //     print('Cannot request ads without user consent.');
+  //   }
+  // }
+
+  Future handleDownloadClick(BuildContext context) async {
+    // final data = await SharPreferences.getString(SharPreferences.offerenabled);
+    final adEnable =
+        await SharPreferences.getBoolean(SharPreferences.isAdsEnabledApi);
+    final checkDownload = await SharPreferences.getBoolean("downloadreward");
+    final adEnable2 = await SharPreferences.shouldLoadAd();
+    final subEnable = await SharPreferences.getBoolean('isSubscriptionEnabled');
+
+    debugPrint(
+        "offer enabled 0 or - ad $adEnable - $adEnable2 & sub $subEnable  ");
+
+    final clickcountcachefn =
+        await SharPreferences.getInt('downloadrewardcount');
+
+    if (clickcountcachefn != null) {
+      clickCount = clickcountcachefn;
+    }
+
+    if (subEnable!) {
+      if (adEnable2) {
+        clickCount++;
+        await SharPreferences.setInt("downloadrewardcount", clickCount);
+
+        final clickcountcache =
+            await SharPreferences.getInt('downloadrewardcount');
+        debugPrint(
+            "offer enabled 1 or - ad $adEnable - $adEnable2 & sub $subEnable  click count - $clickcountcache");
+        if (clickcountcache == 4) {
+          await setDownloadReward();
+          // showLimitDialog(context);
+          return true;
+        } else if (!checkDownload!) {
+          clickCount = 3;
+          await SharPreferences.setInt("downloadrewardcount", clickCount);
+          return false;
+        }
+      } else {
+        clickCount = 3;
+        await SharPreferences.setBoolean("downloadreward", true);
+        await SharPreferences.setInt("downloadrewardcount", clickCount);
+        return false;
+      }
+    } else {
+      clickCount = 3;
+      await SharPreferences.setBoolean("downloadreward", true);
+      await SharPreferences.setInt("downloadrewardcount", clickCount);
+      return false;
+    }
+
+    notifyListeners();
+    return false;
+  }
+
+  Future<void> setDownloadReward() async {
+    await SharPreferences.setBoolean("downloadreward", false);
+    clickCount = 0;
+    await SharPreferences.setInt("downloadrewardcount", clickCount);
+    notifyListeners();
+  }
+
+  // Load list of ProductDetails
+  Future<List<ProductDetails>> loadProductList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? jsonList = prefs.getStringList(_pdkey);
+    if (jsonList == null) return [];
+
+    return jsonList
+        .map((jsonStr) => ProductDetails.fromJson(
+            jsonDecode(jsonStr) as Map<String, dynamic>))
+        .toList();
+  }
+
+  // Optional: clear stored products
+  Future<void> clearProductList() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pdkey);
+  }
+
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _adEnabled = await shouldLoadAd();
+    _adCount = int.tryParse(prefs.getString('showinterstitialo') ?? '0') ?? 0;
+    notifyListeners();
+  }
+
+  Future<bool> shouldLoadAd() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('ad_enabled') ?? true;
+  }
+
+  Future<void> checkAndShowAd(BuildContext context, adEnabledfn) async {
+    final prefs = await SharedPreferences.getInstance();
+    final prefsadcount =
+        await SharPreferences.getString(SharPreferences.showinterstitialrow) ??
+            "0";
+
+    final data = prefs.getString('showinterstitialo') ?? '0';
+
+    _adCount = int.tryParse(data ?? '0') ?? 0;
+
+    _adEnabled = await shouldLoadAd();
+    final adcount = int.tryParse(prefsadcount) ?? 0;
+    debugPrint(" ad check $_adCount  & $adcount  ");
+    if (_adCount % adcount == 0) {
+      EasyLoading.showInfo('Please wait...');
+      await Future.delayed(const Duration(seconds: 2));
+      if (context.mounted) {
+        _loadAndShowInterstitialAd(context);
+      }
+      EasyLoading.dismiss();
+      // Reset counter after showing ad
+      _adCount = 0;
+    }
+    notifyListeners();
+  }
+
+  Future<void> updateAdCount(int newCount) async {
+    final prefs = await SharedPreferences.getInstance();
+    _adCount = newCount;
+    await prefs.setString('showinterstitialo', _adCount.toString());
+  }
+
+  void _loadAndShowInterstitialAd(BuildContext context) async {
+    // final trackingAllowed = await isTrackingAllowed();
+    // debugPrint('ad pop InterstitialAd -  ${!trackingAllowed}');
+    String? adUnitId =
+        await SharPreferences.getString(SharPreferences.googleInterstitialAd);
+    InterstitialAd.load(
+      adUnitId: adUnitId.toString() ?? '',
+      request: await AdConsentManager.getAdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) async {
+          _interstitialAd = ad;
+          _interstitialAd?.show();
+          DebugConsole.log(" interstitialAd is running ");
+          await SharPreferences.setString('OpenAd', '1');
+          _interstitialAd?.fullScreenContentCallback =
+              FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) async {
+              await SharPreferences.setString('OpenAd', '1');
+              ad.dispose();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+            },
+          );
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint('InterstitialAd failed to load: $error');
+        },
+      ),
+    );
+  }
+
+  /// download
+
+  Future<void> _loadAppCount() async {
+    final data = await SharPreferences.getInt(SharPreferences.offercount);
+    //  await SharPreferences.setInt("offercountper", data ?? 0);
+    //final data2 = await SharPreferences.getInt("offercountper");
+    final prefs = await SharedPreferences.getInstance();
+    //await prefs.setInt(_key, data ?? 10);
+    _appCount = prefs.getInt(_key) ?? data ?? 10;
+    debugPrint(" offer count is api $_appCount  $data");
+    notifyListeners();
+  }
+
+  Future<void> _saveAppCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    debugPrint(" offer count is $_appCount ");
+    await prefs.setInt(_key, _appCount);
+  }
+
+  Future decrementCount(BuildContext context) async {
+    await _loadAppCount();
+    if (_appCount > 0) {
+      _appCount--;
+      _saveAppCount();
+      notifyListeners();
+      final data =
+          await SharPreferences.getString(SharPreferences.offerenabled) ?? '';
+
+      final premium = await SharPreferences.getString("premium") ?? 'no';
+      final adenable =
+          await SharPreferences.getBoolean(SharPreferences.isAdsEnabledApi) ??
+              true;
+      final subenable =
+          await SharPreferences.getBoolean('isSubscriptionEnabled') ?? true;
+      // await Future.delayed(Duration(seconds: 1));
+      debugPrint("offer enabled or - $_appCount $data $adenable $subenable");
+      if (subenable) {
+        debugPrint("sub enabled or - $subenable");
+        if (data == '1') {
+          if (adenable) {
+            if (_appCount == 0) {
+              if (context.mounted && premium == 'no') {
+                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const PremiumAccessDialog(),
+                );
+              }
+            }
+          } else {
+            resetCount();
+          }
+        } else {
+          resetCount();
+        }
+      } else {
+        resetCount();
+      }
+    } else {
+      resetCount();
+    }
+  }
+
+  Future<void> resetCount() async {
+    final data = await SharPreferences.getInt(SharPreferences.offercount) ?? 20;
+    _appCount = data;
+    await _saveAppCount();
+    notifyListeners();
+  }
+
+// daily verse
+  bool isLoadingDailyVerse = false;
+  List<DailyVerseList> dailyVerseList = [];
+
+  Future<void> loadDailyVerses() async {
+    isLoadingDailyVerse = true;
+    // notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+
+    final bool dataIsChanged = prefs.getBool('dataIsChanged') ?? true;
+    final String? cachedJson = prefs.getString('cachedDailyVerseList');
+
+    if (!dataIsChanged && cachedJson != null) {
+      // Load from cache
+      final List<dynamic> decoded = jsonDecode(cachedJson);
+      dailyVerseList = decoded
+          .map((e) => DailyVerseList.fromJson(e as Map<String, dynamic>))
+          .toSet()
+          .toList();
+      debugPrint("dailyVerseList is ${dailyVerseList.length}");
+      isLoadingDailyVerse = false;
+      notifyListeners();
+      return;
+    }
+
+    // Continue loading from DB
+    List<String> selectedCategories =
+        prefs.getStringList('selected_categories') ?? ['faith-in-hard-times'];
+
+    final dbClient = await DBHelper().db;
+    if (dbClient == null) return;
+
+    final table = selectedCategories.isEmpty ? "dailyVerses" : "dailyVersesnew";
+    final dailyVerses = await dbClient.rawQuery("SELECT * FROM $table");
+
+    final today = DateTime.now();
+    final todayString = DateFormat('yyyy-MM-dd').format(today);
+
+    final result = await compute(_filterAndSortVerses, {
+      'verses': dailyVerses,
+      'today': todayString,
+    });
+
+    // Fetch book names
+    final List<DailyVerseList> enrichedList = [];
+
+    for (var verse in result) {
+      final bookData = await dbClient.rawQuery(
+        "SELECT DISTINCT title FROM book WHERE book_num = ? LIMIT 1",
+        [verse['Book_Id']],
+      );
+      final bookName =
+          bookData.isNotEmpty ? bookData.first['title'] as String : 'Unknown';
+
+      enrichedList.add(DailyVerseList(
+        categoryName: verse['Category_Name'],
+        categoryId: int.parse(verse['Category_Id'].toString()),
+        book: bookName,
+        bookId: int.parse(verse['Book_Id'].toString()),
+        chapter: int.parse(verse['Chapter'].toString()),
+        verse: verse['Verse'],
+        date: verse['Date'],
+        verseNum: int.parse(verse['Verse_Num'].toString()),
+      ));
+    }
+
+    dailyVerseList = enrichedList;
+    debugPrint("dailyVerseList new is ${dailyVerseList.length}");
+    // Cache in SharedPreferences
+    final String jsonList =
+        jsonEncode(dailyVerseList.map((e) => e.toJson()).toSet().toList());
+    await prefs.setString('cachedDailyVerseList', jsonList);
+    await prefs.setBool('dataIsChanged', false); // Reset the flag
+
+    isLoadingDailyVerse = false;
+    notifyListeners();
+  }
+
+  // Future<void> loadDailyVerses() async {
+  //   isLoadingDailyVerse = true;
+  //   notifyListeners();
+
+  //   final prefs = await SharedPreferences.getInstance();
+  //   List<String> selectedCategories =
+  //       prefs.getStringList('selected_categories') ?? ['faith-in-hard-times'];
+
+  //   final dbClient = await DBHelper().db;
+  //   if (dbClient == null) return;
+
+  //   final table = selectedCategories.isEmpty ? "dailyVerses" : "dailyVersesnew";
+  //   final dailyVerses = await dbClient.rawQuery("SELECT * FROM $table");
+
+  //   final today = DateTime.now();
+  //   final todayString = DateFormat('yyyy-MM-dd').format(today);
+
+  //   // Compute to process DB results off main thread
+  //   final result = await compute(_filterAndSortVerses, {
+  //     'verses': dailyVerses,
+  //     'today': todayString,
+  //   });
+
+  //   // Fetch book names on main thread
+  //   final List<DailyVerseList> enrichedList = [];
+
+  //   for (var verse in result) {
+  //     final bookData = await dbClient.rawQuery(
+  //       "SELECT DISTINCT title FROM book WHERE book_num = ? LIMIT 1",
+  //       [verse['Book_Id']],
+  //     );
+  //     final bookName =
+  //         bookData.isNotEmpty ? bookData.first['title'] as String : 'Unknown';
+
+  //     enrichedList.add(DailyVerseList(
+  //       categoryName: verse['Category_Name'],
+  //       categoryId: int.parse(verse['Category_Id'].toString()),
+  //       book: bookName,
+  //       bookId: int.parse(verse['Book_Id'].toString()),
+  //       chapter: int.parse(verse['Chapter'].toString()),
+  //       verse: verse['Verse'],
+  //       date: verse['Date'],
+  //       verseNum: int.parse(verse['Verse_Num'].toString()),
+  //     ));
+  //   }
+
+  //   dailyVerseList = enrichedList;
+  //   isLoadingDailyVerse = false;
+  //   notifyListeners();
+  // }
+
+//search
+  bool isLoadingsearch = false;
+
+  List<VerseBookContentModel> verseList = [];
+  List<VerseBookContentModel> otVerseList = [];
+  List<VerseBookContentModel> ntVerseList = [];
+
+  List<MainBookListModel> bookList = [];
+  List<MainBookListModel> otBookList = [];
+  List<MainBookListModel> ntBookList = [];
+
+  void setIsLoading(bool value) {
+    isLoadingsearch = value;
+    notifyListeners();
+  }
+
+  void setData({
+    required List<VerseBookContentModel> allVerses,
+    required List<VerseBookContentModel> otVerses,
+    required List<VerseBookContentModel> ntVerses,
+    required List<MainBookListModel> allBooks,
+    required List<MainBookListModel> otBooks,
+    required List<MainBookListModel> ntBooks,
+  }) {
+    verseList = allVerses;
+    otVerseList = otVerses;
+    ntVerseList = ntVerses;
+
+    bookList = allBooks;
+    otBookList = otBooks;
+    ntBookList = ntBooks;
+
+    notifyListeners();
+  }
+}
+
+// Background selectedCategories
+List<Map<String, dynamic>> _filterVerses(Map<String, dynamic> args) {
+  List<Map<String, dynamic>> data =
+      List<Map<String, dynamic>>.from(args['data']);
+  List<String> selectedCategories =
+      List<String>.from(args['selectedCategories']);
+
+  return data
+      .where((e) => selectedCategories.contains(e["Category_Name"]))
+      .toSet()
+      .toList();
+}
+
+/// Background dailyverse list
+List<Map<String, dynamic>> _filterAndSortVerses(Map<String, dynamic> args) {
+  // final verses = List<Map<String, dynamic>>.from(args['verses']);
+  // final todayStr = args['today'];
+
+  // final today = DateTime.parse(todayStr);
+  // final todayOnly = DateFormat('yyyy-MM-dd').format(today);
+
+  // List<Map<String, dynamic>> filtered = [];
+
+  // for (var i in verses) {
+  //   try {
+  //     final verseDate = DateTime.parse(i['Date']);
+  //     final verseDateOnly = DateFormat('yyyy-MM-dd').format(verseDate);
+  //     if (verseDateOnly.compareTo(todayOnly) > 0) continue;
+
+  //     filtered.add(i);
+  //   } catch (e) {
+  //     continue;
+  //   }
+  // }
+
+  // filtered.sort((a, b) {
+  //   final dateA = DateTime.parse(a['Date']);
+  //   final dateB = DateTime.parse(b['Date']);
+
+  //   final isTodayA = DateFormat('yyyy-MM-dd').format(dateA) == todayOnly;
+  //   final isTodayB = DateFormat('yyyy-MM-dd').format(dateB) == todayOnly;
+
+  //   if (isTodayA && !isTodayB) return -1;
+  //   if (!isTodayA && isTodayB) return 1;
+
+  //   return dateB.compareTo(dateA);
+  // });
+
+  // return filtered;
+
+  final verses = List<Map<String, dynamic>>.from(args['verses']);
+
+  List<Map<String, dynamic>> filtered = [];
+
+  for (var i in verses) {
+    try {
+      DateTime.parse(i['Date']); // Ensure valid date
+      filtered.add(i);
+    } catch (e) {
+      continue;
+    }
+  }
+
+  filtered.sort((a, b) {
+    final dateA = DateTime.parse(a['Date']);
+    final dateB = DateTime.parse(b['Date']);
+    return dateB.compareTo(dateA); // Sort descending
+  });
+
+  return filtered;
+}
+
+//search background
+List<VerseBookContentModel> parseVerses(List<Map<String, dynamic>> data) {
+  return data.map((e) => VerseBookContentModel.fromJson(e)).toList();
+}
+
+Map<String, List<VerseBookContentModel>> splitVerses(
+    List<VerseBookContentModel> all) {
+  List<VerseBookContentModel> ot = [];
+  List<VerseBookContentModel> nt = [];
+
+  for (var v in all) {
+    if (v.bookNum!.clamp(0, 38) == v.bookNum) {
+      ot.add(v);
+    } else {
+      nt.add(v);
+    }
+  }
+
+  return {'ot': ot, 'nt': nt};
+}
+
+List<MainBookListModel> parseBooks(List<Map<String, dynamic>> data) {
+  return data.map((e) => MainBookListModel.fromJson(e)).toList();
+}
+
+Map<String, List<MainBookListModel>> splitBooks(List<MainBookListModel> books) {
+  List<MainBookListModel> ot = books.take(39).toList();
+  List<MainBookListModel> nt = books.skip(39).toList();
+  return {'ot': ot, 'nt': nt};
+}
