@@ -44,6 +44,7 @@ import 'package:biblebookapp/view/screens/chat/chat_screen.dart';
 
 import 'package:biblebookapp/view/widget/verse_item_widget.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -1129,6 +1130,52 @@ class _HomeScreenState extends State<HomeScreen>
     await prefs.setString('last_mark_as_read_ad_time', DateTime.now().toIso8601String());
   }
 
+  // Helper method to show interstitial ad and wait for dismissal (for good internet)
+  // This ensures ad shows FIRST, then content shows AFTER ad is dismissed
+  Future<void> _showInterstitialAdAndWait() async {
+    final completer = Completer<void>();
+    
+    // Check if ad is available
+    final ad = _adService.interstitialAd;
+    if (ad == null) {
+      completer.complete(); // No ad available, proceed immediately
+      return completer.future;
+    }
+    
+    // Set up callback to complete when ad is dismissed
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) async {
+        await SharPreferences.setString('OpenAd', '1');
+        ad.dispose();
+        if (!completer.isCompleted) {
+          completer.complete(); // Ad dismissed, proceed with content
+        }
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        if (!completer.isCompleted) {
+          completer.complete(); // Ad failed, proceed with content
+        }
+      },
+      onAdShowedFullScreenContent: (ad) async {
+        await SharPreferences.setString('OpenAd', '1');
+      },
+    );
+    
+    // Show the ad
+    ad.show();
+    
+    // Wait for ad to be dismissed or fail (with timeout to prevent infinite wait)
+    return completer.future.timeout(
+      const Duration(seconds: 30),
+      onTimeout: () {
+        if (!completer.isCompleted) {
+          completer.complete(); // Timeout - proceed anyway
+        }
+      },
+    );
+  }
+
   // Future<void> _handleAdDismissed() async {
   //   if (mounted) setState(() => isAdReady = false);
 
@@ -1531,13 +1578,38 @@ class _HomeScreenState extends State<HomeScreen>
                              subscriptionPlan.isNotEmpty && 
                              ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
         
-        // Show interstitial ad only for non-subscribed users
+        // Show interstitial ad only for non-subscribed users and when online with good internet
         if (!isSubscribed) {
-          // Show interstitial ad using AdService
-          await SharPreferences.setString('OpenAd', '1');
-          _adService.showInterstitialAd();
+          // Check internet connectivity - if offline or low internet (2G), skip ad and proceed
+          try {
+            final hasInternet = await InternetConnection().hasInternetAccess;
+            if (hasInternet) {
+              // Check connection type - if mobile only (likely 2G/slow), skip ad
+              final connectivityResult = await Connectivity().checkConnectivity();
+              final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) && 
+                                  !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                  !connectivityResult.contains(ConnectivityResult.ethernet);
+              
+              // Only show ad if online with wifi/ethernet (not mobile only/2G)
+              if (!isMobileOnly) {
+                // Show ad FIRST, wait for dismissal, THEN show content
+                try {
+                  await _showInterstitialAdAndWait();
+                } catch (e) {
+                  debugPrint('Error showing ad in Amen: $e');
+                  // If ad fails, proceed anyway
+                }
+              }
+              // If mobile only (2G), skip ad and proceed
+            }
+            // If offline, skip ad and proceed
+          } catch (e) {
+            // If connectivity check fails, skip ad and proceed
+            debugPrint('Connectivity check error in Amen: $e');
+          }
         }
         
+        // Proceed with action after ad (if shown) or immediately (if skipped)
         Constants.showToast("Amen!");
         Navigator.of(context).pop();
       },
@@ -3216,6 +3288,49 @@ class _HomeScreenState extends State<HomeScreen>
                                                                 controller
                                                                     .isReadLoad
                                                                     .value = false;
+                                                                
+                                                                // Check internet connectivity first - if offline/low internet, skip ad and navigate directly
+                                                                bool shouldSkipAd = false;
+                                                                try {
+                                                                  final hasInternet = await InternetConnection().hasInternetAccess;
+                                                                  if (!hasInternet) {
+                                                                    // Offline - skip ad and navigate directly
+                                                                    shouldSkipAd = true;
+                                                                  } else {
+                                                                    // Check if mobile only connection (likely 2G/slow) - skip ad
+                                                                    final connectivityResult = await Connectivity().checkConnectivity();
+                                                                    final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) && 
+                                                                                        !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                                                                        !connectivityResult.contains(ConnectivityResult.ethernet);
+                                                                    if (isMobileOnly) {
+                                                                      // Low internet (2G/mobile only) - skip ad and navigate directly
+                                                                      shouldSkipAd = true;
+                                                                    }
+                                                                  }
+                                                                } catch (e) {
+                                                                  // If connectivity check fails, skip ad and proceed
+                                                                  debugPrint('Connectivity check error in Mark as Read: $e');
+                                                                  shouldSkipAd = true;
+                                                                }
+                                                                
+                                                                // If should skip ad (offline/low internet), navigate directly
+                                                                if (shouldSkipAd) {
+                                                                  Get.to(() =>
+                                                                      MarkAsReadScreen(
+                                                                        ReadedChapter: controller
+                                                                            .selectedChapter
+                                                                            .value,
+                                                                        RededBookName: controller
+                                                                            .selectedBook
+                                                                            .value,
+                                                                        SelectedBookChapterCount: controller
+                                                                            .selectedBookChapterCount
+                                                                            .value,
+                                                                      ));
+                                                                  return;
+                                                                }
+                                                                
+                                                                // Only show ad if online with good connection
                                                                 if (_adService
                                                                             .interstitialAd !=
                                                                         null &&
@@ -3228,11 +3343,15 @@ class _HomeScreenState extends State<HomeScreen>
                                                                   if (canShowAd) {
                                                                     print(
                                                                         'Load Interstitial Ad');
-                                                                    // await loadInterstitialAd(
-                                                                    //     controller);
-                                                                    _adService
-                                                                        .showInterstitialAd();
                                                                     await _saveMarkAsReadAdTime();
+                                                                    // Show ad FIRST, wait for dismissal, THEN navigate
+                                                                    try {
+                                                                      await _showInterstitialAdAndWait();
+                                                                    } catch (e) {
+                                                                      debugPrint('Error showing ad in Mark as Read: $e');
+                                                                      // If ad fails, proceed anyway
+                                                                    }
+                                                                    // Navigate AFTER ad is dismissed
                                                                     Get.to(() =>
                                                                         MarkAsReadScreen(
                                                                           ReadedChapter: controller
@@ -3668,15 +3787,58 @@ class _HomeScreenState extends State<HomeScreen>
                                                                           controller
                                                                               .isReadLoad
                                                                               .value = false;
+                                                                          
+                                                                          // Check internet connectivity first - if offline/low internet, skip ad and navigate directly
+                                                                          bool shouldSkipAd = false;
+                                                                          try {
+                                                                            final hasInternet = await InternetConnection().hasInternetAccess;
+                                                                            if (!hasInternet) {
+                                                                              // Offline - skip ad and navigate directly
+                                                                              shouldSkipAd = true;
+                                                                            } else {
+                                                                              // Check if mobile only connection (likely 2G/slow) - skip ad
+                                                                              final connectivityResult = await Connectivity().checkConnectivity();
+                                                                              final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) && 
+                                                                                                  !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                                                                                  !connectivityResult.contains(ConnectivityResult.ethernet);
+                                                                              if (isMobileOnly) {
+                                                                                // Low internet (2G/mobile only) - skip ad and navigate directly
+                                                                                shouldSkipAd = true;
+                                                                              }
+                                                                            }
+                                                                          } catch (e) {
+                                                                            // If connectivity check fails, skip ad and proceed
+                                                                            debugPrint('Connectivity check error in Mark as Read: $e');
+                                                                            shouldSkipAd = true;
+                                                                          }
+                                                                          
+                                                                          // If should skip ad (offline/low internet), navigate directly
+                                                                          if (shouldSkipAd) {
+                                                                            Get.to(() =>
+                                                                                MarkAsReadScreen(
+                                                                                  ReadedChapter: controller.selectedChapter.value,
+                                                                                  RededBookName: controller.selectedBook.value,
+                                                                                  SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                                ));
+                                                                            return;
+                                                                          }
+                                                                          
+                                                                          // Only show ad if online with good connection
                                                                           if (_adService.interstitialAd != null &&
                                                                               controller.adFree.value == false) {
                                                                             // Check if 3 minutes have passed since last ad
                                                                             final canShowAd = await _canShowMarkAsReadAd();
                                                                             if (canShowAd) {
                                                                               print('Load Interstitial Ad');
-                                                                              // await loadInterstitialAd(controller);
-                                                                              _adService.showInterstitialAd();
                                                                               await _saveMarkAsReadAdTime();
+                                                                              // Show ad FIRST, wait for dismissal, THEN navigate
+                                                                              try {
+                                                                                await _showInterstitialAdAndWait();
+                                                                              } catch (e) {
+                                                                                debugPrint('Error showing ad in Mark as Read: $e');
+                                                                                // If ad fails, proceed anyway
+                                                                              }
+                                                                              // Navigate AFTER ad is dismissed
                                                                               Get.to(() =>
                                                                                   MarkAsReadScreen(
                                                                                     ReadedChapter: controller.selectedChapter.value,
