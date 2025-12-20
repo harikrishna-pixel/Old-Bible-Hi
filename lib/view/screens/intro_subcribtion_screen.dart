@@ -65,7 +65,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   int selectedindex = 0;
   List<ProductDetails> _products = [];
   ProductDetails? _exitOfferProduct; // Store exit offer product for purchase
-  bool _isExitOfferShowing = false; // Track if exit offer is currently being shown
+  bool _isExitOfferShowing =
+      false; // Track if exit offer is currently being shown
 
   void _sortProducts() {
     _products.sort((a, b) {
@@ -76,6 +77,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         if (id == widget.lifeTimePlan) return 2;
         return 3;
       }
+
       return getOrder(a.id).compareTo(getOrder(b.id));
     });
   }
@@ -102,7 +104,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       Constants.showToast("Check your Internet connection");
       return; // Return early - don't show loader or proceed
     }
-    
+
     if (!userTap) {
       debugPrint("Buy Product");
       try {
@@ -129,7 +131,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   /// Mark that paywall has been shown (for first time tracking)
   Future<void> _markPaywallShown() async {
-    final hasShownPaywall = await SharPreferences.getBoolean('has_shown_paywall_first_time') ?? false;
+    final hasShownPaywall =
+        await SharPreferences.getBoolean('has_shown_paywall_first_time') ??
+            false;
     if (!hasShownPaywall) {
       await SharPreferences.setBoolean('has_shown_paywall_first_time', true);
       await SharPreferences.setBoolean('is_first_time_paywall_cancel', true);
@@ -139,7 +143,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   /// Check if exit offer should be shown and display it (for purchase cancellation)
   Future<void> _checkAndShowExitOffer(DashBoardController controller) async {
     try {
-      final isFirstTimeCancel = await SharPreferences.getBoolean('is_first_time_paywall_cancel') ?? false;
+      final isFirstTimeCancel =
+          await SharPreferences.getBoolean('is_first_time_paywall_cancel') ??
+              false;
 
       if (!isFirstTimeCancel) {
         // Not the first time, don't show exit offer
@@ -147,8 +153,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       }
 
       // Check if exit offer already shown and if 10 minutes have passed
-      final hasShownExitOffer = await SharPreferences.getBoolean('has_shown_exit_offer') ?? false;
-      final exitOfferFirstShownTime = await SharPreferences.getString('exit_offer_first_shown_time');
+      final hasShownExitOffer =
+          await SharPreferences.getBoolean('has_shown_exit_offer') ?? false;
+      final exitOfferFirstShownTime =
+          await SharPreferences.getString('exit_offer_first_shown_time');
 
       if (hasShownExitOffer && exitOfferFirstShownTime != null) {
         // Check if 10 minutes have passed
@@ -173,7 +181,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // Mark that exit offer has been shown and save timestamp
         if (!hasShownExitOffer) {
           await SharPreferences.setBoolean('has_shown_exit_offer', true);
-          await SharPreferences.setString('exit_offer_first_shown_time', DateTime.now().toIso8601String());
+          await SharPreferences.setString(
+              'exit_offer_first_shown_time', DateTime.now().toIso8601String());
         }
         await SharPreferences.setBoolean('is_first_time_paywall_cancel', false);
 
@@ -190,10 +199,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   /// Show exit offer from home screen (checking 10 minute limit)
-  static Future<void> showExitOfferFromHomeScreen(BuildContext context, DashBoardController controller) async {
+  static Future<void> showExitOfferFromHomeScreen(
+      BuildContext context, DashBoardController controller) async {
     try {
       final exitOfferFirstShownTime =
-      await SharPreferences.getString('exit_offer_first_shown_time');
+          await SharPreferences.getString('exit_offer_first_shown_time');
       final now = DateTime.now();
 
       if (exitOfferFirstShownTime != null) {
@@ -203,20 +213,24 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
           if (difference.inMinutes >= 10) {
             // 10 minutes have passed, don't show forever
-            final alreadyNotified =
-                await SharPreferences.getBoolean('exit_offer_expired_toast_shown') ?? false;
+            final alreadyNotified = await SharPreferences.getBoolean(
+                    'exit_offer_expired_toast_shown') ??
+                false;
             if (!alreadyNotified) {
-              await SharPreferences.setBoolean('exit_offer_expired_toast_shown', true);
+              await SharPreferences.setBoolean(
+                  'exit_offer_expired_toast_shown', true);
               Constants.showToast("Limited time offer has expired");
             }
             // Proceed to paywall without exit offer
           }
         } catch (e) {
           debugPrint('Error parsing exit offer timestamp: $e');
-          final alreadyNotified =
-              await SharPreferences.getBoolean('exit_offer_expired_toast_shown') ?? false;
+          final alreadyNotified = await SharPreferences.getBoolean(
+                  'exit_offer_expired_toast_shown') ??
+              false;
           if (!alreadyNotified) {
-            await SharPreferences.setBoolean('exit_offer_expired_toast_shown', true);
+            await SharPreferences.setBoolean(
+                'exit_offer_expired_toast_shown', true);
             Constants.showToast("Limited time offer has expired");
           }
           // Proceed to paywall without exit offer
@@ -232,12 +246,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
       // Navigate to subscription screen which will show the exit offer
       // Use constants as fallback when SharedPreferences are empty (first time loading)
-      final sixMonthPlan = await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
-      final oneYearPlan = await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
-      final lifeTimePlan = await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
+      final sixMonthPlan = await SharPreferences.getString('sixMonthPlan') ??
+          BibleInfo.sixMonthPlanid;
+      final oneYearPlan = await SharPreferences.getString('oneYearPlan') ??
+          BibleInfo.oneYearPlanid;
+      final lifeTimePlan = await SharPreferences.getString('lifeTimePlan') ??
+          BibleInfo.lifeTimePlanid;
 
       Get.to(
-            () => SubscriptionScreen(
+        () => SubscriptionScreen(
           sixMonthPlan: sixMonthPlan,
           oneYearPlan: oneYearPlan,
           lifeTimePlan: lifeTimePlan,
@@ -253,13 +270,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   /// Check if exit offer should be shown before closing/navigating away from paywall
-  Future<void> _checkAndShowExitOfferBeforeClose(DashBoardController controller) async {
+  Future<void> _checkAndShowExitOfferBeforeClose(
+      DashBoardController controller) async {
     try {
       debugPrint('🚪 User is closing/navigating away from paywall');
 
       // First, check if exit offer timer has expired (10 minutes check)
-      final hasShownExitOffer = await SharPreferences.getBoolean('has_shown_exit_offer') ?? false;
-      final exitOfferFirstShownTime = await SharPreferences.getString('exit_offer_first_shown_time');
+      final hasShownExitOffer =
+          await SharPreferences.getBoolean('has_shown_exit_offer') ?? false;
+      final exitOfferFirstShownTime =
+          await SharPreferences.getString('exit_offer_first_shown_time');
 
       if (hasShownExitOffer && exitOfferFirstShownTime != null) {
         // Check if 10 minutes have passed
@@ -270,12 +290,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
           if (difference.inMinutes >= 10) {
             // 10 minutes have passed, don't show forever
-            debugPrint('⏭️ Exit offer time expired (10 minutes passed), navigating away');
+            debugPrint(
+                '⏭️ Exit offer time expired (10 minutes passed), navigating away');
             _navigateAwayFromPaywall();
             return;
           } else {
             // 10 minutes haven't passed yet, show exit offer again
-            debugPrint('⏰ Exit offer timer still active (${10 - difference.inMinutes} minutes remaining), showing exit offer again');
+            debugPrint(
+                '⏰ Exit offer timer still active (${10 - difference.inMinutes} minutes remaining), showing exit offer again');
           }
         } catch (e) {
           debugPrint('Error parsing exit offer timestamp: $e');
@@ -283,7 +305,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       }
 
       // Check if this is first time (for initial setup only)
-      final isFirstTimeCancel = await SharPreferences.getBoolean('is_first_time_paywall_cancel') ?? false;
+      final isFirstTimeCancel =
+          await SharPreferences.getBoolean('is_first_time_paywall_cancel') ??
+              false;
       debugPrint('🔑 Is first time cancel: $isFirstTimeCancel');
 
       // Check API response for exit offer
@@ -294,12 +318,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // Mark that exit offer has been shown and save timestamp (only on first show)
         if (!hasShownExitOffer) {
           await SharPreferences.setBoolean('has_shown_exit_offer', true);
-          await SharPreferences.setString('exit_offer_first_shown_time', DateTime.now().toIso8601String());
+          await SharPreferences.setString(
+              'exit_offer_first_shown_time', DateTime.now().toIso8601String());
           debugPrint('📝 First time showing exit offer, timestamp saved');
         }
         // Only set first time flag to false on first show (keep existing logic)
         if (isFirstTimeCancel) {
-          await SharPreferences.setBoolean('is_first_time_paywall_cancel', false);
+          await SharPreferences.setBoolean(
+              'is_first_time_paywall_cancel', false);
         }
 
         // Show exit offer bottom sheet (will show again if dismissed and clicked again within 10 minutes)
@@ -334,18 +360,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     } else {
       // Route to Reader Screen (HomeScreen with From: "Read")
       Get.offAll(() => HomeScreen(
-        From: "Read",
-        selectedVerseNumForRead: "",
-        selectedBookForRead: "",
-        selectedChapterForRead: "",
-        selectedBookNameForRead: "",
-        selectedVerseForRead: "",
-      ));
+            From: "Read",
+            selectedVerseNumForRead: "",
+            selectedBookForRead: "",
+            selectedChapterForRead: "",
+            selectedBookNameForRead: "",
+            selectedVerseForRead: "",
+          ));
     }
   }
 
   /// Get exit offer from API response with fallback to constant data
-  Future<GetAudioModelDataSubFields?> _getExitOfferFromApi(DashBoardController controller) async {
+  Future<GetAudioModelDataSubFields?> _getExitOfferFromApi(
+      DashBoardController controller) async {
     try {
       debugPrint('🔍 Checking exit offer in API response...');
 
@@ -355,7 +382,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
       // If controller data is empty, try loading from cached SharedPreferences
       if (subFields == null || subFields.isEmpty) {
-        debugPrint('⚠️ Controller audioData is empty, trying to load from cache...');
+        debugPrint(
+            '⚠️ Controller audioData is empty, trying to load from cache...');
         try {
           final prefs = await SharedPreferences.getInstance();
           final cachedJson = prefs.getString('cached_api_response');
@@ -367,7 +395,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             subFields = apiData.data?.subFields;
             debugPrint('✅ Loaded API data from cache successfully');
           } else {
-            debugPrint('⚠️ No cached API response found, trying to load API directly...');
+            debugPrint(
+                '⚠️ No cached API response found, trying to load API directly...');
             // Try to load API directly if cache doesn't exist
             try {
               final loadedData = await getMusicDetails();
@@ -395,10 +424,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
       debugPrint('📊 SubFields count: ${subFields?.length ?? 0}');
 
+      // Get exit offer ID from SharedPreferences (with fallback to constant)
+      final exitOfferId = await SharPreferences.getString('exitOfferPlan') ??
+          BibleInfo.exitOfferPlanid;
+
       if (subFields != null && subFields.isNotEmpty) {
         for (var field in subFields) {
           debugPrint('📋 Field identifier: ${field?.identifier}');
-          if (field?.identifier == "com.balaklrapps.genevabible.lifetime.exitoffer") {
+          if (field?.identifier == exitOfferId) {
             debugPrint('✅ Exit offer found!');
             return field;
           }
@@ -409,7 +442,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       }
 
       // Fallback to constant data if API and cache both failed
-      debugPrint('⚠️ Exit offer not found in API/cache, using constant data as fallback');
+      debugPrint(
+          '⚠️ Exit offer not found in API/cache, using constant data as fallback');
       try {
         // Create a fallback exit offer using constant lifetime plan ID
         final fallbackExitOffer = GetAudioModelDataSubFields(
@@ -439,7 +473,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         debugPrint('✅ Created fallback exit offer after error');
         return fallbackExitOffer;
       } catch (fallbackError) {
-        debugPrint('❌ Error creating fallback exit offer after error: $fallbackError');
+        debugPrint(
+            '❌ Error creating fallback exit offer after error: $fallbackError');
         return null;
       }
     }
@@ -449,7 +484,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   void _showExitOfferBottomSheet(GetAudioModelDataSubFields exitOffer) async {
     // Prevent showing exit offer multiple times
     if (_isExitOfferShowing) {
-      debugPrint('⚠️ Exit offer bottom sheet is already showing, skipping duplicate call');
+      debugPrint(
+          '⚠️ Exit offer bottom sheet is already showing, skipping duplicate call');
       return;
     }
 
@@ -475,7 +511,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     // Calculate remaining countdown based on first shown time
     int remainingSeconds = 600; // 10 minutes default
     try {
-      final stored = await SharPreferences.getString('exit_offer_first_shown_time');
+      final stored =
+          await SharPreferences.getString('exit_offer_first_shown_time');
       if (stored != null && stored.isNotEmpty) {
         final firstShown = DateTime.parse(stored);
         final diffSeconds = DateTime.now().difference(firstShown).inSeconds;
@@ -495,12 +532,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       final exitOfferProductId = exitOffer.identifier;
 
       if (exitOfferProductId == null || exitOfferProductId.isEmpty) {
-        debugPrint('⚠️ Exit offer product ID is null or empty, using lifetime product');
+        debugPrint(
+            '⚠️ Exit offer product ID is null or empty, using lifetime product');
         // Use lifetime product as fallback
         try {
           final lifetimeProduct = _products.firstWhere(
-                (product) => product.id == widget.lifeTimePlan,
-            orElse: () => _products.isNotEmpty ? _products.first : null as ProductDetails,
+            (product) => product.id == widget.lifeTimePlan,
+            orElse: () =>
+                _products.isNotEmpty ? _products.first : null as ProductDetails,
           );
           if (lifetimeProduct != null && lifetimeProduct.price.isNotEmpty) {
             exitOfferPrice = lifetimeProduct.price;
@@ -515,7 +554,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // Query the exit offer product from the store
         final Set<String> exitOfferIds = {exitOfferProductId};
         final ProductDetailsResponse exitOfferResponse =
-        await _inAppPurchase.queryProductDetails(exitOfferIds);
+            await _inAppPurchase.queryProductDetails(exitOfferIds);
 
         if (exitOfferResponse.productDetails.isNotEmpty) {
           final exitOfferProduct = exitOfferResponse.productDetails.first;
@@ -524,15 +563,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           debugPrint('✅ Exit offer product loaded: ${exitOfferProduct.id}');
           debugPrint('💰 EXIT OFFER PRICE: $exitOfferPrice');
         } else {
-          debugPrint('⚠️ Exit offer product not found in store, using lifetime product');
+          debugPrint(
+              '⚠️ Exit offer product not found in store, using lifetime product');
           if (exitOfferResponse.error != null) {
             debugPrint('❌ Error: ${exitOfferResponse.error}');
           }
           // Fallback to lifetime product
           try {
             final lifetimeProduct = _products.firstWhere(
-                  (product) => product.id == widget.lifeTimePlan,
-              orElse: () => _products.isNotEmpty ? _products.first : null as ProductDetails,
+              (product) => product.id == widget.lifeTimePlan,
+              orElse: () => _products.isNotEmpty
+                  ? _products.first
+                  : null as ProductDetails,
             );
             if (lifetimeProduct != null && lifetimeProduct.price.isNotEmpty) {
               exitOfferPrice = lifetimeProduct.price;
@@ -547,8 +589,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       // Get original lifetime product price for comparison
       try {
         final lifetimeProduct = _products.firstWhere(
-              (product) => product.id == widget.lifeTimePlan,
-          orElse: () => _products.isNotEmpty ? _products.first : null as ProductDetails,
+          (product) => product.id == widget.lifeTimePlan,
+          orElse: () =>
+              _products.isNotEmpty ? _products.first : null as ProductDetails,
         );
         if (lifetimeProduct != null && lifetimeProduct.price.isNotEmpty) {
           originalLifetimePrice = lifetimeProduct.price;
@@ -559,17 +602,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       }
 
       // Print exit offer details
-      debugPrint('📊 Exit Offer Data - identifier: ${exitOffer.identifier}, item_1: ${exitOffer.item_1}, item_2: ${exitOffer.item_2}, discount_value: ${exitOffer.value}');
+      debugPrint(
+          '📊 Exit Offer Data - identifier: ${exitOffer.identifier}, item_1: ${exitOffer.item_1}, item_2: ${exitOffer.item_2}, discount_value: ${exitOffer.value}');
       debugPrint('💰 Final Exit Offer Price: $exitOfferPrice');
       debugPrint('💰 Original Lifetime Price: $originalLifetimePrice');
-
     } catch (e) {
       debugPrint('❌ Error fetching exit offer product: $e');
       // Fallback to original lifetime product price
       try {
         final lifetimeProduct = _products.firstWhere(
-              (product) => product.id == widget.lifeTimePlan,
-          orElse: () => _products.isNotEmpty ? _products.first : null as ProductDetails,
+          (product) => product.id == widget.lifeTimePlan,
+          orElse: () =>
+              _products.isNotEmpty ? _products.first : null as ProductDetails,
         );
         if (lifetimeProduct != null && lifetimeProduct.price.isNotEmpty) {
           exitOfferPrice = lifetimeProduct.price;
@@ -619,7 +663,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     });
   }
 
-
   /// Handle exit offer purchase (lifetime plan)
   Future<void> _handleExitOfferPurchase() async {
     try {
@@ -630,10 +673,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       ProductDetails? productToPurchase = _exitOfferProduct;
 
       if (productToPurchase == null) {
-        debugPrint('⚠️ Exit offer product not available, using regular lifetime product');
+        debugPrint(
+            '⚠️ Exit offer product not available, using regular lifetime product');
         // Fallback to regular lifetime product
         productToPurchase = _products.firstWhere(
-              (product) => product.id == widget.lifeTimePlan,
+          (product) => product.id == widget.lifeTimePlan,
           orElse: () => _products.first,
         );
       } else {
@@ -667,13 +711,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
         return Get.offAll(() => HomeScreen(
-          From: "premium",
-          selectedVerseNumForRead: "",
-          selectedBookForRead: "",
-          selectedChapterForRead: "",
-          selectedBookNameForRead: "",
-          selectedVerseForRead: "",
-        ));
+              From: "premium",
+              selectedVerseNumForRead: "",
+              selectedBookForRead: "",
+              selectedChapterForRead: "",
+              selectedBookNameForRead: "",
+              selectedVerseForRead: "",
+            ));
       } else if (productId == widget.oneYearPlan) {
         final dur = DateTime(dateTime.year + 1, dateTime.month, dateTime.day);
         final diff = dur.difference(DateTime.now());
@@ -682,13 +726,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
         return Get.offAll(() => HomeScreen(
-          From: "premium",
-          selectedVerseNumForRead: "",
-          selectedBookForRead: "",
-          selectedChapterForRead: "",
-          selectedBookNameForRead: "",
-          selectedVerseForRead: "",
-        ));
+              From: "premium",
+              selectedVerseNumForRead: "",
+              selectedBookForRead: "",
+              selectedChapterForRead: "",
+              selectedBookNameForRead: "",
+              selectedVerseForRead: "",
+            ));
       } else if (productId == widget.sixMonthPlan) {
         final dur = addSixMonths(customDate: dateTime);
         final diff = dur.difference(DateTime.now());
@@ -697,13 +741,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
         return Get.offAll(() => HomeScreen(
-          From: "premium",
-          selectedVerseNumForRead: "",
-          selectedBookForRead: "",
-          selectedChapterForRead: "",
-          selectedBookNameForRead: "",
-          selectedVerseForRead: "",
-        ));
+              From: "premium",
+              selectedVerseNumForRead: "",
+              selectedBookForRead: "",
+              selectedChapterForRead: "",
+              selectedBookNameForRead: "",
+              selectedVerseForRead: "",
+            ));
       }
     }
     // final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
@@ -755,7 +799,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   },
                   body: {
                     'receipt-data':
-                    purchaseDetails.verificationData.localVerificationData,
+                        purchaseDetails.verificationData.localVerificationData,
                     'exclude-old-transactions': true,
                     'password': controller.sharedSecret
                   },
@@ -769,7 +813,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 // DebugConsole.log(" purchases sucess - $data");
                 await purchaseSubmit(
                     receiptData:
-                    '${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
+                        '${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
                 final todayDate = DateTime.now();
                 await SharPreferences.setBoolean("downloadreward", true);
                 await Future.delayed(Duration(seconds: 1));
@@ -786,13 +830,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   await SharPreferences.setBoolean('closead', true);
                   debugPrint("restore data 2");
                   return Get.offAll(() => HomeScreen(
-                    From: "premium",
-                    selectedVerseNumForRead: "",
-                    selectedBookForRead: "",
-                    selectedChapterForRead: "",
-                    selectedBookNameForRead: "",
-                    selectedVerseForRead: "",
-                  ));
+                        From: "premium",
+                        selectedVerseNumForRead: "",
+                        selectedBookForRead: "",
+                        selectedChapterForRead: "",
+                        selectedBookNameForRead: "",
+                        selectedVerseForRead: "",
+                      ));
                 } else if (purchaseDetails.productID == widget.oneYearPlan) {
                   await controller.disableAd(const Duration(days: 366));
                   await Future.delayed(Duration(seconds: 2));
@@ -804,13 +848,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   await SharPreferences.setBoolean('closead', true);
                   debugPrint("restore data 3 ");
                   return Get.offAll(() => HomeScreen(
-                    From: "premium",
-                    selectedVerseNumForRead: "",
-                    selectedBookForRead: "",
-                    selectedChapterForRead: "",
-                    selectedBookNameForRead: "",
-                    selectedVerseForRead: "",
-                  ));
+                        From: "premium",
+                        selectedVerseNumForRead: "",
+                        selectedBookForRead: "",
+                        selectedChapterForRead: "",
+                        selectedBookNameForRead: "",
+                        selectedVerseForRead: "",
+                      ));
                 } else if (purchaseDetails.productID == widget.lifeTimePlan) {
                   await controller.disableAd(const Duration(days: 3650012345));
                   await Future.delayed(Duration(seconds: 2));
@@ -822,13 +866,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   await SharPreferences.setBoolean('closead', true);
                   debugPrint("restore data 4 ");
                   return Get.offAll(() => HomeScreen(
-                    From: "premium",
-                    selectedVerseNumForRead: "",
-                    selectedBookForRead: "",
-                    selectedChapterForRead: "",
-                    selectedBookNameForRead: "",
-                    selectedVerseForRead: "",
-                  ));
+                        From: "premium",
+                        selectedVerseNumForRead: "",
+                        selectedBookForRead: "",
+                        selectedChapterForRead: "",
+                        selectedBookNameForRead: "",
+                        selectedVerseForRead: "",
+                      ));
                 }
               }
             }
@@ -843,8 +887,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _handleRestore(purchaseDetails, controller);
             }
           }
-        } else if (purchaseDetails.pendingCompletePurchase
-        ) {
+        } else if (purchaseDetails.pendingCompletePurchase) {
           await InAppPurchase.instance.completePurchase(purchaseDetails);
           EasyLoading.dismiss();
         } else if (purchaseDetails.status == PurchaseStatus.canceled) {
@@ -876,7 +919,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     }
 
     // Check if preloaded data is available
-    final preloadedAvailability = PaywallPreloadService.getPreloadedAvailability();
+    final preloadedAvailability =
+        PaywallPreloadService.getPreloadedAvailability();
     final preloadedProducts = PaywallPreloadService.getPreloadedProducts();
 
     if (preloadedAvailability != null && preloadedProducts.isNotEmpty) {
@@ -891,7 +935,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         });
       }
       // Save preloaded products to cache
-      final productprovider = Provider.of<DownloadProvider>(context, listen: false);
+      final productprovider =
+          Provider.of<DownloadProvider>(context, listen: false);
       await productprovider.saveProductList(preloadedProducts.map((iapProduct) {
         return m.ProductDetails(
           id: iapProduct.id,
@@ -919,7 +964,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
         // If products are still empty after loading, create fallback from constants
         if (_products.isEmpty && mounted) {
-          debugPrint('⚠️ Products still empty after load, creating fallback from constants');
+          debugPrint(
+              '⚠️ Products still empty after load, creating fallback from constants');
           _createFallbackProductsFromConstants();
         }
 
@@ -942,12 +988,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     // setState(() {});
     await SharPreferences.setBoolean('closead', false);
     final productprovider =
-    Provider.of<DownloadProvider>(context, listen: false);
+        Provider.of<DownloadProvider>(context, listen: false);
 
     if (Platform.isIOS) {
       final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-      _inAppPurchase
-          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+          _inAppPurchase
+              .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
       await iosPlatformAddition.setDelegate(ExamplePaymentQueueDelegate());
 
       Set<String> ids = {
@@ -977,20 +1023,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (_products.isEmpty && datacheck.isEmpty) {
         debugPrint("🔄 Cache is empty, querying from App Store...");
         ProductDetailsResponse response =
-        await _inAppPurchase.queryProductDetails(ids);
+            await _inAppPurchase.queryProductDetails(ids);
 
         debugPrint("📊 Product Details Response:");
         debugPrint("   - Error: ${response.error}");
         debugPrint("   - Not Found IDs: ${response.notFoundIDs}");
-        debugPrint("   - Product Details Count: ${response.productDetails.length}");
-        debugPrint("   - Products: ${response.productDetails.map((p) => '${p.id}: ${p.price}').join(', ')}");
+        debugPrint(
+            "   - Product Details Count: ${response.productDetails.length}");
+        debugPrint(
+            "   - Products: ${response.productDetails.map((p) => '${p.id}: ${p.price}').join(', ')}");
 
         if (response.error != null) {
           debugPrint("❌ Error querying products: ${response.error}");
         }
 
         if (response.notFoundIDs.isNotEmpty) {
-          debugPrint("⚠️ Products not found in App Store: ${response.notFoundIDs.join(', ')}");
+          debugPrint(
+              "⚠️ Products not found in App Store: ${response.notFoundIDs.join(', ')}");
         }
 
         if (response.productDetails.isEmpty) {
@@ -1021,7 +1070,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             debugPrint("✅ Products loaded successfully: ${_products.length}");
           });
         } else {
-          debugPrint("⚠️ No products from store, creating fallback products from constants");
+          debugPrint(
+              "⚠️ No products from store, creating fallback products from constants");
           // Create fallback products using constant plan IDs
           _createFallbackProductsFromConstants();
         }
@@ -1047,7 +1097,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             debugPrint("✅ Loaded ${_products.length} products from cache");
           });
         } else {
-          debugPrint("⚠️ Cache is empty, creating fallback products from constants");
+          debugPrint(
+              "⚠️ Cache is empty, creating fallback products from constants");
           // Create fallback products using constant plan IDs
           _createFallbackProductsFromConstants();
         }
@@ -1102,7 +1153,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       setState(() {
         _products = fallbackProducts;
         _sortProducts();
-        debugPrint('✅ Created ${_products.length} fallback products from constants');
+        debugPrint(
+            '✅ Created ${_products.length} fallback products from constants');
       });
     } else {
       debugPrint('⚠️ Could not create fallback products');
@@ -1126,7 +1178,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
     _purchaseUpdatedStream = InAppPurchase.instance.purchaseStream;
     _purchaseUpdatedStream.listen(
-          (purchases) => _listenToPurchaseUpdated(purchases, controller),
+      (purchases) => _listenToPurchaseUpdated(purchases, controller),
       onDone: () {
         // _subscription?.cancel();
       },
@@ -1152,7 +1204,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Future<void> _checkAndShowExitOfferFromHome() async {
     try {
       final exitOfferFirstShownTime =
-      await SharPreferences.getString('exit_offer_first_shown_time');
+          await SharPreferences.getString('exit_offer_first_shown_time');
       final now = DateTime.now();
       DateTime? firstShownDateTime;
 
@@ -1209,8 +1261,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   void alldispose() async {
     if (Platform.isIOS) {
       final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-      _inAppPurchase
-          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+          _inAppPurchase
+              .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
       await iosPlatformAddition.setDelegate(null);
       // await _subscription?.cancel();
     }
@@ -1231,9 +1283,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   /// 🔹 Handle restored purchases (after pressing restore button)
   Future<void> _handleRestore(
-      PurchaseDetails purchaseDetails,
-      DashBoardController controller,
-      ) async {
+    PurchaseDetails purchaseDetails,
+    DashBoardController controller,
+  ) async {
     //EasyLoading.dismiss();
     debugPrint("Restored Purchase: ${purchaseDetails.productID}");
 
@@ -1256,7 +1308,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       Constants.showToast("Check your Internet connection");
       return; // Return early - don't show loader or proceed
     }
-    
+
     // if (!Platform.isIOS) {
     //   Constants.showToast("Restore is only available on iOS");
     //   return;
@@ -1364,20 +1416,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           // Back button when coming from wallpaper
                           widget.checkad == 'image'
                               ? SafeArea(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: IconButton(
-                                icon: Icon(Icons.arrow_back, color: CommanColor.whiteBlack(context), size: 24),
-                                iconSize: 24,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () {
-                                  // Directly go back when coming from wallpaper (skip exit offer)
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ),
-                          )
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: IconButton(
+                                      icon: Icon(Icons.arrow_back,
+                                          color:
+                                              CommanColor.whiteBlack(context),
+                                          size: 24),
+                                      iconSize: 24,
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () {
+                                        // Directly go back when coming from wallpaper (skip exit offer)
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ),
+                                )
                               : const SizedBox(),
                           // Jesus Image
                           // Image.asset(
@@ -1415,35 +1470,33 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                       // Features list
                       _buildFeatureItem(
-                          "assets/offer/fe1.png",
-                          "Read without distractions",
+                          "assets/offer/fe1.png", "Read without distractions",
                           highlightWords: ["without distractions"]),
                       _buildFeatureItem(
-                          "assets/offer/fe2.png",
-                          "Daily Verses & Inspirations",
+                          "assets/offer/fe2.png", "Daily Verses & Inspirations",
                           highlightWords: ["Daily Verses"]),
                       _buildFeatureItem(
-                          "assets/offer/fe3.png",
-                          "Access all available themes",
+                          "assets/offer/fe3.png", "Access all available themes",
                           highlightWords: ["themes"]),
-                      _buildFeatureItem(
-                          "assets/offer/fe4.png",
+                      _buildFeatureItem("assets/offer/fe4.png",
                           "Backup & Sync across all devices",
                           highlightWords: ["Backup & Sync"]),
-                      _buildFeatureItem(
-                          "assets/guidance.png",
+                      _buildFeatureItem("assets/guidance.png",
                           "Scripture Explanations & Answers",
                           highlightWords: ["Explanations & Answers"]),
-                      _buildFeatureItem(
-                          "assets/coins.png",
-                          _currentBonusLabel,
+                      _buildFeatureItem("assets/coins.png", _currentBonusLabel,
                           highlightWords: [_currentBonusHighlight]),
 
                       const SizedBox(height: 17),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Image.asset("assets/Line 217.png", height: 20, width: 20,fit: BoxFit.fitWidth,),
+                          Image.asset(
+                            "assets/Line 217.png",
+                            height: 20,
+                            width: 20,
+                            fit: BoxFit.fitWidth,
+                          ),
                           const SizedBox(width: 10),
                           Text(
                             "CHOOSE YOUR PREMIUM PLAN",
@@ -1453,7 +1506,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 color: CommanColor.whiteBlack(context)),
                           ),
                           const SizedBox(width: 10),
-                          Image.asset("assets/Line 216.png", height: 20, width: 20),
+                          Image.asset("assets/Line 216.png",
+                              height: 20, width: 20),
                         ],
                       ),
                       // Choose plan text
@@ -1472,52 +1526,57 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         duration: const Duration(milliseconds: 200),
                         child: isPurchaseLoading
                             ? Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: SizedBox(
-                              height: 100,
-                              width: 200,
-                              child: Center(
-                                  child: Column(
-                                    children: [
-                                      const CircularProgressIndicator.adaptive(),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text('Please wait...',
-                                            style:
-                                            CommanStyle.appBarStyle(context)
-                                                .copyWith(fontSize: 12)),
-                                      )
-                                    ],
-                                  ))),
-                        )
+                                padding: const EdgeInsets.only(top: 12),
+                                child: SizedBox(
+                                    height: 100,
+                                    width: 200,
+                                    child: Center(
+                                        child: Column(
+                                      children: [
+                                        const CircularProgressIndicator
+                                            .adaptive(),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text('Please wait...',
+                                              style: CommanStyle.appBarStyle(
+                                                      context)
+                                                  .copyWith(fontSize: 12)),
+                                        )
+                                      ],
+                                    ))),
+                              )
                             : Column(
-                          children: [
-                            // First row: Two plans side by side
-                            if (_products.length >= 2)
-                              Row(
                                 children: [
-                                  Expanded(
-                                    child: _buildPlanCard(0, controller),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _buildPlanCard(1, controller),
-                                  ),
+                                  // First row: Two plans side by side
+                                  if (_products.length >= 2)
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildPlanCard(0, controller),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: _buildPlanCard(1, controller),
+                                        ),
+                                      ],
+                                    ),
+                                  const SizedBox(height: 15),
+                                  // Second row: One plan full width
+                                  if (_products.length >= 3)
+                                    _buildPlanCard(2, controller),
+                                  // Handle case with less than 3 products
+                                  if (_products.length == 1)
+                                    _buildPlanCard(2, controller),
                                 ],
                               ),
-                            const SizedBox(height: 15),
-                            // Second row: One plan full width
-                            if (_products.length >= 3)
-                              _buildPlanCard(2, controller),
-                            // Handle case with less than 3 products
-                            if (_products.length == 1)
-                              _buildPlanCard(2, controller),
-                          ],
-                        ),
                       ),
 
                       const SizedBox(height: 15),
-                      Text("No Risk. No hidden charges", style: TextStyle(fontWeight : FontWeight.w600, color: CommanColor.whiteBlack(context).withOpacity(0.7))),
+                      Text("No Risk. No hidden charges",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: CommanColor.whiteBlack(context)
+                                  .withOpacity(0.7))),
                       const SizedBox(height: 15),
 
                       // One Year plan
@@ -1548,7 +1607,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             ),
                             onPressed: () async {
                               await SharPreferences.setString('OpenAd', '1');
-                              await SharPreferences.setBoolean('startpurches', true);
+                              await SharPreferences.setBoolean(
+                                  'startpurches', true);
                               _buyProduct(_products[selectedindex]);
                               // await controller.disableAd(const Duration(days: 3));
                               // return Get.offAll(() => HomeScreen(
@@ -1609,7 +1669,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           ),
                           TextButton(
                             onPressed: () async {
-                              await SharPreferences.setBoolean('restorepurches', true);
+                              await SharPreferences.setBoolean(
+                                  'restorepurches', true);
                               await _restorePurchases(controller);
                             },
                             child: Text(
@@ -1649,7 +1710,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: IconButton(
-                      icon: Icon(Icons.close, color: CommanColor.whiteBlack(context), size: 20),
+                      icon: Icon(Icons.close,
+                          color: CommanColor.whiteBlack(context), size: 20),
                       iconSize: 20,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -1681,10 +1743,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return null;
   }
 
-  String _getDiscountedPrice(ProductDetails product, DashBoardController controller) {
+  String _getDiscountedPrice(
+      ProductDetails product, DashBoardController controller) {
     final fakeOfferPercentage = _fakeOffer(product, controller);
     if (fakeOfferPercentage != null) {
-      final fakePrice = calculateOriginalPrice(fakeOfferPercentage, product.rawPrice);
+      final fakePrice =
+          calculateOriginalPrice(fakeOfferPercentage, product.rawPrice);
       return '${product.currencySymbol}${fakePrice.toStringAsFixed(2)}';
     }
     return '';
@@ -1700,13 +1764,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String _getPlanSubtitle(int index) {
     if (_products[index].id == widget.sixMonthPlan) return 'Daily Habit Plan';
     if (_products[index].id == widget.oneYearPlan) return 'Best Yearly Plan';
-    if (_products[index].id == widget.lifeTimePlan) return 'Pay once, Grow forever';
+    if (_products[index].id == widget.lifeTimePlan)
+      return 'Pay once, Grow forever';
     return '';
   }
 
   String get _currentBonusLabel {
     String label = "Get 5,000 Bonus credits with this plan";
-    if (_products.isNotEmpty && selectedindex >= 0 && selectedindex < _products.length) {
+    if (_products.isNotEmpty &&
+        selectedindex >= 0 &&
+        selectedindex < _products.length) {
       final currentId = _products[selectedindex].id;
       if (currentId == widget.sixMonthPlan) {
         label = "Get 500 Bonus credits with this plan";
@@ -1721,7 +1788,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   String get _currentBonusHighlight {
     String highlight = "5,000 Bonus credits";
-    if (_products.isNotEmpty && selectedindex >= 0 && selectedindex < _products.length) {
+    if (_products.isNotEmpty &&
+        selectedindex >= 0 &&
+        selectedindex < _products.length) {
       final currentId = _products[selectedindex].id;
       if (currentId == widget.sixMonthPlan) {
         highlight = "500 Bonus credits";
@@ -1770,117 +1839,120 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               border: Border.all(
                 color: isSelected
                     ? (CommanColor.isDarkTheme(context)
-                    ? const Color(0xFFD4C5B0)
-                    : const Color(0xFF6B5642))
+                        ? const Color(0xFFD4C5B0)
+                        : const Color(0xFF6B5642))
                     : (CommanColor.isDarkTheme(context)
-                    ? const Color(0xFFC4B5A0)
-                    : const Color(0xFFC4B5A0)),
+                        ? const Color(0xFFC4B5A0)
+                        : const Color(0xFFC4B5A0)),
                 width: 2,
               ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: isLifetime
                 ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Title on left
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _getPlanTitle(index),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: CommanColor.whiteBlack(context),
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Title on left
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _getPlanTitle(index),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: CommanColor.whiteBlack(context),
+                            ),
+                          ),
+                          Text("One Time Payment",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: CommanColor.whiteBlack(context)))
+                        ],
                       ),
-                    ),
-                    Text("One Time Payment",
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: CommanColor.whiteBlack(context)))
-                  ],
-                ),
-                // Prices on right
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Strikethrough price (if exists)
-                    if (discountedPrice.isNotEmpty) ...[
-                      Text(
-                        discountedPrice,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: CommanColor.whiteBlack(context).withOpacity(0.6),
-                          decoration: TextDecoration.lineThrough,
-                          decorationThickness: 2,
-                        ),
+                      // Prices on right
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Strikethrough price (if exists)
+                          if (discountedPrice.isNotEmpty) ...[
+                            Text(
+                              discountedPrice,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: CommanColor.whiteBlack(context)
+                                    .withOpacity(0.6),
+                                decoration: TextDecoration.lineThrough,
+                                decorationThickness: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          // Actual price
+                          Text(
+                            _products[index].price,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: CommanColor.whiteBlack(context),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
                     ],
-                    // Actual price
-                    Text(
-                      _products[index].price,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: CommanColor.whiteBlack(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            )
+                  )
                 : Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Title
-                Text(
-                  _getPlanTitle(index),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: CommanColor.whiteBlack(context),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 5),
-                // Price Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Strikethrough price (if exists)
-                    if (discountedPrice.isNotEmpty) ...[
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Title
                       Text(
-                        discountedPrice,
+                        _getPlanTitle(index),
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: CommanColor.whiteBlack(context).withOpacity(0.6),
-                          decoration: TextDecoration.lineThrough,
-                          decorationThickness: 2,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: CommanColor.whiteBlack(context),
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(height: 5),
+                      // Price Section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Strikethrough price (if exists)
+                          if (discountedPrice.isNotEmpty) ...[
+                            Text(
+                              discountedPrice,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: CommanColor.whiteBlack(context)
+                                    .withOpacity(0.6),
+                                decoration: TextDecoration.lineThrough,
+                                decorationThickness: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          // Actual price
+                          Text(
+                            _products[index].price,
+                            style: TextStyle(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                              color: CommanColor.whiteBlack(context),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                    // Actual price
-                    Text(
-                      _products[index].price,
-                      style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.bold,
-                        color: CommanColor.whiteBlack(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
           ),
           // Badge
           if (badgeText != null)
@@ -1888,7 +1960,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               right: 10,
               top: -6,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: CommanColor.isDarkTheme(context)
                       ? const Color(0xFFD4C5B0)
@@ -1912,7 +1985,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  List<TextSpan> _buildHighlightedText(String text, List<String> highlightWords, BuildContext context) {
+  List<TextSpan> _buildHighlightedText(
+      String text, List<String> highlightWords, BuildContext context) {
     List<TextSpan> spans = [];
     String remainingText = text;
     final highlightColor = CommanColor.isDarkTheme(context)
@@ -1943,7 +2017,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         }
 
         // Add highlighted word
-        final actualWord = remainingText.substring(earliestIndex, earliestIndex + foundWord!.length);
+        final actualWord = remainingText.substring(
+            earliestIndex, earliestIndex + foundWord!.length);
         spans.add(TextSpan(
           text: actualWord,
           style: TextStyle(
@@ -1953,14 +2028,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ));
 
         // Update remaining text
-        remainingText = remainingText.substring(earliestIndex + foundWord.length);
+        remainingText =
+            remainingText.substring(earliestIndex + foundWord.length);
       }
     }
 
     return spans;
   }
 
-  Widget _buildFeatureItem(String image, String text, {List<String>? highlightWords}) {
+  Widget _buildFeatureItem(String image, String text,
+      {List<String>? highlightWords}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 20),
       child: Row(
@@ -1970,15 +2047,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           Expanded(
             child: highlightWords != null && highlightWords.isNotEmpty
                 ? RichText(
-              text: TextSpan(
-                style: TextStyle(fontSize: 14, color: CommanColor.whiteBlack(context)),
-                children: _buildHighlightedText(text, highlightWords, context),
-              ),
-            )
+                    text: TextSpan(
+                      style: TextStyle(
+                          fontSize: 14, color: CommanColor.whiteBlack(context)),
+                      children:
+                          _buildHighlightedText(text, highlightWords, context),
+                    ),
+                  )
                 : Text(
-              text,
-              style: TextStyle(fontSize: 14, color: CommanColor.whiteBlack(context)),
-            ),
+                    text,
+                    style: TextStyle(
+                        fontSize: 14, color: CommanColor.whiteBlack(context)),
+                  ),
           ),
         ],
       ),
@@ -2007,10 +2087,12 @@ class _ExitOfferBottomSheetContent extends StatefulWidget {
   });
 
   @override
-  State<_ExitOfferBottomSheetContent> createState() => _ExitOfferBottomSheetContentState();
+  State<_ExitOfferBottomSheetContent> createState() =>
+      _ExitOfferBottomSheetContentState();
 }
 
-class _ExitOfferBottomSheetContentState extends State<_ExitOfferBottomSheetContent> {
+class _ExitOfferBottomSheetContentState
+    extends State<_ExitOfferBottomSheetContent> {
   Timer? _countdownTimer;
   late int _countdownMinutes;
   late int _countdownSeconds;

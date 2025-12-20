@@ -144,20 +144,20 @@ class ListedImageDetailScreen extends HookConsumerWidget {
     // Load ad initially
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((callback) async {
-        try {
-          final shouldLoadAd = await SharPreferences.shouldLoadAd();
+          try {
+            final shouldLoadAd = await SharPreferences.shouldLoadAd();
 
-          if (!shouldLoadAd) return;
+            if (!shouldLoadAd) return;
 
-          debugPrint("Loading ads...");
+            debugPrint("Loading ads...");
 
-          // Load other ads with single mounted check
-          // _adService.loadRewardedInterstitialAds(() {});
+            // Load other ads with single mounted check
+            // _adService.loadRewardedInterstitialAds(() {});
 
-          adService.loadBannerAd(() {});
-        } catch (e) {
-          debugPrint("Error loading ads: $e");
-        }
+            adService.loadBannerAd(() {});
+          } catch (e) {
+            debugPrint("Error loading ads: $e");
+          }
       });
     });
 
@@ -298,7 +298,7 @@ class ListedImageDetailScreen extends HookConsumerWidget {
                     onPageChanged: (val) {
                       // Update index only if different to prevent unnecessary updates
                       if (val != currentIndex.value) {
-                        currentIndex.value = val;
+                      currentIndex.value = val;
                       }
                     },
                   ),

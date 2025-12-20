@@ -209,11 +209,48 @@ class BackgroundApiService {
       await prefs.setString('oneYearPlanvalue', value.data?.subIdentifierOneyearValue ?? '');
       await prefs.setString('lifeTimePlanvalue', value.data?.subIdentifierLifetimeValue ?? '');
       
+      // Extract and save exit offer ID from subFields
+      String exitOfferId = BibleInfo.exitOfferPlanid; // Default to constant
+      if (value.data?.subFields != null) {
+        for (var field in value.data!.subFields!) {
+          if (field?.identifier != null && 
+              field!.identifier!.isNotEmpty && 
+              field.identifier!.contains('exitoffer')) {
+            exitOfferId = field.identifier!;
+            break;
+          }
+        }
+      }
+      await prefs.setString('exitOfferPlan', exitOfferId);
+      
+      // Extract coin pack IDs from subFields
+      String coinPack1Id = BibleInfo.coinPack1Id; // Default to constant
+      String coinPack2Id = BibleInfo.coinPack2Id; // Default to constant
+      String coinPack3Id = BibleInfo.coinPack3Id; // Default to constant
+      if (value.data?.subFields != null) {
+        for (var field in value.data!.subFields!) {
+          if (field?.identifier != null && 
+              field!.identifier!.isNotEmpty && 
+              field.identifier!.contains('coinspack')) {
+            if (field.identifier!.contains('coinspack1')) {
+              coinPack1Id = field.identifier!;
+            } else if (field.identifier!.contains('coinspack2')) {
+              coinPack2Id = field.identifier!;
+            } else if (field.identifier!.contains('coinspack3')) {
+              coinPack3Id = field.identifier!;
+            }
+          }
+        }
+      }
+      await prefs.setString('coinPack1Id', coinPack1Id);
+      await prefs.setString('coinPack2Id', coinPack2Id);
+      await prefs.setString('coinPack3Id', coinPack3Id);
+      
       // Save offer data
       await prefs.setString('offerenabled', value.data?.offerEnabled ?? '');
       await prefs.setInt('offercount', int.tryParse(value.data?.offerCount.toString() ?? '') ?? 5);
       
-      // Save coin pack data from sub_fields
+      // Save coin pack data from sub_fields (keep existing JSON structure for backward compatibility)
       if (value.data?.subFields != null) {
         final coinPacks = <String, dynamic>{};
         for (var field in value.data!.subFields!) {

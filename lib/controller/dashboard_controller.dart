@@ -355,6 +355,38 @@ class DashBoardController extends GetxController with WidgetsBindingObserver {
     goldValue = value.data?.subFields?[1]?.identifier ?? '';
     platinumValue = value.data?.subFields?[2]?.identifier ?? '';
 
+    // Extract exit offer ID from subFields
+    String exitOfferId = BibleInfo.exitOfferPlanid; // Default to constant
+    if (value.data?.subFields != null) {
+      for (var field in value.data!.subFields!) {
+        if (field?.identifier != null && 
+            field!.identifier!.contains('exitoffer')) {
+          exitOfferId = field.identifier!;
+          break;
+        }
+      }
+    }
+
+    // Extract coin pack IDs from subFields
+    String coinPack1Id = BibleInfo.coinPack1Id; // Default to constant
+    String coinPack2Id = BibleInfo.coinPack2Id; // Default to constant
+    String coinPack3Id = BibleInfo.coinPack3Id; // Default to constant
+    if (value.data?.subFields != null) {
+      for (var field in value.data!.subFields!) {
+        if (field?.identifier != null && 
+            field!.identifier!.isNotEmpty && 
+            field.identifier!.contains('coinspack')) {
+          if (field.identifier!.contains('coinspack1')) {
+            coinPack1Id = field.identifier!;
+          } else if (field.identifier!.contains('coinspack2')) {
+            coinPack2Id = field.identifier!;
+          } else if (field.identifier!.contains('coinspack3')) {
+            coinPack3Id = field.identifier!;
+          }
+        }
+      }
+    }
+
     offerEnabled = value.data?.offerEnabled ?? "";
     offerDays = value.data?.offerDays.toString() ?? "";
     offerCount = value.data?.offerCount.toString() ?? "70";
@@ -363,6 +395,10 @@ class DashBoardController extends GetxController with WidgetsBindingObserver {
       SharPreferences.setString('sixMonthPlan', sixMonthPlan.toString() ?? ""),
       SharPreferences.setString('oneYearPlan', oneYearPlan.toString() ?? ""),
       SharPreferences.setString('lifeTimePlan', lifeTimePlan.toString() ?? ""),
+      SharPreferences.setString('exitOfferPlan', exitOfferId),
+      SharPreferences.setString('coinPack1Id', coinPack1Id),
+      SharPreferences.setString('coinPack2Id', coinPack2Id),
+      SharPreferences.setString('coinPack3Id', coinPack3Id),
       SharPreferences.setString(
           'sixMonthPlanvalue', sixMonthPlanValue.toString() ?? ""),
       SharPreferences.setString(

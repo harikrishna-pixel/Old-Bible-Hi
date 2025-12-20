@@ -5,16 +5,26 @@ class BibleInfo {
   static String ios_Bundle_Id = "com.balaklrapps.genevabible";
   static String bible_shortName = "Geneva Bible";
   static String current_Version = "1.0.69";
-  static String android_Package_Name = "com.whitebibles.amplifiedbible";
+  static String android_Package_Name = "com.whitebibles.genevabible";
   static String appID = '11656bd4-ed0c-11ef-b28e-fa163e8c011b';
   //static int surveyAppId = 3;
 
 //IAP
   static String sixMonthPlanid =
-      'com.balaklrapps.amplifiedbible.sixmonthadsfree';
-  static String oneYearPlanid = 'com.balaklrapps.amplifiedbible.oneyearadsfree';
+      'com.balaklrapps.genevabible.sixmonthadsfree';
+  static String oneYearPlanid = 'com.balaklrapps.genevabible.oneyearadsfree';
   static String lifeTimePlanid =
-      'com.balaklrapps.amplifiedbible.lifetimeadsfree';
+      'com.balaklrapps.genevabible.lifetimeadsfree';
+  static String exitOfferPlanid =
+      'com.balaklrapps.genevabible.lifetime.exitoffer';
+  
+  // Coin Pack IDs
+  static String coinPack1Id =
+      'com.balaklrapps.genevabible.coinspack1';
+  static String coinPack2Id =
+      'com.balaklrapps.genevabible.coinspack2';
+  static String coinPack3Id =
+      'com.balaklrapps.genevabible.coinspack3';
 
   static bool enableIAP = true;
 

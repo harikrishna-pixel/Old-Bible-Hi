@@ -43,7 +43,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // Rewarded Ad
   RewardedAd? _rewardedAd;
   bool _isRewardedAdLoaded = false;
-  
+
   // Cache SharedPreferences instance for instant credits loading (works offline)
   SharedPreferences? _cachedPrefs;
 
@@ -170,11 +170,11 @@ class _WalletScreenState extends State<WalletScreen> {
       debugPrint('Error initializing credits: $e');
       // Fallback: try to load from WalletService
       try {
-        final credits = await WalletService.getCredits();
+    final credits = await WalletService.getCredits();
         if (mounted) {
-          setState(() {
+      setState(() {
             _currentCredits = credits; // Store credits in constant/state
-          });
+      });
         }
       } catch (e2) {
         debugPrint('Error loading credits from WalletService: $e2');
