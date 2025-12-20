@@ -4182,41 +4182,17 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             floatingActionButton: controller.isFetchContent.value || !_showUI
                 ? const SizedBox()
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                          onTap: () {
-                            Get.to(ChatScreen());
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
-                            child: Container(
-                                height: screenWidth > 450 ? 50 : 35,
-                                width: screenWidth > 450 ? 50 : 35,
-                                decoration: BoxDecoration(
-                                  color: CommanColor.whiteLightModePrimary(
-                                      context),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(CupertinoIcons.chat_bubble_2,
-                                    size: screenWidth > 450 ? 44 : 24,
-                                    color: CommanColor.darkModePrimaryWhite(
-                                        context))),
-                          )),
-                      floatingButton(
-                        chapterNum: controller.selectedChapter.value,
-                        bookName: controller.selectedBook.value,
-                        contentList: controller.selectedVersesContent,
-                        chapterCount: controller.selectedBookChapterCount.value,
-                        audioData: controller.audioData.value,
-                        bookNum: controller.selectedBookNum.value,
-                        internetConnection: controller.connectionStatus,
-                        textToSpeechLoad: controller.loadTextToSpeech.value,
-                        audioPlayer: audioPlayer,
-                      ),
-                    ],
-                  ),
+                : floatingButton(
+                  chapterNum: controller.selectedChapter.value,
+                  bookName: controller.selectedBook.value,
+                  contentList: controller.selectedVersesContent,
+                  chapterCount: controller.selectedBookChapterCount.value,
+                  audioData: controller.audioData.value,
+                  bookNum: controller.selectedBookNum.value,
+                  internetConnection: controller.connectionStatus,
+                  textToSpeechLoad: controller.loadTextToSpeech.value,
+                  audioPlayer: audioPlayer,
+                ),
             drawer: controller.isFetchContent.value
                 ? const SizedBox()
                 : Drawer(
