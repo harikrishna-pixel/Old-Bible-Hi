@@ -7,6 +7,7 @@ import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
+import 'package:biblebookapp/view/screens/dashboard/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -225,12 +226,21 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _loadCoinPacks() async {
-    // Load coin packs data from API response (saved in SharedPreferences by BackgroundApiService)
+    // Check connectivity first - if offline, use constants directly
+    final hasInternet = await InternetConnection().hasInternetAccess;
+    
+    if (!hasInternet) {
+      // Offline - use constants directly (don't check SharedPreferences)
+      _loadCoinPacksFromConstants();
+      return;
+    }
+    
+    // Online - Load coin packs data from API response (saved in SharedPreferences by BackgroundApiService)
     // Credits amount comes from API's sub_fields -> item_1 field
     final prefs = await SharedPreferences.getInstance();
     final coinPacksJson = prefs.getString('coin_packs');
     
-    if (coinPacksJson != null) {
+    if (coinPacksJson != null && coinPacksJson.isNotEmpty) {
       try {
         final coinPacksMap = jsonDecode(coinPacksJson) as Map<String, dynamic>;
         final packs = <Map<String, dynamic>>[];
@@ -257,7 +267,50 @@ class _WalletScreenState extends State<WalletScreen> {
         }
       } catch (e) {
         debugPrint('Error loading coin packs: $e');
+        // Fallback to constants if JSON parsing fails
+        _loadCoinPacksFromConstants();
       }
+    } else {
+      // No API data available (first time) - use constants as fallback
+      _loadCoinPacksFromConstants();
+    }
+  }
+
+  /// Load coin packs from constants directly (offline mode or fallback)
+  void _loadCoinPacksFromConstants() {
+    try {
+      // Use constants directly (don't check SharedPreferences when offline)
+      final coinPack1Id = BibleInfo.coinPack1Id;
+      final coinPack2Id = BibleInfo.coinPack2Id;
+      final coinPack3Id = BibleInfo.coinPack3Id;
+      
+      // Default coin pack data based on constants (matches API structure)
+      final packs = <Map<String, dynamic>>[
+        {
+          'identifier': coinPack1Id,
+          'credits': '100', // Default credits for pack 1
+          'discount': '20', // Default discount for pack 1
+        },
+        {
+          'identifier': coinPack2Id,
+          'credits': '500', // Default credits for pack 2
+          'discount': '20', // Default discount for pack 2
+        },
+        {
+          'identifier': coinPack3Id,
+          'credits': '1000', // Default credits for pack 3
+          'discount': '20', // Default discount for pack 3
+        },
+      ];
+      
+      if (mounted) {
+        setState(() {
+          _coinPacks = packs;
+        });
+        debugPrint('WalletScreen: Loaded coin packs from constants (offline mode)');
+      }
+    } catch (e) {
+      debugPrint('Error loading coin packs from constants: $e');
     }
   }
 
