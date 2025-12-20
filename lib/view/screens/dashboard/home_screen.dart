@@ -976,6 +976,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isBottomSheetOpen = false;
   bool _hasInitialized = false;
   bool _showUI = true; // Track UI visibility for scroll-based hide/show
+  BuildContext? _bottomSheetContext; // Track bottom sheet context to dismiss it
 
   // dailyverse
   static const int _targetSeconds = 2; // Show after 2 seconds on Reading screen
@@ -1257,7 +1258,8 @@ class _HomeScreenState extends State<HomeScreen>
       // Give a small window so the app-open ad can surface first
       await Future.delayed(const Duration(seconds: 4));
 
-      if (mounted) {
+      // Double-check we're still on Reader screen before showing
+      if (mounted && widget.From.toString() == "Read") {
         await _showDailyVerseBottomSheet(_fontSize);
       }
     }
@@ -1265,6 +1267,12 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _showDailyVerseBottomSheet(double fontSize) async {
     if (_isBottomSheetOpen) return;
+
+    // Verify we're still on Reader screen before showing
+    if (widget.From.toString() != "Read") {
+      return;
+    }
+
     _isBottomSheetOpen = true;
 
     try {
@@ -1316,14 +1324,26 @@ class _HomeScreenState extends State<HomeScreen>
         return;
       }
 
+      // Final check: ensure we're still on Reader screen before showing
+      if (widget.From.toString() != "Read") {
+        _isBottomSheetOpen = false;
+        return;
+      }
+
       await showModalBottomSheet(
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         context: context,
         enableDrag: false,
-        builder: (context) => _buildVerseBottomSheet(
-            context, randomBgImage, todayVerse, fontSize),
-      );
+        builder: (context) {
+          _bottomSheetContext = context;
+          return _buildVerseBottomSheet(
+              context, randomBgImage, todayVerse, fontSize);
+        },
+      ).then((_) {
+        // Clear context when bottom sheet is dismissed
+        _bottomSheetContext = null;
+      });
 
       // if (!_isBottomSheetOpen) {
       //   await _checkAndShowOfferDialog();
@@ -1821,6 +1841,18 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void didPushNext() {
     _onHidden();
+    // Dismiss daily verse bottom sheet if open when navigating away
+    if (_isBottomSheetOpen && _bottomSheetContext != null) {
+      try {
+        Navigator.of(_bottomSheetContext!).pop();
+        _bottomSheetContext = null;
+        _isBottomSheetOpen = false;
+      } catch (e) {
+        debugPrint('Error dismissing bottom sheet: $e');
+        _isBottomSheetOpen = false;
+        _bottomSheetContext = null;
+      }
+    }
   }
 
   // Called when this route is again visible because the top route was popped
@@ -1879,6 +1911,20 @@ class _HomeScreenState extends State<HomeScreen>
     }
     _checkerTimer?.cancel();
     _checkerTimer = null;
+
+    // Dismiss daily verse bottom sheet if open when screen is hidden
+    // This ensures it doesn't show on other screens
+    if (_isBottomSheetOpen && _bottomSheetContext != null) {
+      try {
+        Navigator.of(_bottomSheetContext!).pop();
+        _bottomSheetContext = null;
+        _isBottomSheetOpen = false;
+      } catch (e) {
+        debugPrint('Error dismissing bottom sheet in _onHidden: $e');
+        _isBottomSheetOpen = false;
+        _bottomSheetContext = null;
+      }
+    }
     // setState(() {}); // update UI if you show remaining time
   }
 
