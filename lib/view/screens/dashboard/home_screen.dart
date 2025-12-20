@@ -1230,6 +1230,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   // Daily Verse methods
   Future<void> _checkAndShowVerse() async {
+    // Only show verse on Reader screen (From == "Read")
+    if (widget.From.toString() != "Read") {
+      return;
+    }
+
     if (_isBottomSheetOpen) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -1848,6 +1853,12 @@ class _HomeScreenState extends State<HomeScreen>
   // ---------- Pause/Resume helpers ----------
   void _onVisible() {
     debugPrint("Visible HomeScreen!");
+
+    // Only start verse timer on Reader screen (From == "Read")
+    if (widget.From.toString() != "Read") {
+      return;
+    }
+
     if (_verseShown) return; // already shown, nothing to do
 
     // start or resume stopwatch

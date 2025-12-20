@@ -101,7 +101,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     // Check connectivity FIRST before showing loader
     final hasInternet = await InternetConnection().hasInternetAccess;
     if (!hasInternet) {
-      Constants.showToast("Check your Internet connection");
+      Constants.showToast("No Internet connection");
       return; // Return early - don't show loader or proceed
     }
 
