@@ -88,12 +88,12 @@ class HomeScreen extends StatefulWidget {
 
   HomeScreen(
       {super.key,
-      required this.selectedBookForRead,
-      required this.selectedChapterForRead,
-      required this.selectedVerseNumForRead,
-      required this.From,
-      required this.selectedBookNameForRead,
-      required this.selectedVerseForRead});
+        required this.selectedBookForRead,
+        required this.selectedChapterForRead,
+        required this.selectedVerseNumForRead,
+        required this.From,
+        required this.selectedBookNameForRead,
+        required this.selectedVerseForRead});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -976,6 +976,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isBottomSheetOpen = false;
   bool _hasInitialized = false;
   bool _showUI = true; // Track UI visibility for scroll-based hide/show
+  BuildContext? _bottomSheetContext; // Track bottom sheet context to dismiss it
 
   // dailyverse
   static const int _targetSeconds = 2; // Show after 2 seconds on Reading screen
@@ -1191,8 +1192,8 @@ class _HomeScreenState extends State<HomeScreen>
     final prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(SharPreferences.selectedFontSize);
     final data = await SharPreferences.getString(
-          SharPreferences.selectedBook,
-        ) ??
+      SharPreferences.selectedBook,
+    ) ??
         "";
     if (mounted) {
       setState(() {
@@ -1200,8 +1201,8 @@ class _HomeScreenState extends State<HomeScreen>
         _fontSize = (value != null
             ? double.tryParse(value)
             : Sizecf.scrnWidth! > 450
-                ? 25.0
-                : 19.0)!;
+            ? 25.0
+            : 19.0)!;
       });
     }
   }
@@ -1214,7 +1215,7 @@ class _HomeScreenState extends State<HomeScreen>
     await checkingappcount(result);
 
     final dataCount =
-        await SharPreferences.getString(SharPreferences.showinterstitialrow);
+    await SharPreferences.getString(SharPreferences.showinterstitialrow);
 
     _swipeThreshold = int.parse(dataCount ?? "7");
     final shouldLoadAd = await SharPreferences.shouldLoadAd();
@@ -1257,7 +1258,8 @@ class _HomeScreenState extends State<HomeScreen>
       // Give a small window so the app-open ad can surface first
       await Future.delayed(const Duration(seconds: 4));
 
-      if (mounted) {
+      // Double-check we're still on Reader screen before showing
+      if (mounted && widget.From.toString() == "Read") {
         await _showDailyVerseBottomSheet(_fontSize);
       }
     }
@@ -1265,11 +1267,17 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _showDailyVerseBottomSheet(double fontSize) async {
     if (_isBottomSheetOpen) return;
+
+    // Verify we're still on Reader screen before showing
+    if (widget.From.toString() != "Read") {
+      return;
+    }
+
     _isBottomSheetOpen = true;
 
     try {
       final downloadProvider =
-          Provider.of<DownloadProvider>(context, listen: false);
+      Provider.of<DownloadProvider>(context, listen: false);
       await downloadProvider.loadDailyVerses();
 
       if (mounted) {
@@ -1292,7 +1300,7 @@ class _HomeScreenState extends State<HomeScreen>
       }
 
       final todayVerse = dailyVerseList.firstWhere(
-        (verse) =>
+            (verse) =>
             isSameDay(DateTime.parse(verse.date.toString()), DateTime.now()),
         orElse: () => dailyVerseList.first,
       );
@@ -1316,14 +1324,26 @@ class _HomeScreenState extends State<HomeScreen>
         return;
       }
 
+      // Final check: ensure we're still on Reader screen before showing
+      if (widget.From.toString() != "Read") {
+        _isBottomSheetOpen = false;
+        return;
+      }
+
       await showModalBottomSheet(
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         context: context,
         enableDrag: false,
-        builder: (context) => _buildVerseBottomSheet(
-            context, randomBgImage, todayVerse, fontSize),
-      );
+        builder: (context) {
+          _bottomSheetContext = context;
+          return _buildVerseBottomSheet(
+              context, randomBgImage, todayVerse, fontSize);
+        },
+      ).then((_) {
+        // Clear context when bottom sheet is dismissed
+        _bottomSheetContext = null;
+      });
 
       // if (!_isBottomSheetOpen) {
       //   await _checkAndShowOfferDialog();
@@ -1347,8 +1367,8 @@ class _HomeScreenState extends State<HomeScreen>
           heightFactor: screenWidth < 380
               ? 0.85
               : screenWidth > 450
-                  ? 0.79
-                  : 0.73,
+              ? 0.79
+              : 0.73,
           child: GestureDetector(
             onTap: () {
               setState(() {
@@ -1376,7 +1396,7 @@ class _HomeScreenState extends State<HomeScreen>
                               padding: const EdgeInsets.all(12),
                               child: Column(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                MainAxisAlignment.spaceEvenly,
                                 children: [
                                   SizedBox(height: 9),
                                   Align(
@@ -1388,13 +1408,13 @@ class _HomeScreenState extends State<HomeScreen>
                                       maxFontSize: screenWidth < 380
                                           ? BibleInfo.fontSizeScale * 14.9
                                           : screenWidth > 450
-                                              ? BibleInfo.fontSizeScale * 32
-                                              : DashBoardController()
-                                                      .fontSize
-                                                      .value *
-                                                  1.2,
+                                          ? BibleInfo.fontSizeScale * 32
+                                          : DashBoardController()
+                                          .fontSize
+                                          .value *
+                                          1.2,
                                       minFontSize:
-                                          screenWidth < 380 ? 11.5 : 10.9,
+                                      screenWidth < 380 ? 11.5 : 10.9,
                                     ),
                                   ),
                                   Padding(
@@ -1409,8 +1429,8 @@ class _HomeScreenState extends State<HomeScreen>
                                           fontSize: screenWidth < 380
                                               ? 14
                                               : screenWidth > 450
-                                                  ? BibleInfo.fontSizeScale * 28
-                                                  : fontSize - 2,
+                                              ? BibleInfo.fontSizeScale * 28
+                                              : fontSize - 2,
                                         ),
                                       ),
                                     ),
@@ -1433,8 +1453,8 @@ class _HomeScreenState extends State<HomeScreen>
                                 fontSize: screenWidth < 380
                                     ? 17
                                     : screenWidth > 450
-                                        ? 31
-                                        : 19,
+                                    ? 31
+                                    : 19,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -1481,8 +1501,8 @@ class _HomeScreenState extends State<HomeScreen>
                       height: screenWidth < 380
                           ? 5
                           : screenWidth > 450
-                              ? 13
-                              : 9),
+                          ? 13
+                          : 9),
                   Positioned(
                     bottom: 10,
                     right: 5,
@@ -1513,7 +1533,7 @@ class _HomeScreenState extends State<HomeScreen>
           context: context,
           builder: (context) => ShareAlertBox(
             verseTitle:
-                " ${todayVerse.book} ${int.parse(todayVerse.chapter.toString()) + 1}:${int.parse(todayVerse.verseNum.toString()) + 1}",
+            " ${todayVerse.book} ${int.parse(todayVerse.chapter.toString()) + 1}:${int.parse(todayVerse.verseNum.toString()) + 1}",
             onShareAsText: () async {
               Navigator.of(context).pop();
               final appPackageName =
@@ -1522,10 +1542,10 @@ class _HomeScreenState extends State<HomeScreen>
               String appid = BibleInfo.apple_AppId;
               if (Platform.isAndroid) {
                 message =
-                    "${parse(todayVerse.verse.toString()).body?.text ?? ''}. \n   You can read more at:\nhttps://play.google.com/store/apps/details?id=$appPackageName";
+                "${parse(todayVerse.verse.toString()).body?.text ?? ''}. \n   You can read more at:\nhttps://play.google.com/store/apps/details?id=$appPackageName";
               } else if (Platform.isIOS) {
                 message =
-                    '${parse(todayVerse.verse.toString()).body?.text ?? ''}.\n ${todayVerse.book} ${todayVerse.chapter! + 1}:${todayVerse.verseNum! + 1} \n You can read more at:\nhttps://itunes.apple.com/app/id$appid';
+                '${parse(todayVerse.verse.toString()).body?.text ?? ''}.\n ${todayVerse.book} ${todayVerse.chapter! + 1}:${todayVerse.verseNum! + 1} \n You can read more at:\nhttps://itunes.apple.com/app/id$appid';
               }
 
               if (message.isNotEmpty) {
@@ -1548,13 +1568,13 @@ class _HomeScreenState extends State<HomeScreen>
         width: screenWidth < 380
             ? 39
             : screenWidth > 450
-                ? 67
-                : 45,
+            ? 67
+            : 45,
         height: screenWidth < 380
             ? 39
             : screenWidth > 450
-                ? 67
-                : 45,
+            ? 67
+            : 45,
         padding: EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: CommanColor.darkPrimaryColor.withValues(alpha: 0.7),
@@ -1566,13 +1586,13 @@ class _HomeScreenState extends State<HomeScreen>
             height: screenWidth < 380
                 ? 21
                 : screenWidth > 450
-                    ? 40
-                    : 25,
+                ? 40
+                : 25,
             width: screenWidth < 380
                 ? 21
                 : screenWidth > 450
-                    ? 40
-                    : 25,
+                ? 40
+                : 25,
           ),
         ),
       ),
@@ -1584,7 +1604,7 @@ class _HomeScreenState extends State<HomeScreen>
       onPressed: () async {
         // Check if user is subscribed
         final downloadProvider =
-            Provider.of<DownloadProvider>(context, listen: false);
+        Provider.of<DownloadProvider>(context, listen: false);
         final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
         final isSubscribed = subscriptionPlan != null &&
             subscriptionPlan.isNotEmpty &&
@@ -1599,7 +1619,7 @@ class _HomeScreenState extends State<HomeScreen>
             if (hasInternet) {
               // Check connection type - if mobile only (likely 2G/slow), skip ad
               final connectivityResult =
-                  await Connectivity().checkConnectivity();
+              await Connectivity().checkConnectivity();
               final isMobileOnly =
                   connectivityResult.contains(ConnectivityResult.mobile) &&
                       !connectivityResult.contains(ConnectivityResult.wifi) &&
@@ -1633,13 +1653,13 @@ class _HomeScreenState extends State<HomeScreen>
         height: screenWidth < 380
             ? 19
             : screenWidth > 450
-                ? 40
-                : 25,
+            ? 40
+            : 25,
         width: screenWidth < 380
             ? 19
             : screenWidth > 450
-                ? 40
-                : 25,
+            ? 40
+            : 25,
       ),
       label: Text("AMEN",
           style: TextStyle(
@@ -1647,8 +1667,8 @@ class _HomeScreenState extends State<HomeScreen>
               fontSize: screenWidth < 380
                   ? 14
                   : screenWidth > 450
-                      ? 19
-                      : null)),
+                  ? 19
+                  : null)),
       style: ElevatedButton.styleFrom(
         backgroundColor: CommanColor.darkPrimaryColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1657,8 +1677,8 @@ class _HomeScreenState extends State<HomeScreen>
             vertical: screenWidth < 380
                 ? 6
                 : screenWidth > 450
-                    ? 16
-                    : 12),
+                ? 16
+                : 12),
       ),
     );
   }
@@ -1674,16 +1694,16 @@ class _HomeScreenState extends State<HomeScreen>
         await SharPreferences.setString(SharPreferences.selectedBookNum,
             "${int.parse(todayVerse.bookId.toString())}");
         Get.offAll(
-          () => HomeScreen(
+              () => HomeScreen(
             From: "Daily",
             selectedBookForRead: int.parse(todayVerse.bookId.toString()),
             selectedChapterForRead:
-                1 + int.parse(todayVerse.chapter.toString()),
+            1 + int.parse(todayVerse.chapter.toString()),
             selectedVerseNumForRead:
-                1 + int.parse(todayVerse.verseNum.toString()),
+            1 + int.parse(todayVerse.verseNum.toString()),
             selectedBookNameForRead: todayVerse.book.toString(),
             selectedVerseForRead:
-                parse(todayVerse.verse.toString()).body?.text.toString() ?? '',
+            parse(todayVerse.verse.toString()).body?.text.toString() ?? '',
           ),
           transition: Transition.cupertinoDialog,
           duration: const Duration(milliseconds: 300),
@@ -1693,13 +1713,13 @@ class _HomeScreenState extends State<HomeScreen>
         width: screenWidth < 380
             ? 39
             : screenWidth > 450
-                ? 67
-                : 45,
+            ? 67
+            : 45,
         height: screenWidth < 380
             ? 39
             : screenWidth > 450
-                ? 67
-                : 45,
+            ? 67
+            : 45,
         padding: EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: CommanColor.darkPrimaryColor.withValues(alpha: 0.7),
@@ -1712,8 +1732,8 @@ class _HomeScreenState extends State<HomeScreen>
             size: screenWidth < 380
                 ? 21
                 : screenWidth > 450
-                    ? 40
-                    : 25,
+                ? 40
+                : 25,
           ),
         ),
       ),
@@ -1723,7 +1743,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _shareVerse(DailyVerseList verse) async {
     try {
       final boundary = _verseContainerKey.currentContext?.findRenderObject()
-          as RenderRepaintBoundary;
+      as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
@@ -1737,7 +1757,7 @@ class _HomeScreenState extends State<HomeScreen>
           subject: '${BibleInfo.bible_shortName} app',
           text: "",
           sharePositionOrigin:
-              Rect.fromPoints(const Offset(2, 2), const Offset(3, 3)));
+          Rect.fromPoints(const Offset(2, 2), const Offset(3, 3)));
     } catch (e) {
       debugPrint('Error sharing verse: $e');
       if (mounted) {
@@ -1770,7 +1790,7 @@ class _HomeScreenState extends State<HomeScreen>
       );
 
       final boundary = _verseContainerKey.currentContext?.findRenderObject()
-          as RenderRepaintBoundary;
+      as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
@@ -1821,6 +1841,18 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void didPushNext() {
     _onHidden();
+    // Dismiss daily verse bottom sheet if open when navigating away
+    if (_isBottomSheetOpen && _bottomSheetContext != null) {
+      try {
+        Navigator.of(_bottomSheetContext!).pop();
+        _bottomSheetContext = null;
+        _isBottomSheetOpen = false;
+      } catch (e) {
+        debugPrint('Error dismissing bottom sheet: $e');
+        _isBottomSheetOpen = false;
+        _bottomSheetContext = null;
+      }
+    }
   }
 
   // Called when this route is again visible because the top route was popped
@@ -1879,6 +1911,20 @@ class _HomeScreenState extends State<HomeScreen>
     }
     _checkerTimer?.cancel();
     _checkerTimer = null;
+
+    // Dismiss daily verse bottom sheet if open when screen is hidden
+    // This ensures it doesn't show on other screens
+    if (_isBottomSheetOpen && _bottomSheetContext != null) {
+      try {
+        Navigator.of(_bottomSheetContext!).pop();
+        _bottomSheetContext = null;
+        _isBottomSheetOpen = false;
+      } catch (e) {
+        debugPrint('Error dismissing bottom sheet in _onHidden: $e');
+        _isBottomSheetOpen = false;
+        _bottomSheetContext = null;
+      }
+    }
     // setState(() {}); // update UI if you show remaining time
   }
 
@@ -2081,7 +2127,7 @@ class _HomeScreenState extends State<HomeScreen>
         init: DashBoardController(),
         initState: (state) async {
           final cacheProvider =
-              Provider.of<CacheNotifier>(context, listen: false);
+          Provider.of<CacheNotifier>(context, listen: false);
           final data = await cacheProvider.readCache(key: 'user');
           if (mounted) {
             // setState(() {
@@ -2490,474 +2536,474 @@ class _HomeScreenState extends State<HomeScreen>
             key: _scaffoldKey,
             appBar: controller.selectedChapter.value.isNotEmpty && _showUI
                 ? AppBar(
-                    toolbarHeight: screenWidth > 450 ? 70 : 55,
-                    iconTheme:
-                        IconThemeData(color: CommanColor.whiteBlack(context)),
-                    flexibleSpace: Container(
-                      color: p.Provider.of<ThemeProvider>(context)
-                                  .currentCustomTheme ==
-                              AppCustomTheme.vintage
-                          ? null
-                          : Provider.of<ThemeProvider>(context).themeMode ==
-                                  ThemeMode.dark
-                              ? CommanColor.darkPrimaryColor
-                              : p.Provider.of<ThemeProvider>(context)
-                                          .currentCustomTheme ==
-                                      AppCustomTheme.vintage
-                                  ? CommanColor.darkPrimaryColor
-                                  : p.Provider.of<ThemeProvider>(context)
-                                      .backgroundColor,
-                      decoration: p.Provider.of<ThemeProvider>(context)
-                                  .currentCustomTheme ==
-                              AppCustomTheme.vintage
-                          ? BoxDecoration(
-                              color: Provider.of<ThemeProvider>(context)
-                                          .themeMode ==
-                                      ThemeMode.dark
-                                  ? CommanColor.black
-                                  : p.Provider.of<ThemeProvider>(context)
-                                              .currentCustomTheme ==
-                                          AppCustomTheme.vintage
-                                      ? CommanColor.darkPrimaryColor
-                                      : p.Provider.of<ThemeProvider>(context)
-                                          .backgroundColor,
-                              image: DecorationImage(
-                                image: AssetImage(Images.bgImage((context))),
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : null,
+              toolbarHeight: screenWidth > 450 ? 70 : 55,
+              iconTheme:
+              IconThemeData(color: CommanColor.whiteBlack(context)),
+              flexibleSpace: Container(
+                color: p.Provider.of<ThemeProvider>(context)
+                    .currentCustomTheme ==
+                    AppCustomTheme.vintage
+                    ? null
+                    : Provider.of<ThemeProvider>(context).themeMode ==
+                    ThemeMode.dark
+                    ? CommanColor.darkPrimaryColor
+                    : p.Provider.of<ThemeProvider>(context)
+                    .currentCustomTheme ==
+                    AppCustomTheme.vintage
+                    ? CommanColor.darkPrimaryColor
+                    : p.Provider.of<ThemeProvider>(context)
+                    .backgroundColor,
+                decoration: p.Provider.of<ThemeProvider>(context)
+                    .currentCustomTheme ==
+                    AppCustomTheme.vintage
+                    ? BoxDecoration(
+                  color: Provider.of<ThemeProvider>(context)
+                      .themeMode ==
+                      ThemeMode.dark
+                      ? CommanColor.black
+                      : p.Provider.of<ThemeProvider>(context)
+                      .currentCustomTheme ==
+                      AppCustomTheme.vintage
+                      ? CommanColor.darkPrimaryColor
+                      : p.Provider.of<ThemeProvider>(context)
+                      .backgroundColor,
+                  image: DecorationImage(
+                    image: AssetImage(Images.bgImage((context))),
+                    fit: BoxFit.cover,
+                  ),
+                )
+                    : null,
+              ),
+              backgroundColor: p.Provider.of<ThemeProvider>(context)
+                  .currentCustomTheme ==
+                  AppCustomTheme.vintage
+                  ? Colors.transparent
+                  : null,
+              leadingWidth: 120,
+              leading: Row(
+                children: [
+                  SizedBox(width: 12),
+                  // Show back button if coming from chat, otherwise show menu
+                  widget.From.toString() == "chat"
+                      ? GestureDetector(
+                    onTap: () {
+                      Get.back();
+                    },
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      size: screenWidth > 450 ? 40 : 24,
+                      color: CommanColor.whiteBlack(context),
                     ),
-                    backgroundColor: p.Provider.of<ThemeProvider>(context)
-                                .currentCustomTheme ==
-                            AppCustomTheme.vintage
-                        ? Colors.transparent
-                        : null,
-                    leadingWidth: 120,
-                    leading: Row(
-                      children: [
-                        SizedBox(width: 12),
-                        // Show back button if coming from chat, otherwise show menu
-                        widget.From.toString() == "chat"
-                            ? GestureDetector(
-                                onTap: () {
-                                  Get.back();
-                                },
-                                child: Icon(
-                                  Icons.arrow_back_ios,
-                                  size: screenWidth > 450 ? 40 : 24,
-                                  color: CommanColor.whiteBlack(context),
-                                ),
-                              )
-                            : GestureDetector(
-                                onTap: () {
-                                  _scaffoldKey.currentState?.openDrawer();
-                                },
-                                child: Icon(
-                                  Icons.menu,
-                                  size: screenWidth > 450 ? 40 : 24,
-                                ),
-                              ),
-                        SizedBox(width: 12),
-                        controller.isAdsCompletlyDisabled.value
-                            ? const SizedBox.shrink()
-                            : controller.adFree.value
-                                ? DateTime.tryParse(controller
-                                            .RewardAdExpireDate.value) !=
-                                        null
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          showModalBottomSheet<void>(
-                                            context: context,
-                                            backgroundColor: Colors.white,
-                                            shape: const RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                top: Radius.circular(25),
-                                              ),
-                                            ),
-                                            clipBehavior:
-                                                Clip.antiAliasWithSaveLayer,
-                                            builder: (BuildContext context) {
-                                              final startTime = DateTime.parse(
-                                                  '${controller.RewardAdExpireDate}');
+                  )
+                      : GestureDetector(
+                    onTap: () {
+                      _scaffoldKey.currentState?.openDrawer();
+                    },
+                    child: Icon(
+                      Icons.menu,
+                      size: screenWidth > 450 ? 40 : 24,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  controller.isAdsCompletlyDisabled.value
+                      ? const SizedBox.shrink()
+                      : controller.adFree.value
+                      ? DateTime.tryParse(controller
+                      .RewardAdExpireDate.value) !=
+                      null
+                      ? GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet<void>(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.vertical(
+                              top: Radius.circular(25),
+                            ),
+                          ),
+                          clipBehavior:
+                          Clip.antiAliasWithSaveLayer,
+                          builder: (BuildContext context) {
+                            final startTime = DateTime.parse(
+                                '${controller.RewardAdExpireDate}');
 
-                                              DateTime ExpiryDate = startTime;
+                            DateTime ExpiryDate = startTime;
 
-                                              final currentTime =
-                                                  DateTime.now();
-                                              final diffDy =
-                                                  ExpiryDate.difference(
-                                                          currentTime)
-                                                      .inDays;
+                            final currentTime =
+                            DateTime.now();
+                            final diffDy =
+                                ExpiryDate.difference(
+                                    currentTime)
+                                    .inDays;
 
-                                              return Stack(
-                                                children: [
-                                                  Container(
-                                                    decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                            color: Colors
-                                                                .white),
-                                                        borderRadius:
-                                                            const BorderRadius
-                                                                .only(
-                                                                topLeft: Radius
-                                                                    .circular(
-                                                                        20),
-                                                                topRight: Radius
-                                                                    .circular(
-                                                                        20))),
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.30,
-                                                    // color: Colors.white,
-                                                    child:
-                                                        SingleChildScrollView(
-                                                      physics:
-                                                          const ScrollPhysics(),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: <Widget>[
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Image.asset(
-                                                                  "assets/feedbacklogo.png",
-                                                                  height: 120,
-                                                                  width: 120,
-                                                                  color: CommanColor
-                                                                      .lightDarkPrimary(
-                                                                          context)),
-                                                            ],
-                                                          ),
-                                                          // SizedBox(height: 5,),
-                                                          Text(
-                                                            'Subscription Info',
-                                                            style: TextStyle(
-                                                                letterSpacing:
-                                                                    BibleInfo
-                                                                        .letterSpacing,
-                                                                fontSize: BibleInfo
-                                                                        .fontSizeScale *
-                                                                    16,
-                                                                color: CommanColor
-                                                                    .lightDarkPrimary(
-                                                                        context),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 15,
-                                                          ),
-                                                          Text(
-                                                              diffDy > 365
-                                                                  ? 'Your subscription will never expire'
-                                                                  : '$diffDy day(s) left for the renewal of the subscription.',
-                                                              style: TextStyle(
-                                                                  letterSpacing:
-                                                                      BibleInfo
-                                                                          .letterSpacing,
-                                                                  fontSize: screenWidth <
-                                                                          380
-                                                                      ? BibleInfo
-                                                                              .fontSizeScale *
-                                                                          13
-                                                                      : BibleInfo
-                                                                              .fontSizeScale *
-                                                                          15,
-                                                                  color: CommanColor
-                                                                      .lightDarkPrimary(
-                                                                          context),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400)),
-                                                          const SizedBox(
-                                                              height: 5),
-                                                          Text(
-                                                              diffDy > 365
-                                                                  ? 'Your subscription period is lifetime'
-                                                                  : 'Your subscription expires on ${DateFormat('dd-MM-yyyy').format(ExpiryDate)}',
-                                                              style: TextStyle(
-                                                                letterSpacing:
-                                                                    BibleInfo
-                                                                        .letterSpacing,
-                                                                fontSize: screenWidth <
-                                                                        380
-                                                                    ? BibleInfo
-                                                                            .fontSizeScale *
-                                                                        13
-                                                                    : BibleInfo
-                                                                            .fontSizeScale *
-                                                                        15,
-                                                                color: CommanColor
-                                                                    .lightDarkPrimary(
-                                                                        context),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                              )),
-                                                          const SizedBox(
-                                                              height: 5),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Positioned(
-                                                    top: 10,
-                                                    right: 15,
-                                                    child: InkWell(
-                                                      child: Icon(
-                                                        Icons.close,
-                                                        color: CommanColor
-                                                            .lightDarkPrimary(
-                                                                context),
-                                                        size: 25,
-                                                      ),
-                                                      onTap: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                    ),
-                                                  )
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        child: Image.asset(
-                                          'assets/info.png',
-                                          height: screenWidth > 450 ? 40 : 24,
-                                        ))
-                                    : Visibility(
-                                        visible:
-                                            controller.isSubscriptionEnabled ??
-                                                true,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            if (controller.connectionStatus
-                                                        .first ==
-                                                    ConnectivityResult.wifi ||
-                                                controller.connectionStatus
-                                                        .first ==
-                                                    ConnectivityResult.mobile) {
-                                              adsIcon = false;
-                                              debugPrint(
-                                                  "all plans - ${controller.sixMonthPlan} ${controller.oneYearPlan}  ${controller.lifeTimePlan}");
-                                              SubscriptionScreen
-                                                  .showExitOfferFromHomeScreen(
-                                                      context, controller);
-                                            } else {
-                                              Constants.showToast(
-                                                  "Check your Internet Connection");
-                                            }
-                                          },
-                                          child: Image.asset(
-                                            'assets/no-ad.png',
-                                            height: screenWidth > 450 ? 40 : 24,
-                                            width: screenWidth > 450 ? 40 : 24,
-                                            color:
-                                                CommanColor.whiteBlack(context),
-                                          ),
-                                        ))
-                                : Visibility(
-                                    visible: controller.isSubscriptionEnabled ??
-                                        false,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        adsIcon = false;
-                                        SubscriptionScreen
-                                            .showExitOfferFromHomeScreen(
-                                                context, controller);
-                                      },
-                                      child: Image.asset(
-                                        'assets/no-ad.png',
-                                        height: screenWidth > 450 ? 35 : 24,
-                                        width: screenWidth > 450 ? 35 : 24,
-                                        color: CommanColor.whiteBlack(context),
-                                      ),
+                            return Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors
+                                              .white),
+                                      borderRadius:
+                                      const BorderRadius
+                                          .only(
+                                          topLeft: Radius
+                                              .circular(
+                                              20),
+                                          topRight: Radius
+                                              .circular(
+                                              20))),
+                                  height:
+                                  MediaQuery.of(context)
+                                      .size
+                                      .height *
+                                      0.30,
+                                  // color: Colors.white,
+                                  child:
+                                  SingleChildScrollView(
+                                    physics:
+                                    const ScrollPhysics(),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .start,
+                                      mainAxisSize:
+                                      MainAxisSize.min,
+                                      children: <Widget>[
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment
+                                              .center,
+                                          children: [
+                                            Image.asset(
+                                                "assets/feedbacklogo.png",
+                                                height: 120,
+                                                width: 120,
+                                                color: CommanColor
+                                                    .lightDarkPrimary(
+                                                    context)),
+                                          ],
+                                        ),
+                                        // SizedBox(height: 5,),
+                                        Text(
+                                          'Subscription Info',
+                                          style: TextStyle(
+                                              letterSpacing:
+                                              BibleInfo
+                                                  .letterSpacing,
+                                              fontSize: BibleInfo
+                                                  .fontSizeScale *
+                                                  16,
+                                              color: CommanColor
+                                                  .lightDarkPrimary(
+                                                  context),
+                                              fontWeight:
+                                              FontWeight
+                                                  .w500),
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        Text(
+                                            diffDy > 365
+                                                ? 'Your subscription will never expire'
+                                                : '$diffDy day(s) left for the renewal of the subscription.',
+                                            style: TextStyle(
+                                                letterSpacing:
+                                                BibleInfo
+                                                    .letterSpacing,
+                                                fontSize: screenWidth <
+                                                    380
+                                                    ? BibleInfo
+                                                    .fontSizeScale *
+                                                    13
+                                                    : BibleInfo
+                                                    .fontSizeScale *
+                                                    15,
+                                                color: CommanColor
+                                                    .lightDarkPrimary(
+                                                    context),
+                                                fontWeight:
+                                                FontWeight
+                                                    .w400)),
+                                        const SizedBox(
+                                            height: 5),
+                                        Text(
+                                            diffDy > 365
+                                                ? 'Your subscription period is lifetime'
+                                                : 'Your subscription expires on ${DateFormat('dd-MM-yyyy').format(ExpiryDate)}',
+                                            style: TextStyle(
+                                              letterSpacing:
+                                              BibleInfo
+                                                  .letterSpacing,
+                                              fontSize: screenWidth <
+                                                  380
+                                                  ? BibleInfo
+                                                  .fontSizeScale *
+                                                  13
+                                                  : BibleInfo
+                                                  .fontSizeScale *
+                                                  15,
+                                              color: CommanColor
+                                                  .lightDarkPrimary(
+                                                  context),
+                                              fontWeight:
+                                              FontWeight
+                                                  .w400,
+                                            )),
+                                        const SizedBox(
+                                            height: 5),
+                                      ],
                                     ),
                                   ),
-                      ],
-                    ),
-                    actions: [
-                      BibleInfo.folders.length != 1
-                          ? Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: InkWell(
-                                  onTap: () {
-                                    if (controller.adFree.value == false) {
-                                      controller.bannerAd?.dispose();
-                                      controller.bannerAd?.load();
-                                    }
-                                    Get.to(() => BibleVersionsScreen(
-                                          from: 'home',
-                                        ));
-                                  },
-                                  child: Image.asset(
-                                    "assets/biblebook.png",
-                                    height: screenWidth > 450 ? 30 : 24,
-                                    width: screenWidth > 450 ? 30 : 24,
-                                    color: CommanColor.whiteBlack(context),
-                                  )),
-                            )
-                          : SizedBox(),
-                      InkWell(
-                          onTap: () {
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(
-                                () => SearchScreen(
-                                      controller: controller,
+                                ),
+                                Positioned(
+                                  top: 10,
+                                  right: 15,
+                                  child: InkWell(
+                                    child: Icon(
+                                      Icons.close,
+                                      color: CommanColor
+                                          .lightDarkPrimary(
+                                          context),
+                                      size: 25,
                                     ),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          child: Image.asset(
-                            "assets/search.png",
-                            height: screenWidth > 450 ? 30 : 18,
-                            width: screenWidth > 450 ? 30 : 18,
-                            color: CommanColor.whiteBlack(context),
-                          )),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: ChangeThemeButtonWidget(),
-                      ),
-                    ],
-                    title: IntrinsicWidth(
-                      child: InkWell(
-                        onTap: () async {
-                          if (controller.adFree.value == false) {
-                            controller.bannerAd?.dispose();
-                            controller.bannerAd?.load();
-                          }
-                          Get.to(() => const BookListScreen(),
-                              transition: Transition.cupertinoDialog,
-                              duration: const Duration(milliseconds: 300));
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                  "${selectedBookname ?? controller.selectedBook}",
-                                  style:
-                                      CommanStyle.appBarStyle(context).copyWith(
-                                    fontSize: screenWidth > 450
-                                        ? BibleInfo.fontSizeScale * 26
-                                        : BibleInfo.fontSizeScale * 18,
-                                  )),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 3.0, left: 4),
-                              child: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: CommanColor.whiteBlack(context),
-                                size: screenWidth > 450 ? 39 : 24,
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(30.0),
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                            hintColor: CommanColor.whiteAndDark(context)),
-                        child: Container(
-                          height: screenWidth > 450 ? 45 : 30.0,
-                          color:
-                              Provider.of<ThemeProvider>(context).themeMode ==
-                                      ThemeMode.dark
-                                  ? p.Provider.of<ThemeProvider>(context)
-                                              .currentCustomTheme ==
-                                          AppCustomTheme.vintage
-                                      ? CommanColor.darkPrimaryColor
-                                      : CommanColor.darkPrimaryColor200
-                                  : p.Provider.of<ThemeProvider>(context)
-                                              .currentCustomTheme ==
-                                          AppCustomTheme.vintage
-                                      ? CommanColor.white
-                                      : p.Provider.of<ThemeProvider>(context)
-                                          .backgroundColor,
-                          alignment: Alignment.center,
-                          child: InkWell(
-                            onTap: () {
-                              if (controller.adFree.value == false) {
-                                controller.bannerAd?.dispose();
-                                controller.bannerAd?.load();
-                              }
-                              Get.to(
-                                  () => ChapterListScreen(
-                                        book_num:
-                                            controller.selectedBookNum.value,
-                                        chapterCount: controller
-                                            .selectedBookChapterCount.value,
-                                        selectedChapter:
-                                            controller.selectedChapter.value,
-                                      ),
-                                  transition: Transition.cupertinoDialog,
-                                  duration: const Duration(milliseconds: 300));
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                controller.selectedChapter.value == ""
-                                    ? const SizedBox()
-                                    : Text(
-                                        "Chapter - ${int.parse(controller.selectedChapter.value)}",
-                                        style: CommanStyle.bw14500(context)
-                                            .copyWith(
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: screenWidth > 450
-                                                    ? BibleInfo.fontSizeScale *
-                                                        20
-                                                    : BibleInfo.fontSizeScale *
-                                                        14)),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(top: 2.0, left: 5),
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: CommanColor.whiteBlack(context),
-                                    size: screenWidth > 450 ? 39 : 18,
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                    },
                                   ),
                                 )
                               ],
-                            ),
-                          ),
+                            );
+                          },
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/info.png',
+                        height: screenWidth > 450 ? 40 : 24,
+                      ))
+                      : Visibility(
+                      visible:
+                      controller.isSubscriptionEnabled ??
+                          true,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (controller.connectionStatus
+                              .first ==
+                              ConnectivityResult.wifi ||
+                              controller.connectionStatus
+                                  .first ==
+                                  ConnectivityResult.mobile) {
+                            adsIcon = false;
+                            debugPrint(
+                                "all plans - ${controller.sixMonthPlan} ${controller.oneYearPlan}  ${controller.lifeTimePlan}");
+                            SubscriptionScreen
+                                .showExitOfferFromHomeScreen(
+                                context, controller);
+                          } else {
+                            Constants.showToast(
+                                "Check your Internet Connection");
+                          }
+                        },
+                        child: Image.asset(
+                          'assets/no-ad.png',
+                          height: screenWidth > 450 ? 40 : 24,
+                          width: screenWidth > 450 ? 40 : 24,
+                          color:
+                          CommanColor.whiteBlack(context),
                         ),
+                      ))
+                      : Visibility(
+                    visible: controller.isSubscriptionEnabled ??
+                        false,
+                    child: GestureDetector(
+                      onTap: () {
+                        adsIcon = false;
+                        SubscriptionScreen
+                            .showExitOfferFromHomeScreen(
+                            context, controller);
+                      },
+                      child: Image.asset(
+                        'assets/no-ad.png',
+                        height: screenWidth > 450 ? 35 : 24,
+                        width: screenWidth > 450 ? 35 : 24,
+                        color: CommanColor.whiteBlack(context),
                       ),
                     ),
-                    centerTitle: true,
-                    elevation: 2,
-                  )
+                  ),
+                ],
+              ),
+              actions: [
+                BibleInfo.folders.length != 1
+                    ? Padding(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 10),
+                  child: InkWell(
+                      onTap: () {
+                        if (controller.adFree.value == false) {
+                          controller.bannerAd?.dispose();
+                          controller.bannerAd?.load();
+                        }
+                        Get.to(() => BibleVersionsScreen(
+                          from: 'home',
+                        ));
+                      },
+                      child: Image.asset(
+                        "assets/biblebook.png",
+                        height: screenWidth > 450 ? 30 : 24,
+                        width: screenWidth > 450 ? 30 : 24,
+                        color: CommanColor.whiteBlack(context),
+                      )),
+                )
+                    : SizedBox(),
+                InkWell(
+                    onTap: () {
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(
+                              () => SearchScreen(
+                            controller: controller,
+                          ),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    child: Image.asset(
+                      "assets/search.png",
+                      height: screenWidth > 450 ? 30 : 18,
+                      width: screenWidth > 450 ? 30 : 18,
+                      color: CommanColor.whiteBlack(context),
+                    )),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: ChangeThemeButtonWidget(),
+                ),
+              ],
+              title: IntrinsicWidth(
+                child: InkWell(
+                  onTap: () async {
+                    if (controller.adFree.value == false) {
+                      controller.bannerAd?.dispose();
+                      controller.bannerAd?.load();
+                    }
+                    Get.to(() => const BookListScreen(),
+                        transition: Transition.cupertinoDialog,
+                        duration: const Duration(milliseconds: 300));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                            "${selectedBookname ?? controller.selectedBook}",
+                            style:
+                            CommanStyle.appBarStyle(context).copyWith(
+                              fontSize: screenWidth > 450
+                                  ? BibleInfo.fontSizeScale * 26
+                                  : BibleInfo.fontSizeScale * 18,
+                            )),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3.0, left: 4),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: CommanColor.whiteBlack(context),
+                          size: screenWidth > 450 ? 39 : 24,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(30.0),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                      hintColor: CommanColor.whiteAndDark(context)),
+                  child: Container(
+                    height: screenWidth > 450 ? 45 : 30.0,
+                    color:
+                    Provider.of<ThemeProvider>(context).themeMode ==
+                        ThemeMode.dark
+                        ? p.Provider.of<ThemeProvider>(context)
+                        .currentCustomTheme ==
+                        AppCustomTheme.vintage
+                        ? CommanColor.darkPrimaryColor
+                        : CommanColor.darkPrimaryColor200
+                        : p.Provider.of<ThemeProvider>(context)
+                        .currentCustomTheme ==
+                        AppCustomTheme.vintage
+                        ? CommanColor.white
+                        : p.Provider.of<ThemeProvider>(context)
+                        .backgroundColor,
+                    alignment: Alignment.center,
+                    child: InkWell(
+                      onTap: () {
+                        if (controller.adFree.value == false) {
+                          controller.bannerAd?.dispose();
+                          controller.bannerAd?.load();
+                        }
+                        Get.to(
+                                () => ChapterListScreen(
+                              book_num:
+                              controller.selectedBookNum.value,
+                              chapterCount: controller
+                                  .selectedBookChapterCount.value,
+                              selectedChapter:
+                              controller.selectedChapter.value,
+                            ),
+                            transition: Transition.cupertinoDialog,
+                            duration: const Duration(milliseconds: 300));
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          controller.selectedChapter.value == ""
+                              ? const SizedBox()
+                              : Text(
+                              "Chapter - ${int.parse(controller.selectedChapter.value)}",
+                              style: CommanStyle.bw14500(context)
+                                  .copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: screenWidth > 450
+                                      ? BibleInfo.fontSizeScale *
+                                      20
+                                      : BibleInfo.fontSizeScale *
+                                      14)),
+                          Padding(
+                            padding:
+                            const EdgeInsets.only(top: 2.0, left: 5),
+                            child: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: CommanColor.whiteBlack(context),
+                              size: screenWidth > 450 ? 39 : 18,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              centerTitle: true,
+              elevation: 2,
+            )
                 : null,
             body: WillPopScope(
               onWillPop: () async {
                 Future.delayed(Duration.zero, () async {
                   int saveRating = await SharPreferences.getInt(
-                          SharPreferences.saveRating) ??
+                      SharPreferences.saveRating) ??
                       0;
                   String lastViewRatingDateTime =
                       await SharPreferences.getString(
-                              SharPreferences.lastViewTime) ??
+                          SharPreferences.lastViewTime) ??
                           "";
                   String lastRatingDateTime = await SharPreferences.getString(
-                          SharPreferences.ratingDateTime) ??
+                      SharPreferences.ratingDateTime) ??
                       "";
                   if (lastRatingDateTime != "") {
                     final startTime = DateFormat('dd-MM-yyyy HH:mm')
@@ -2967,7 +3013,7 @@ class _HomeScreenState extends State<HomeScreen>
                     if (saveRating <= 4 && diffDy > 3) {
                       Future.delayed(
                         Duration(minutes: 2),
-                        () {},
+                            () {},
                       );
                     }
                   }
@@ -3041,1148 +3087,1170 @@ class _HomeScreenState extends State<HomeScreen>
                   height: MediaQuery.of(context).size.height,
                   width: MediaQuery.of(context).size.width,
                   decoration: p.Provider.of<ThemeProvider>(context)
-                              .currentCustomTheme ==
-                          AppCustomTheme.vintage
+                      .currentCustomTheme ==
+                      AppCustomTheme.vintage
                       ? BoxDecoration(
-                          // color: Color(0x80605749),
-                          image: DecorationImage(
-                              image: AssetImage(Images.bgImage(context)),
-                              fit: BoxFit.fill))
+                    // color: Color(0x80605749),
+                      image: DecorationImage(
+                          image: AssetImage(Images.bgImage(context)),
+                          fit: BoxFit.fill))
                       : null,
                   child: controller.isFetchContent.value
                       ? const Center(
-                          child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Loader(),
-                          ],
-                        ))
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Loader(),
+                        ],
+                      ))
                       : controller.selectedBookContent.isEmpty
-                          ? Center(
-                              child: Text(
-                                "Content is Empty",
-                                style: CommanStyle.bw16500(context),
+                      ? Center(
+                    child: Text(
+                      "Content is Empty",
+                      style: CommanStyle.bw16500(context),
+                    ),
+                  )
+                      : ListView.builder(
+                    scrollDirection: controller.scrollDirection,
+                    controller: controller.autoScrollController.value,
+                    itemCount: controller.selectedBookContent.length,
+                    physics: const ScrollPhysics(),
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.only(
+                        left: 15, right: 15, bottom: 20),
+                    itemBuilder: (context, index) {
+                      var data =
+                      controller.selectedBookContent[index];
+                      return AutoScrollTag(
+                        key: ValueKey(index),
+                        controller:
+                        controller.autoScrollController.value,
+                        index: index,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                              const EdgeInsets.only(top: 10.0),
+                              child: GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    controller.selectedIndex.value =
+                                    -1;
+
+                                    controller.selectedIndex.value =
+                                        index;
+
+                                    controller.selectedVerseView
+                                        .value = index;
+                                    controller.printText.value =
+                                    '${parse(data.content).body?.text ?? data.content}';
+                                  });
+
+                                  await homeContentEditBottomSheet(
+                                      context,
+                                      loadInterstitial:
+                                      loadInterstitialAd,
+                                      callback2: () {
+                                        //_handledownloadClick();
+                                      }, callback: (v) {
+                                    setState(() {
+                                      // selectedcolor = v;
+                                      controller.selectedIndex.value =
+                                          index;
+                                    });
+                                    debugPrint(" step 1 ");
+                                  },
+                                      verNum: "${index + 1}",
+                                      verseBookdata: data,
+                                      selectedColor: data
+                                          .isHighlighted ==
+                                          "no"
+                                          ? 0
+                                          : int.parse(
+                                          selectedcolor ??
+                                              '0x00000000'),
+                                      controller: controller)
+                                      .then(
+                                        (value) {
+                                      setState(() {
+                                        controller
+                                            .selectedIndex.value = -1;
+                                      });
+                                      debugPrint(" step 2 ");
+                                      // controller.selectedIndex.value =
+                                      //     -1;
+                                    },
+                                  );
+                                },
+                                child: VerseItemWidget(
+                                  index: index,
+                                  currentindex:
+                                  controller.selectedIndex.value,
+                                  controller: controller,
+                                  data: data,
+                                  selectedVerseForRead: widget
+                                      .selectedVerseForRead
+                                      .toString(),
+                                  selectedColor:
+                                  selectedcolor.toString(),
+                                ),
+                              ),
+                            ),
+                            controller.selectedBookContent.length == 1
+                                ? Padding(
+                              padding:
+                              const EdgeInsets.symmetric(
+                                  vertical: 7),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await SharPreferences
+                                          .setString(
+                                          'OpenAd', '1');
+                                      await DBHelper()
+                                          .db
+                                          .then((value) {
+                                        value!
+                                            .rawQuery(
+                                            "SELECT * From book WHERE book_num = ${int.parse(controller.selectedBookNum.value)}")
+                                            .then(
+                                                (value) async {
+                                              controller.bookReadPer
+                                                  .value = value[0]
+                                              ["read_per"]
+                                                  .toString();
+                                              if (controller
+                                                  .selectedBookContent[
+                                              0]
+                                                  .isRead ==
+                                                  "no") {
+                                                if (int.tryParse(
+                                                    controller
+                                                        .bookReadPer
+                                                        .value) ==
+                                                    0) {
+                                                  double readPer = (100 *
+                                                      1) /
+                                                      double.parse(
+                                                          controller
+                                                              .selectedBookChapterCount
+                                                              .value
+                                                              .toString());
+                                                  DBHelper()
+                                                      .updateBookData(
+                                                      int.parse(controller
+                                                          .selectedBookId
+                                                          .value
+                                                          .toString()),
+                                                      "read_per",
+                                                      readPer
+                                                          .toStringAsFixed(
+                                                          1)
+                                                          .toString())
+                                                      .then(
+                                                          (value) {});
+                                                } else {
+                                                  double readPer = (100 *
+                                                      1) /
+                                                      double.parse(
+                                                          controller
+                                                              .selectedBookChapterCount
+                                                              .value
+                                                              .toString());
+                                                  double finalRead =
+                                                      double.parse(controller
+                                                          .bookReadPer
+                                                          .value
+                                                          .toString()) +
+                                                          readPer;
+                                                  DBHelper()
+                                                      .updateBookData(
+                                                      int.parse(controller
+                                                          .selectedBookId
+                                                          .value
+                                                          .toString()),
+                                                      "read_per",
+                                                      finalRead
+                                                          .toStringAsFixed(
+                                                          1)
+                                                          .toString())
+                                                      .then(
+                                                          (value) {});
+                                                }
+                                                controller
+                                                    .isReadLoad
+                                                    .value = true;
+                                                for (var i = 0;
+                                                i <
+                                                    controller
+                                                        .selectedBookContent
+                                                        .value
+                                                        .length;
+                                                i++) {
+                                                  DBHelper()
+                                                      .updateVersesData(
+                                                      int.parse(controller
+                                                          .selectedBookContent
+                                                          .value[
+                                                      i]
+                                                          .id
+                                                          .toString()),
+                                                      "is_read",
+                                                      "yes")
+                                                      .then(
+                                                          (value) {});
+                                                  var data = VerseBookContentModel(
+                                                      id: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .id,
+                                                      bookNum: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .bookNum,
+                                                      chapterNum: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .chapterNum,
+                                                      verseNum: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .verseNum,
+                                                      content: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .content,
+                                                      isBookmarked:
+                                                      controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isBookmarked,
+                                                      isHighlighted:
+                                                      controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isHighlighted,
+                                                      isNoted: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isNoted,
+                                                      isUnderlined:
+                                                      controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isUnderlined,
+                                                      isRead:
+                                                      "yes");
+                                                  controller
+                                                      .selectedBookContent[
+                                                  i] = data;
+                                                }
+
+                                                Future.delayed(
+                                                  const Duration(
+                                                      milliseconds:
+                                                      200),
+                                                      () async {
+                                                    controller
+                                                        .isReadLoad
+                                                        .value = false;
+
+                                                    // Check internet connectivity first - if offline/low internet, skip ad and navigate directly
+                                                    bool
+                                                    shouldSkipAd =
+                                                    false;
+                                                    try {
+                                                      final hasInternet =
+                                                      await InternetConnection()
+                                                          .hasInternetAccess;
+                                                      if (!hasInternet) {
+                                                        // Offline - skip ad and navigate directly
+                                                        shouldSkipAd =
+                                                        true;
+                                                      } else {
+                                                        // Check if mobile only connection (likely 2G/slow) - skip ad
+                                                        final connectivityResult =
+                                                        await Connectivity()
+                                                            .checkConnectivity();
+                                                        final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
+                                                            !connectivityResult.contains(ConnectivityResult
+                                                                .wifi) &&
+                                                            !connectivityResult
+                                                                .contains(ConnectivityResult.ethernet);
+                                                        if (isMobileOnly) {
+                                                          // Low internet (2G/mobile only) - skip ad and navigate directly
+                                                          shouldSkipAd =
+                                                          true;
+                                                        }
+                                                      }
+                                                    } catch (e) {
+                                                      // If connectivity check fails, skip ad and proceed
+                                                      debugPrint(
+                                                          'Connectivity check error in Mark as Read: $e');
+                                                      shouldSkipAd =
+                                                      true;
+                                                    }
+
+                                                    // If should skip ad (offline/low internet), navigate directly
+                                                    if (shouldSkipAd) {
+                                                      Get.to(() =>
+                                                          MarkAsReadScreen(
+                                                            ReadedChapter: controller
+                                                                .selectedChapter
+                                                                .value,
+                                                            RededBookName: controller
+                                                                .selectedBook
+                                                                .value,
+                                                            SelectedBookChapterCount: controller
+                                                                .selectedBookChapterCount
+                                                                .value,
+                                                          ));
+                                                      return;
+                                                    }
+
+                                                    // Only show ad if online with good connection
+                                                    if (_adService
+                                                        .interstitialAd !=
+                                                        null &&
+                                                        controller
+                                                            .adFree
+                                                            .value ==
+                                                            false) {
+                                                      // Check if 3 minutes have passed since last ad
+                                                      final canShowAd =
+                                                      await _canShowMarkAsReadAd();
+                                                      if (canShowAd) {
+                                                        print(
+                                                            'Load Interstitial Ad');
+                                                        await _saveMarkAsReadAdTime();
+                                                        // Show ad FIRST, wait for dismissal, THEN navigate
+                                                        try {
+                                                          await _showInterstitialAdAndWait();
+                                                        } catch (e) {
+                                                          debugPrint(
+                                                              'Error showing ad in Mark as Read: $e');
+                                                          // If ad fails, proceed anyway
+                                                        }
+                                                        // Navigate AFTER ad is dismissed
+                                                        Get.to(() =>
+                                                            MarkAsReadScreen(
+                                                              ReadedChapter: controller
+                                                                  .selectedChapter
+                                                                  .value,
+                                                              RededBookName: controller
+                                                                  .selectedBook
+                                                                  .value,
+                                                              SelectedBookChapterCount: controller
+                                                                  .selectedBookChapterCount
+                                                                  .value,
+                                                            ));
+                                                      } else {
+                                                        // Ad shown recently, skip ad but still navigate
+                                                        Get.to(() =>
+                                                            MarkAsReadScreen(
+                                                              ReadedChapter: controller
+                                                                  .selectedChapter
+                                                                  .value,
+                                                              RededBookName: controller
+                                                                  .selectedBook
+                                                                  .value,
+                                                              SelectedBookChapterCount: controller
+                                                                  .selectedBookChapterCount
+                                                                  .value,
+                                                            ));
+                                                      }
+                                                    } else {
+                                                      print(
+                                                          'Not Load Interstitial Ad');
+
+                                                      final randomItem =
+                                                      await StorageHelper
+                                                          .getRandomBookOrApp();
+
+                                                      if (randomItem
+                                                      is BookModel) {
+                                                        print(
+                                                            "Random Book: ${randomItem.bookName}");
+
+                                                        final connectivityResult =
+                                                        await Connectivity()
+                                                            .checkConnectivity();
+                                                        if (connectivityResult[
+                                                        0] ==
+                                                            ConnectivityResult
+                                                                .none) {
+                                                          return Get
+                                                              .to(() =>
+                                                              MarkAsReadScreen(
+                                                                ReadedChapter: controller.selectedChapter.value,
+                                                                RededBookName: controller.selectedBook.value,
+                                                                SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                              ));
+                                                          // return Constants
+                                                          //     .showToast(
+                                                          //         "Check your Internet connection");
+                                                        }
+                                                        Get.to(
+                                                              () =>
+                                                              FullScreenAd(
+                                                                networkimage:
+                                                                randomItem.bookThumbURL,
+                                                                title: randomItem
+                                                                    .bookName,
+                                                                description:
+                                                                randomItem.bookDescription,
+                                                                iteamurl:
+                                                                randomItem.bookUrl,
+                                                                rededBookName: controller
+                                                                    .selectedBook
+                                                                    .value,
+                                                                readedChapter: controller
+                                                                    .selectedChapter
+                                                                    .value,
+                                                                selectedBookChapterCount: controller
+                                                                    .selectedBookChapterCount
+                                                                    .value,
+                                                              ),
+                                                        );
+                                                      } else if (randomItem
+                                                      is AppModel) {
+                                                        print(
+                                                            "Random App: ${randomItem.appName}");
+                                                        final connectivityResult =
+                                                        await Connectivity()
+                                                            .checkConnectivity();
+                                                        if (connectivityResult[
+                                                        0] ==
+                                                            ConnectivityResult
+                                                                .none) {
+                                                          return Get
+                                                              .to(() =>
+                                                              MarkAsReadScreen(
+                                                                ReadedChapter: controller.selectedChapter.value,
+                                                                RededBookName: controller.selectedBook.value,
+                                                                SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                              ));
+                                                          // return Constants
+                                                          //     .showToast(
+                                                          //         "Check your Internet connection");
+                                                        }
+                                                        Get.to(
+                                                              () =>
+                                                              FullScreenAd(
+                                                                networkimage:
+                                                                randomItem.thumburl,
+                                                                title: randomItem
+                                                                    .appName,
+                                                                description:
+                                                                randomItem.apptype,
+                                                                iteamurl:
+                                                                randomItem.appurl,
+                                                                rededBookName: controller
+                                                                    .selectedBook
+                                                                    .value,
+                                                                readedChapter: controller
+                                                                    .selectedChapter
+                                                                    .value,
+                                                                selectedBookChapterCount: controller
+                                                                    .selectedBookChapterCount
+                                                                    .value,
+                                                              ),
+                                                        );
+                                                      }
+
+                                                      // Get.to(() =>
+                                                      //     MarkAsReadScreen(
+                                                      //       ReadedChapter: controller
+                                                      //           .selectedChapter
+                                                      //           .value,
+                                                      //       RededBookName: controller
+                                                      //           .selectedBook
+                                                      //           .value,
+                                                      //       SelectedBookChapterCount: controller
+                                                      //           .selectedBookChapterCount
+                                                      //           .value,
+                                                      //     ));
+                                                    }
+                                                  },
+                                                );
+                                              } else {
+                                                controller
+                                                    .isReadLoad
+                                                    .value = true;
+                                                if (int.tryParse(
+                                                    controller
+                                                        .bookReadPer
+                                                        .value) ==
+                                                    0) {
+                                                } else {
+                                                  double readPer = (100 *
+                                                      1) /
+                                                      double.parse(
+                                                          controller
+                                                              .selectedBookChapterCount
+                                                              .value
+                                                              .toString());
+                                                  double finalRead =
+                                                      double.parse(controller
+                                                          .bookReadPer
+                                                          .value
+                                                          .toString()) -
+                                                          readPer;
+                                                  DBHelper()
+                                                      .updateBookData(
+                                                      int.parse(controller
+                                                          .selectedBookId
+                                                          .value
+                                                          .toString()),
+                                                      "read_per",
+                                                      finalRead
+                                                          .toStringAsFixed(
+                                                          1)
+                                                          .toString())
+                                                      .then(
+                                                          (value) {});
+                                                }
+                                                for (var i = 0;
+                                                i <
+                                                    controller
+                                                        .selectedBookContent
+                                                        .length;
+                                                i++) {
+                                                  await DBHelper()
+                                                      .updateVersesData(
+                                                      int.parse(controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .id
+                                                          .toString()),
+                                                      "is_read",
+                                                      "no")
+                                                      .then(
+                                                          (value) {});
+                                                  var data = VerseBookContentModel(
+                                                      id: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .id,
+                                                      bookNum: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .bookNum,
+                                                      chapterNum: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .chapterNum,
+                                                      verseNum: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .verseNum,
+                                                      content: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .content,
+                                                      isBookmarked:
+                                                      controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isBookmarked,
+                                                      isHighlighted:
+                                                      controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isHighlighted,
+                                                      isNoted: controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isNoted,
+                                                      isUnderlined:
+                                                      controller
+                                                          .selectedBookContent[
+                                                      i]
+                                                          .isUnderlined,
+                                                      isRead: "no");
+                                                  controller
+                                                      .selectedBookContent[
+                                                  i] = data;
+                                                }
+                                                Future.delayed(
+                                                    const Duration(
+                                                        milliseconds:
+                                                        200),
+                                                        () {
+                                                      controller
+                                                          .isReadLoad
+                                                          .value = false;
+                                                    });
+                                              }
+                                            });
+                                      });
+                                    },
+                                    child: Container(
+                                      width: 200,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: controller
+                                            .selectedBookContent[
+                                        0]
+                                            .isRead ==
+                                            "no"
+                                            ? Colors.black38
+                                            : CommanColor
+                                            .whiteLightModePrimary(
+                                            context),
+                                        borderRadius:
+                                        const BorderRadius
+                                            .all(
+                                            Radius.circular(
+                                                5)),
+                                        boxShadow: [
+                                          const BoxShadow(
+                                              color: Colors
+                                                  .black26,
+                                              blurRadius: 2)
+                                        ],
+                                      ),
+                                      child: Center(
+                                          child: controller
+                                              .isReadLoad
+                                              .value ==
+                                              false
+                                              ? Text(
+                                            controller.selectedBookContent[0]
+                                                .isRead ==
+                                                "no"
+                                                ? 'Mark as Read'
+                                                : "Marked as Read",
+                                            style: TextStyle(
+                                                letterSpacing:
+                                                BibleInfo
+                                                    .letterSpacing,
+                                                fontSize: screenWidth > 450
+                                                    ? BibleInfo.fontSizeScale *
+                                                    20
+                                                    : BibleInfo.fontSizeScale *
+                                                    14,
+                                                fontWeight:
+                                                FontWeight
+                                                    .w500,
+                                                color: controller.selectedBookContent[0].isRead ==
+                                                    "no"
+                                                    ? Colors
+                                                    .white
+                                                    : CommanColor.darkModePrimaryWhite(
+                                                    context)),
+                                          )
+                                              : const SizedBox(
+                                              height: 22,
+                                              width: 22,
+                                              child:
+                                              CircularProgressIndicator(
+                                                color: Colors
+                                                    .white,
+                                                strokeWidth:
+                                                2.2,
+                                              ))),
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
-                          : ListView.builder(
-                              scrollDirection: controller.scrollDirection,
-                              controller: controller.autoScrollController.value,
-                              itemCount: controller.selectedBookContent.length,
-                              physics: const ScrollPhysics(),
-                              shrinkWrap: true,
-                              padding: const EdgeInsets.only(
-                                  left: 15, right: 15, bottom: 20),
-                              itemBuilder: (context, index) {
-                                var data =
-                                    controller.selectedBookContent[index];
-                                return AutoScrollTag(
-                                  key: ValueKey(index),
-                                  controller:
-                                      controller.autoScrollController.value,
-                                  index: index,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                : index ==
+                                controller.selectedBookContent
+                                    .length -
+                                    1
+                                ? Obx(() => Column(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets
+                                      .only(top: 15),
+                                  width: MediaQuery.of(
+                                      context)
+                                      .size
+                                      .width,
+                                  color:
+                                  Colors.transparent,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment
+                                        .center,
                                     children: [
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 10.0),
-                                        child: GestureDetector(
-                                          onTap: () async {
-                                            setState(() {
-                                              controller.selectedIndex.value =
-                                                  -1;
+                                      GestureDetector(
+                                        onTap: () async {
+                                          await SharPreferences
+                                              .setString(
+                                              'OpenAd',
+                                              '1');
+                                          await DBHelper()
+                                              .db
+                                              .then(
+                                                  (value) {
+                                                value!
+                                                    .rawQuery(
+                                                    "SELECT * From book WHERE book_num = ${int.parse(controller.selectedBookNum.value)}")
+                                                    .then(
+                                                        (value) async {
+                                                      controller
+                                                          .bookReadPer
+                                                          .value = value[0]
+                                                      [
+                                                      "read_per"]
+                                                          .toString();
+                                                      if (controller
+                                                          .selectedBookContent[1]
+                                                          .isRead ==
+                                                          "no") {
+                                                        if (controller
+                                                            .bookReadPer
+                                                            .value ==
+                                                            "0") {
+                                                          double
+                                                          readPer =
+                                                              (100 * 1) /
+                                                                  double.parse(controller.selectedBookChapterCount.value.toString());
+                                                          await DBHelper()
+                                                              .updateBookData(
+                                                              int.parse(controller.selectedBookId.value.toString()),
+                                                              "read_per",
+                                                              readPer.toStringAsFixed(1).toString())
+                                                              .then((value) {});
+                                                        } else {
+                                                          double
+                                                          readPer =
+                                                              (100 * 1) /
+                                                                  double.parse(controller.selectedBookChapterCount.value.toString());
+                                                          double
+                                                          finalRead =
+                                                              double.parse(controller.bookReadPer.value.toString()) +
+                                                                  readPer;
+                                                          await DBHelper()
+                                                              .updateBookData(
+                                                              int.parse(controller.selectedBookId.value.toString()),
+                                                              "read_per",
+                                                              finalRead.toStringAsFixed(1).toString())
+                                                              .then((value) {});
+                                                        }
+                                                        controller
+                                                            .isReadLoad
+                                                            .value = true;
+                                                        for (var i =
+                                                        0;
+                                                        i < controller.selectedBookContent.length;
+                                                        i++) {
+                                                          await DBHelper()
+                                                              .updateVersesData(
+                                                              int.parse(controller.selectedBookContent[i].id.toString()),
+                                                              "is_read",
+                                                              "yes")
+                                                              .then((value) {});
+                                                          var data = VerseBookContentModel(
+                                                              id: controller.selectedBookContent[i].id,
+                                                              bookNum: controller.selectedBookContent[i].bookNum,
+                                                              chapterNum: controller.selectedBookContent[i].chapterNum,
+                                                              verseNum: controller.selectedBookContent[i].verseNum,
+                                                              content: controller.selectedBookContent[i].content,
+                                                              isBookmarked: controller.selectedBookContent[i].isBookmarked,
+                                                              isHighlighted: controller.selectedBookContent[i].isHighlighted,
+                                                              isNoted: controller.selectedBookContent[i].isNoted,
+                                                              isUnderlined: controller.selectedBookContent[i].isUnderlined,
+                                                              isRead: "yes");
+                                                          controller.selectedBookContent[i] =
+                                                              data;
+                                                        }
 
-                                              controller.selectedIndex.value =
-                                                  index;
-
-                                              controller.selectedVerseView
-                                                  .value = index;
-                                              controller.printText.value =
-                                                  '${parse(data.content).body?.text ?? data.content}';
-                                            });
-
-                                            await homeContentEditBottomSheet(
-                                                    context,
-                                                    loadInterstitial:
-                                                        loadInterstitialAd,
-                                                    callback2: () {
-                                              //_handledownloadClick();
-                                            }, callback: (v) {
-                                              setState(() {
-                                                // selectedcolor = v;
-                                                controller.selectedIndex.value =
-                                                    index;
-                                              });
-                                              debugPrint(" step 1 ");
-                                            },
-                                                    verNum: "${index + 1}",
-                                                    verseBookdata: data,
-                                                    selectedColor: data
-                                                                .isHighlighted ==
-                                                            "no"
-                                                        ? 0
-                                                        : int.parse(
-                                                            selectedcolor ??
-                                                                '0x00000000'),
-                                                    controller: controller)
-                                                .then(
-                                              (value) {
-                                                setState(() {
-                                                  controller
-                                                      .selectedIndex.value = -1;
-                                                });
-                                                debugPrint(" step 2 ");
-                                                // controller.selectedIndex.value =
-                                                //     -1;
-                                              },
-                                            );
-                                          },
-                                          child: VerseItemWidget(
-                                            index: index,
-                                            currentindex:
-                                                controller.selectedIndex.value,
-                                            controller: controller,
-                                            data: data,
-                                            selectedVerseForRead: widget
-                                                .selectedVerseForRead
-                                                .toString(),
-                                            selectedColor:
-                                                selectedcolor.toString(),
-                                          ),
-                                        ),
-                                      ),
-                                      controller.selectedBookContent.length == 1
-                                          ? Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 7),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  GestureDetector(
-                                                    onTap: () async {
-                                                      await SharPreferences
-                                                          .setString(
-                                                              'OpenAd', '1');
-                                                      await DBHelper()
-                                                          .db
-                                                          .then((value) {
-                                                        value!
-                                                            .rawQuery(
-                                                                "SELECT * From book WHERE book_num = ${int.parse(controller.selectedBookNum.value)}")
-                                                            .then(
-                                                                (value) async {
-                                                          controller.bookReadPer
-                                                              .value = value[0]
-                                                                  ["read_per"]
-                                                              .toString();
-                                                          if (controller
-                                                                  .selectedBookContent[
-                                                                      0]
-                                                                  .isRead ==
-                                                              "no") {
-                                                            if (int.tryParse(
-                                                                    controller
-                                                                        .bookReadPer
-                                                                        .value) ==
-                                                                0) {
-                                                              double readPer = (100 *
-                                                                      1) /
-                                                                  double.parse(
-                                                                      controller
-                                                                          .selectedBookChapterCount
-                                                                          .value
-                                                                          .toString());
-                                                              DBHelper()
-                                                                  .updateBookData(
-                                                                      int.parse(controller
-                                                                          .selectedBookId
-                                                                          .value
-                                                                          .toString()),
-                                                                      "read_per",
-                                                                      readPer
-                                                                          .toStringAsFixed(
-                                                                              1)
-                                                                          .toString())
-                                                                  .then(
-                                                                      (value) {});
-                                                            } else {
-                                                              double readPer = (100 *
-                                                                      1) /
-                                                                  double.parse(
-                                                                      controller
-                                                                          .selectedBookChapterCount
-                                                                          .value
-                                                                          .toString());
-                                                              double finalRead =
-                                                                  double.parse(controller
-                                                                          .bookReadPer
-                                                                          .value
-                                                                          .toString()) +
-                                                                      readPer;
-                                                              DBHelper()
-                                                                  .updateBookData(
-                                                                      int.parse(controller
-                                                                          .selectedBookId
-                                                                          .value
-                                                                          .toString()),
-                                                                      "read_per",
-                                                                      finalRead
-                                                                          .toStringAsFixed(
-                                                                              1)
-                                                                          .toString())
-                                                                  .then(
-                                                                      (value) {});
-                                                            }
-                                                            controller
-                                                                .isReadLoad
-                                                                .value = true;
-                                                            for (var i = 0;
-                                                                i <
-                                                                    controller
-                                                                        .selectedBookContent
-                                                                        .value
-                                                                        .length;
-                                                                i++) {
-                                                              DBHelper()
-                                                                  .updateVersesData(
-                                                                      int.parse(controller
-                                                                          .selectedBookContent
-                                                                          .value[
-                                                                              i]
-                                                                          .id
-                                                                          .toString()),
-                                                                      "is_read",
-                                                                      "yes")
-                                                                  .then(
-                                                                      (value) {});
-                                                              var data = VerseBookContentModel(
-                                                                  id: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .id,
-                                                                  bookNum: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .bookNum,
-                                                                  chapterNum: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .chapterNum,
-                                                                  verseNum: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .verseNum,
-                                                                  content: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .content,
-                                                                  isBookmarked:
-                                                                      controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .isBookmarked,
-                                                                  isHighlighted:
-                                                                      controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .isHighlighted,
-                                                                  isNoted: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .isNoted,
-                                                                  isUnderlined:
-                                                                      controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .isUnderlined,
-                                                                  isRead:
-                                                                      "yes");
-                                                              controller
-                                                                      .selectedBookContent[
-                                                                  i] = data;
-                                                            }
-
-                                                            Future.delayed(
-                                                              const Duration(
-                                                                  milliseconds:
-                                                                      200),
+                                                        Future
+                                                            .delayed(
+                                                          const Duration(
+                                                              milliseconds:
+                                                              200),
                                                               () async {
-                                                                controller
-                                                                    .isReadLoad
-                                                                    .value = false;
-
-                                                                // Check internet connectivity first - if offline/low internet, skip ad and navigate directly
-                                                                bool
-                                                                    shouldSkipAd =
-                                                                    false;
-                                                                try {
-                                                                  final hasInternet =
-                                                                      await InternetConnection()
-                                                                          .hasInternetAccess;
-                                                                  if (!hasInternet) {
-                                                                    // Offline - skip ad and navigate directly
-                                                                    shouldSkipAd =
-                                                                        true;
-                                                                  } else {
-                                                                    // Check if mobile only connection (likely 2G/slow) - skip ad
-                                                                    final connectivityResult =
-                                                                        await Connectivity()
-                                                                            .checkConnectivity();
-                                                                    final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
-                                                                        !connectivityResult.contains(ConnectivityResult
-                                                                            .wifi) &&
-                                                                        !connectivityResult
-                                                                            .contains(ConnectivityResult.ethernet);
-                                                                    if (isMobileOnly) {
-                                                                      // Low internet (2G/mobile only) - skip ad and navigate directly
-                                                                      shouldSkipAd =
-                                                                          true;
-                                                                    }
-                                                                  }
-                                                                } catch (e) {
-                                                                  // If connectivity check fails, skip ad and proceed
-                                                                  debugPrint(
-                                                                      'Connectivity check error in Mark as Read: $e');
-                                                                  shouldSkipAd =
-                                                                      true;
-                                                                }
-
-                                                                // If should skip ad (offline/low internet), navigate directly
-                                                                if (shouldSkipAd) {
-                                                                  Get.to(() =>
-                                                                      MarkAsReadScreen(
-                                                                        ReadedChapter: controller
-                                                                            .selectedChapter
-                                                                            .value,
-                                                                        RededBookName: controller
-                                                                            .selectedBook
-                                                                            .value,
-                                                                        SelectedBookChapterCount: controller
-                                                                            .selectedBookChapterCount
-                                                                            .value,
-                                                                      ));
-                                                                  return;
-                                                                }
-
-                                                                // Only show ad if online with good connection
-                                                                if (_adService
-                                                                            .interstitialAd !=
-                                                                        null &&
-                                                                    controller
-                                                                            .adFree
-                                                                            .value ==
-                                                                        false) {
-                                                                  // Check if 3 minutes have passed since last ad
-                                                                  final canShowAd =
-                                                                      await _canShowMarkAsReadAd();
-                                                                  if (canShowAd) {
-                                                                    print(
-                                                                        'Load Interstitial Ad');
-                                                                    await _saveMarkAsReadAdTime();
-                                                                    // Show ad FIRST, wait for dismissal, THEN navigate
-                                                                    try {
-                                                                      await _showInterstitialAdAndWait();
-                                                                    } catch (e) {
-                                                                      debugPrint(
-                                                                          'Error showing ad in Mark as Read: $e');
-                                                                      // If ad fails, proceed anyway
-                                                                    }
-                                                                    // Navigate AFTER ad is dismissed
-                                                                    Get.to(() =>
-                                                                        MarkAsReadScreen(
-                                                                          ReadedChapter: controller
-                                                                              .selectedChapter
-                                                                              .value,
-                                                                          RededBookName: controller
-                                                                              .selectedBook
-                                                                              .value,
-                                                                          SelectedBookChapterCount: controller
-                                                                              .selectedBookChapterCount
-                                                                              .value,
-                                                                        ));
-                                                                  } else {
-                                                                    // Ad shown recently, skip ad but still navigate
-                                                                    Get.to(() =>
-                                                                        MarkAsReadScreen(
-                                                                          ReadedChapter: controller
-                                                                              .selectedChapter
-                                                                              .value,
-                                                                          RededBookName: controller
-                                                                              .selectedBook
-                                                                              .value,
-                                                                          SelectedBookChapterCount: controller
-                                                                              .selectedBookChapterCount
-                                                                              .value,
-                                                                        ));
-                                                                  }
-                                                                } else {
-                                                                  print(
-                                                                      'Not Load Interstitial Ad');
-
-                                                                  final randomItem =
-                                                                      await StorageHelper
-                                                                          .getRandomBookOrApp();
-
-                                                                  if (randomItem
-                                                                      is BookModel) {
-                                                                    print(
-                                                                        "Random Book: ${randomItem.bookName}");
-
-                                                                    final connectivityResult =
-                                                                        await Connectivity()
-                                                                            .checkConnectivity();
-                                                                    if (connectivityResult[
-                                                                            0] ==
-                                                                        ConnectivityResult
-                                                                            .none) {
-                                                                      return Get
-                                                                          .to(() =>
-                                                                              MarkAsReadScreen(
-                                                                                ReadedChapter: controller.selectedChapter.value,
-                                                                                RededBookName: controller.selectedBook.value,
-                                                                                SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                              ));
-                                                                      // return Constants
-                                                                      //     .showToast(
-                                                                      //         "Check your Internet connection");
-                                                                    }
-                                                                    Get.to(
-                                                                      () =>
-                                                                          FullScreenAd(
-                                                                        networkimage:
-                                                                            randomItem.bookThumbURL,
-                                                                        title: randomItem
-                                                                            .bookName,
-                                                                        description:
-                                                                            randomItem.bookDescription,
-                                                                        iteamurl:
-                                                                            randomItem.bookUrl,
-                                                                        rededBookName: controller
-                                                                            .selectedBook
-                                                                            .value,
-                                                                        readedChapter: controller
-                                                                            .selectedChapter
-                                                                            .value,
-                                                                        selectedBookChapterCount: controller
-                                                                            .selectedBookChapterCount
-                                                                            .value,
-                                                                      ),
-                                                                    );
-                                                                  } else if (randomItem
-                                                                      is AppModel) {
-                                                                    print(
-                                                                        "Random App: ${randomItem.appName}");
-                                                                    final connectivityResult =
-                                                                        await Connectivity()
-                                                                            .checkConnectivity();
-                                                                    if (connectivityResult[
-                                                                            0] ==
-                                                                        ConnectivityResult
-                                                                            .none) {
-                                                                      return Get
-                                                                          .to(() =>
-                                                                              MarkAsReadScreen(
-                                                                                ReadedChapter: controller.selectedChapter.value,
-                                                                                RededBookName: controller.selectedBook.value,
-                                                                                SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                              ));
-                                                                      // return Constants
-                                                                      //     .showToast(
-                                                                      //         "Check your Internet connection");
-                                                                    }
-                                                                    Get.to(
-                                                                      () =>
-                                                                          FullScreenAd(
-                                                                        networkimage:
-                                                                            randomItem.thumburl,
-                                                                        title: randomItem
-                                                                            .appName,
-                                                                        description:
-                                                                            randomItem.apptype,
-                                                                        iteamurl:
-                                                                            randomItem.appurl,
-                                                                        rededBookName: controller
-                                                                            .selectedBook
-                                                                            .value,
-                                                                        readedChapter: controller
-                                                                            .selectedChapter
-                                                                            .value,
-                                                                        selectedBookChapterCount: controller
-                                                                            .selectedBookChapterCount
-                                                                            .value,
-                                                                      ),
-                                                                    );
-                                                                  }
-
-                                                                  // Get.to(() =>
-                                                                  //     MarkAsReadScreen(
-                                                                  //       ReadedChapter: controller
-                                                                  //           .selectedChapter
-                                                                  //           .value,
-                                                                  //       RededBookName: controller
-                                                                  //           .selectedBook
-                                                                  //           .value,
-                                                                  //       SelectedBookChapterCount: controller
-                                                                  //           .selectedBookChapterCount
-                                                                  //           .value,
-                                                                  //     ));
-                                                                }
-                                                              },
-                                                            );
-                                                          } else {
                                                             controller
                                                                 .isReadLoad
-                                                                .value = true;
-                                                            if (int.tryParse(
-                                                                    controller
-                                                                        .bookReadPer
-                                                                        .value) ==
-                                                                0) {
+                                                                .value = false;
+
+                                                            // Check internet connectivity first - if offline/low internet, skip ad and navigate directly
+                                                            bool
+                                                            shouldSkipAd =
+                                                            false;
+                                                            try {
+                                                              final hasInternet =
+                                                              await InternetConnection().hasInternetAccess;
+                                                              if (!hasInternet) {
+                                                                // Offline - skip ad and navigate directly
+                                                                shouldSkipAd = true;
+                                                              } else {
+                                                                // Check if mobile only connection (likely 2G/slow) - skip ad
+                                                                final connectivityResult = await Connectivity().checkConnectivity();
+                                                                final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) && !connectivityResult.contains(ConnectivityResult.wifi) && !connectivityResult.contains(ConnectivityResult.ethernet);
+                                                                if (isMobileOnly) {
+                                                                  // Low internet (2G/mobile only) - skip ad and navigate directly
+                                                                  shouldSkipAd = true;
+                                                                }
+                                                              }
+                                                            } catch (e) {
+                                                              // If connectivity check fails, skip ad and proceed
+                                                              debugPrint('Connectivity check error in Mark as Read: $e');
+                                                              shouldSkipAd =
+                                                              true;
+                                                            }
+
+                                                            // If should skip ad (offline/low internet), navigate directly
+                                                            if (shouldSkipAd) {
+                                                              Get.to(() =>
+                                                                  MarkAsReadScreen(
+                                                                    ReadedChapter: controller.selectedChapter.value,
+                                                                    RededBookName: controller.selectedBook.value,
+                                                                    SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                  ));
+                                                              return;
+                                                            }
+
+                                                            // Only show ad if online with good connection
+                                                            if (_adService.interstitialAd != null &&
+                                                                controller.adFree.value == false) {
+                                                              // Check if 3 minutes have passed since last ad
+                                                              final canShowAd =
+                                                              await _canShowMarkAsReadAd();
+                                                              if (canShowAd) {
+                                                                print('Load Interstitial Ad');
+                                                                await _saveMarkAsReadAdTime();
+                                                                // Show ad FIRST, wait for dismissal, THEN navigate
+                                                                try {
+                                                                  await _showInterstitialAdAndWait();
+                                                                } catch (e) {
+                                                                  debugPrint('Error showing ad in Mark as Read: $e');
+                                                                  // If ad fails, proceed anyway
+                                                                }
+                                                                // Navigate AFTER ad is dismissed
+                                                                Get.to(() => MarkAsReadScreen(
+                                                                  ReadedChapter: controller.selectedChapter.value,
+                                                                  RededBookName: controller.selectedBook.value,
+                                                                  SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                ));
+                                                              } else {
+                                                                // Ad shown recently, skip ad but still navigate
+                                                                Get.to(() => MarkAsReadScreen(
+                                                                  ReadedChapter: controller.selectedChapter.value,
+                                                                  RededBookName: controller.selectedBook.value,
+                                                                  SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                ));
+                                                              }
                                                             } else {
-                                                              double readPer = (100 *
-                                                                      1) /
-                                                                  double.parse(
-                                                                      controller
-                                                                          .selectedBookChapterCount
-                                                                          .value
-                                                                          .toString());
-                                                              double finalRead =
-                                                                  double.parse(controller
-                                                                          .bookReadPer
-                                                                          .value
-                                                                          .toString()) -
-                                                                      readPer;
-                                                              DBHelper()
-                                                                  .updateBookData(
-                                                                      int.parse(controller
-                                                                          .selectedBookId
-                                                                          .value
-                                                                          .toString()),
-                                                                      "read_per",
-                                                                      finalRead
-                                                                          .toStringAsFixed(
-                                                                              1)
-                                                                          .toString())
-                                                                  .then(
-                                                                      (value) {});
+                                                              print('Not Load Interstitial Ad');
+
+                                                              if (controller.adFree.value !=
+                                                                  false) {
+                                                                return Get.to(() => MarkAsReadScreen(
+                                                                  ReadedChapter: controller.selectedChapter.value,
+                                                                  RededBookName: controller.selectedBook.value,
+                                                                  SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                ));
+                                                              } else {
+                                                                // Get.to(() =>
+                                                                //     MarkAsReadScreen(
+                                                                //       ReadedChapter: controller.selectedChapter.value,
+                                                                //       RededBookName: controller.selectedBook.value,
+                                                                //       SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                //     ));
+                                                                final randomItem = await StorageHelper.getRandomBookOrApp();
+
+                                                                if (randomItem is BookModel) {
+                                                                  print("Random Book: ${randomItem.bookName}");
+                                                                  final connectivityResult = await Connectivity().checkConnectivity();
+                                                                  if (connectivityResult[0] == ConnectivityResult.none) {
+                                                                    return Get.to(() => MarkAsReadScreen(
+                                                                      ReadedChapter: controller.selectedChapter.value,
+                                                                      RededBookName: controller.selectedBook.value,
+                                                                      SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                    ));
+                                                                    // return Constants
+                                                                    //     .showToast(
+                                                                    //         "Check your Internet connection");
+                                                                  }
+                                                                  Get.to(
+                                                                        () => FullScreenAd(
+                                                                      networkimage: randomItem.bookThumbURL,
+                                                                      title: randomItem.bookName,
+                                                                      description: randomItem.bookDescription,
+                                                                      iteamurl: randomItem.bookUrl,
+                                                                      rededBookName: controller.selectedBook.value,
+                                                                      readedChapter: controller.selectedChapter.value,
+                                                                      selectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                    ),
+                                                                  );
+                                                                } else if (randomItem is AppModel) {
+                                                                  final connectivityResult = await Connectivity().checkConnectivity();
+                                                                  if (connectivityResult[0] == ConnectivityResult.none) {
+                                                                    return Get.to(() => MarkAsReadScreen(
+                                                                      ReadedChapter: controller.selectedChapter.value,
+                                                                      RededBookName: controller.selectedBook.value,
+                                                                      SelectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                    ));
+                                                                    // return Constants
+                                                                    //     .showToast(
+                                                                    //         "Check your Internet connection");
+                                                                  }
+                                                                  print("Random App: ${randomItem.appName}");
+                                                                  Get.to(
+                                                                        () => FullScreenAd(
+                                                                      networkimage: randomItem.thumburl,
+                                                                      title: randomItem.appName,
+                                                                      description: randomItem.apptype,
+                                                                      iteamurl: randomItem.appurl,
+                                                                      rededBookName: controller.selectedBook.value,
+                                                                      readedChapter: controller.selectedChapter.value,
+                                                                      selectedBookChapterCount: controller.selectedBookChapterCount.value,
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              }
                                                             }
-                                                            for (var i = 0;
-                                                                i <
-                                                                    controller
-                                                                        .selectedBookContent
-                                                                        .length;
-                                                                i++) {
-                                                              await DBHelper()
-                                                                  .updateVersesData(
-                                                                      int.parse(controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .id
-                                                                          .toString()),
-                                                                      "is_read",
-                                                                      "no")
-                                                                  .then(
-                                                                      (value) {});
-                                                              var data = VerseBookContentModel(
-                                                                  id: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .id,
-                                                                  bookNum: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .bookNum,
-                                                                  chapterNum: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .chapterNum,
-                                                                  verseNum: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .verseNum,
-                                                                  content: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .content,
-                                                                  isBookmarked:
-                                                                      controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .isBookmarked,
-                                                                  isHighlighted:
-                                                                      controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .isHighlighted,
-                                                                  isNoted: controller
-                                                                      .selectedBookContent[
-                                                                          i]
-                                                                      .isNoted,
-                                                                  isUnderlined:
-                                                                      controller
-                                                                          .selectedBookContent[
-                                                                              i]
-                                                                          .isUnderlined,
-                                                                  isRead: "no");
-                                                              controller
-                                                                      .selectedBookContent[
-                                                                  i] = data;
-                                                            }
-                                                            Future.delayed(
-                                                                const Duration(
-                                                                    milliseconds:
-                                                                        200),
+                                                          },
+                                                        );
+                                                      } else {
+                                                        controller
+                                                            .isReadLoad
+                                                            .value = true;
+                                                        if (controller
+                                                            .bookReadPer
+                                                            .value ==
+                                                            0) {
+                                                        } else {
+                                                          double
+                                                          readPer =
+                                                              (100 * 1) /
+                                                                  double.parse(controller.selectedBookChapterCount.value.toString());
+                                                          double
+                                                          finalRead =
+                                                              double.parse(controller.bookReadPer.value.toString()) -
+                                                                  readPer;
+                                                          await DBHelper()
+                                                              .updateBookData(
+                                                              int.parse(controller.selectedBookId.value.toString()),
+                                                              "read_per",
+                                                              finalRead.toStringAsFixed(1).toString())
+                                                              .then((value) {});
+                                                        }
+                                                        for (var i =
+                                                        0;
+                                                        i < controller.selectedBookContent.length;
+                                                        i++) {
+                                                          await DBHelper()
+                                                              .updateVersesData(
+                                                              int.parse(controller.selectedBookContent[i].id.toString()),
+                                                              "is_read",
+                                                              "no")
+                                                              .then((value) {});
+                                                          var data = VerseBookContentModel(
+                                                              id: controller.selectedBookContent[i].id,
+                                                              bookNum: controller.selectedBookContent[i].bookNum,
+                                                              chapterNum: controller.selectedBookContent[i].chapterNum,
+                                                              verseNum: controller.selectedBookContent[i].verseNum,
+                                                              content: controller.selectedBookContent[i].content,
+                                                              isBookmarked: controller.selectedBookContent[i].isBookmarked,
+                                                              isHighlighted: controller.selectedBookContent[i].isHighlighted,
+                                                              isNoted: controller.selectedBookContent[i].isNoted,
+                                                              isUnderlined: controller.selectedBookContent[i].isUnderlined,
+                                                              isRead: "no");
+                                                          controller.selectedBookContent[i] =
+                                                              data;
+                                                        }
+                                                        Future.delayed(
+                                                            const Duration(
+                                                                milliseconds: 200),
                                                                 () {
                                                               controller
                                                                   .isReadLoad
                                                                   .value = false;
                                                             });
-                                                          }
-                                                        });
-                                                      });
-                                                    },
-                                                    child: Container(
-                                                      width: 200,
-                                                      height: 40,
-                                                      decoration: BoxDecoration(
-                                                        color: controller
-                                                                    .selectedBookContent[
-                                                                        0]
-                                                                    .isRead ==
-                                                                "no"
-                                                            ? Colors.black38
-                                                            : CommanColor
-                                                                .whiteLightModePrimary(
-                                                                    context),
-                                                        borderRadius:
-                                                            const BorderRadius
-                                                                .all(
-                                                                Radius.circular(
-                                                                    5)),
-                                                        boxShadow: [
-                                                          const BoxShadow(
-                                                              color: Colors
-                                                                  .black26,
-                                                              blurRadius: 2)
-                                                        ],
-                                                      ),
-                                                      child: Center(
-                                                          child: controller
-                                                                      .isReadLoad
-                                                                      .value ==
-                                                                  false
-                                                              ? Text(
-                                                                  controller.selectedBookContent[0]
-                                                                              .isRead ==
-                                                                          "no"
-                                                                      ? 'Mark as Read'
-                                                                      : "Marked as Read",
-                                                                  style: TextStyle(
-                                                                      letterSpacing:
-                                                                          BibleInfo
-                                                                              .letterSpacing,
-                                                                      fontSize: screenWidth > 450
-                                                                          ? BibleInfo.fontSizeScale *
-                                                                              20
-                                                                          : BibleInfo.fontSizeScale *
-                                                                              14,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: controller.selectedBookContent[0].isRead ==
-                                                                              "no"
-                                                                          ? Colors
-                                                                              .white
-                                                                          : CommanColor.darkModePrimaryWhite(
-                                                                              context)),
-                                                                )
-                                                              : const SizedBox(
-                                                                  height: 22,
-                                                                  width: 22,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    strokeWidth:
-                                                                        2.2,
-                                                                  ))),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          : index ==
-                                                  controller.selectedBookContent
-                                                          .length -
-                                                      1
-                                              ? Obx(() => Column(
-                                                    children: [
-                                                      Container(
-                                                        margin: const EdgeInsets
-                                                            .only(top: 15),
-                                                        width: MediaQuery.of(
-                                                                context)
-                                                            .size
-                                                            .width,
-                                                        color:
-                                                            Colors.transparent,
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            GestureDetector(
-                                                              onTap: () async {
-                                                                await SharPreferences
-                                                                    .setString(
-                                                                        'OpenAd',
-                                                                        '1');
-                                                                await DBHelper()
-                                                                    .db
-                                                                    .then(
-                                                                        (value) {
-                                                                  value!
-                                                                      .rawQuery(
-                                                                          "SELECT * From book WHERE book_num = ${int.parse(controller.selectedBookNum.value)}")
-                                                                      .then(
-                                                                          (value) async {
-                                                                    controller
-                                                                        .bookReadPer
-                                                                        .value = value[0]
-                                                                            [
-                                                                            "read_per"]
-                                                                        .toString();
-                                                                    if (controller
-                                                                            .selectedBookContent[1]
-                                                                            .isRead ==
-                                                                        "no") {
-                                                                      if (controller
-                                                                              .bookReadPer
-                                                                              .value ==
-                                                                          "0") {
-                                                                        double
-                                                                            readPer =
-                                                                            (100 * 1) /
-                                                                                double.parse(controller.selectedBookChapterCount.value.toString());
-                                                                        await DBHelper()
-                                                                            .updateBookData(
-                                                                                int.parse(controller.selectedBookId.value.toString()),
-                                                                                "read_per",
-                                                                                readPer.toStringAsFixed(1).toString())
-                                                                            .then((value) {});
-                                                                      } else {
-                                                                        double
-                                                                            readPer =
-                                                                            (100 * 1) /
-                                                                                double.parse(controller.selectedBookChapterCount.value.toString());
-                                                                        double
-                                                                            finalRead =
-                                                                            double.parse(controller.bookReadPer.value.toString()) +
-                                                                                readPer;
-                                                                        await DBHelper()
-                                                                            .updateBookData(
-                                                                                int.parse(controller.selectedBookId.value.toString()),
-                                                                                "read_per",
-                                                                                finalRead.toStringAsFixed(1).toString())
-                                                                            .then((value) {});
-                                                                      }
-                                                                      controller
-                                                                          .isReadLoad
-                                                                          .value = true;
-                                                                      for (var i =
-                                                                              0;
-                                                                          i < controller.selectedBookContent.length;
-                                                                          i++) {
-                                                                        await DBHelper()
-                                                                            .updateVersesData(
-                                                                                int.parse(controller.selectedBookContent[i].id.toString()),
-                                                                                "is_read",
-                                                                                "yes")
-                                                                            .then((value) {});
-                                                                        var data = VerseBookContentModel(
-                                                                            id: controller.selectedBookContent[i].id,
-                                                                            bookNum: controller.selectedBookContent[i].bookNum,
-                                                                            chapterNum: controller.selectedBookContent[i].chapterNum,
-                                                                            verseNum: controller.selectedBookContent[i].verseNum,
-                                                                            content: controller.selectedBookContent[i].content,
-                                                                            isBookmarked: controller.selectedBookContent[i].isBookmarked,
-                                                                            isHighlighted: controller.selectedBookContent[i].isHighlighted,
-                                                                            isNoted: controller.selectedBookContent[i].isNoted,
-                                                                            isUnderlined: controller.selectedBookContent[i].isUnderlined,
-                                                                            isRead: "yes");
-                                                                        controller.selectedBookContent[i] =
-                                                                            data;
-                                                                      }
-
-                                                                      Future
-                                                                          .delayed(
-                                                                        const Duration(
-                                                                            milliseconds:
-                                                                                200),
-                                                                        () async {
-                                                                          controller
-                                                                              .isReadLoad
-                                                                              .value = false;
-
-                                                                          // Check internet connectivity first - if offline/low internet, skip ad and navigate directly
-                                                                          bool
-                                                                              shouldSkipAd =
-                                                                              false;
-                                                                          try {
-                                                                            final hasInternet =
-                                                                                await InternetConnection().hasInternetAccess;
-                                                                            if (!hasInternet) {
-                                                                              // Offline - skip ad and navigate directly
-                                                                              shouldSkipAd = true;
-                                                                            } else {
-                                                                              // Check if mobile only connection (likely 2G/slow) - skip ad
-                                                                              final connectivityResult = await Connectivity().checkConnectivity();
-                                                                              final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) && !connectivityResult.contains(ConnectivityResult.wifi) && !connectivityResult.contains(ConnectivityResult.ethernet);
-                                                                              if (isMobileOnly) {
-                                                                                // Low internet (2G/mobile only) - skip ad and navigate directly
-                                                                                shouldSkipAd = true;
-                                                                              }
-                                                                            }
-                                                                          } catch (e) {
-                                                                            // If connectivity check fails, skip ad and proceed
-                                                                            debugPrint('Connectivity check error in Mark as Read: $e');
-                                                                            shouldSkipAd =
-                                                                                true;
-                                                                          }
-
-                                                                          // If should skip ad (offline/low internet), navigate directly
-                                                                          if (shouldSkipAd) {
-                                                                            Get.to(() =>
-                                                                                MarkAsReadScreen(
-                                                                                  ReadedChapter: controller.selectedChapter.value,
-                                                                                  RededBookName: controller.selectedBook.value,
-                                                                                  SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                ));
-                                                                            return;
-                                                                          }
-
-                                                                          // Only show ad if online with good connection
-                                                                          if (_adService.interstitialAd != null &&
-                                                                              controller.adFree.value == false) {
-                                                                            // Check if 3 minutes have passed since last ad
-                                                                            final canShowAd =
-                                                                                await _canShowMarkAsReadAd();
-                                                                            if (canShowAd) {
-                                                                              print('Load Interstitial Ad');
-                                                                              await _saveMarkAsReadAdTime();
-                                                                              // Show ad FIRST, wait for dismissal, THEN navigate
-                                                                              try {
-                                                                                await _showInterstitialAdAndWait();
-                                                                              } catch (e) {
-                                                                                debugPrint('Error showing ad in Mark as Read: $e');
-                                                                                // If ad fails, proceed anyway
-                                                                              }
-                                                                              // Navigate AFTER ad is dismissed
-                                                                              Get.to(() => MarkAsReadScreen(
-                                                                                    ReadedChapter: controller.selectedChapter.value,
-                                                                                    RededBookName: controller.selectedBook.value,
-                                                                                    SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                  ));
-                                                                            } else {
-                                                                              // Ad shown recently, skip ad but still navigate
-                                                                              Get.to(() => MarkAsReadScreen(
-                                                                                    ReadedChapter: controller.selectedChapter.value,
-                                                                                    RededBookName: controller.selectedBook.value,
-                                                                                    SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                  ));
-                                                                            }
-                                                                          } else {
-                                                                            print('Not Load Interstitial Ad');
-
-                                                                            if (controller.adFree.value !=
-                                                                                false) {
-                                                                              return Get.to(() => MarkAsReadScreen(
-                                                                                    ReadedChapter: controller.selectedChapter.value,
-                                                                                    RededBookName: controller.selectedBook.value,
-                                                                                    SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                  ));
-                                                                            } else {
-                                                                              // Get.to(() =>
-                                                                              //     MarkAsReadScreen(
-                                                                              //       ReadedChapter: controller.selectedChapter.value,
-                                                                              //       RededBookName: controller.selectedBook.value,
-                                                                              //       SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                              //     ));
-                                                                              final randomItem = await StorageHelper.getRandomBookOrApp();
-
-                                                                              if (randomItem is BookModel) {
-                                                                                print("Random Book: ${randomItem.bookName}");
-                                                                                final connectivityResult = await Connectivity().checkConnectivity();
-                                                                                if (connectivityResult[0] == ConnectivityResult.none) {
-                                                                                  return Get.to(() => MarkAsReadScreen(
-                                                                                        ReadedChapter: controller.selectedChapter.value,
-                                                                                        RededBookName: controller.selectedBook.value,
-                                                                                        SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                      ));
-                                                                                  // return Constants
-                                                                                  //     .showToast(
-                                                                                  //         "Check your Internet connection");
-                                                                                }
-                                                                                Get.to(
-                                                                                  () => FullScreenAd(
-                                                                                    networkimage: randomItem.bookThumbURL,
-                                                                                    title: randomItem.bookName,
-                                                                                    description: randomItem.bookDescription,
-                                                                                    iteamurl: randomItem.bookUrl,
-                                                                                    rededBookName: controller.selectedBook.value,
-                                                                                    readedChapter: controller.selectedChapter.value,
-                                                                                    selectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                  ),
-                                                                                );
-                                                                              } else if (randomItem is AppModel) {
-                                                                                final connectivityResult = await Connectivity().checkConnectivity();
-                                                                                if (connectivityResult[0] == ConnectivityResult.none) {
-                                                                                  return Get.to(() => MarkAsReadScreen(
-                                                                                        ReadedChapter: controller.selectedChapter.value,
-                                                                                        RededBookName: controller.selectedBook.value,
-                                                                                        SelectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                      ));
-                                                                                  // return Constants
-                                                                                  //     .showToast(
-                                                                                  //         "Check your Internet connection");
-                                                                                }
-                                                                                print("Random App: ${randomItem.appName}");
-                                                                                Get.to(
-                                                                                  () => FullScreenAd(
-                                                                                    networkimage: randomItem.thumburl,
-                                                                                    title: randomItem.appName,
-                                                                                    description: randomItem.apptype,
-                                                                                    iteamurl: randomItem.appurl,
-                                                                                    rededBookName: controller.selectedBook.value,
-                                                                                    readedChapter: controller.selectedChapter.value,
-                                                                                    selectedBookChapterCount: controller.selectedBookChapterCount.value,
-                                                                                  ),
-                                                                                );
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        },
-                                                                      );
-                                                                    } else {
-                                                                      controller
-                                                                          .isReadLoad
-                                                                          .value = true;
-                                                                      if (controller
-                                                                              .bookReadPer
-                                                                              .value ==
-                                                                          0) {
-                                                                      } else {
-                                                                        double
-                                                                            readPer =
-                                                                            (100 * 1) /
-                                                                                double.parse(controller.selectedBookChapterCount.value.toString());
-                                                                        double
-                                                                            finalRead =
-                                                                            double.parse(controller.bookReadPer.value.toString()) -
-                                                                                readPer;
-                                                                        await DBHelper()
-                                                                            .updateBookData(
-                                                                                int.parse(controller.selectedBookId.value.toString()),
-                                                                                "read_per",
-                                                                                finalRead.toStringAsFixed(1).toString())
-                                                                            .then((value) {});
-                                                                      }
-                                                                      for (var i =
-                                                                              0;
-                                                                          i < controller.selectedBookContent.length;
-                                                                          i++) {
-                                                                        await DBHelper()
-                                                                            .updateVersesData(
-                                                                                int.parse(controller.selectedBookContent[i].id.toString()),
-                                                                                "is_read",
-                                                                                "no")
-                                                                            .then((value) {});
-                                                                        var data = VerseBookContentModel(
-                                                                            id: controller.selectedBookContent[i].id,
-                                                                            bookNum: controller.selectedBookContent[i].bookNum,
-                                                                            chapterNum: controller.selectedBookContent[i].chapterNum,
-                                                                            verseNum: controller.selectedBookContent[i].verseNum,
-                                                                            content: controller.selectedBookContent[i].content,
-                                                                            isBookmarked: controller.selectedBookContent[i].isBookmarked,
-                                                                            isHighlighted: controller.selectedBookContent[i].isHighlighted,
-                                                                            isNoted: controller.selectedBookContent[i].isNoted,
-                                                                            isUnderlined: controller.selectedBookContent[i].isUnderlined,
-                                                                            isRead: "no");
-                                                                        controller.selectedBookContent[i] =
-                                                                            data;
-                                                                      }
-                                                                      Future.delayed(
-                                                                          const Duration(
-                                                                              milliseconds: 200),
-                                                                          () {
-                                                                        controller
-                                                                            .isReadLoad
-                                                                            .value = false;
-                                                                      });
-                                                                    }
-                                                                  });
-                                                                });
-                                                              },
-                                                              child: Container(
-                                                                width: 200,
-                                                                height: 40,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: controller
-                                                                              .selectedBookContent[
-                                                                                  1]
-                                                                              .isRead ==
-                                                                          "no"
-                                                                      ? Colors
-                                                                          .black38
-                                                                      : CommanColor
-                                                                          .whiteLightModePrimary(
-                                                                              context),
-                                                                  borderRadius:
-                                                                      const BorderRadius
-                                                                          .all(
-                                                                          Radius.circular(
-                                                                              5)),
-                                                                  boxShadow: [
-                                                                    const BoxShadow(
-                                                                        color: Colors
-                                                                            .black26,
-                                                                        blurRadius:
-                                                                            2)
-                                                                  ],
-                                                                ),
-                                                                child: Center(
-                                                                    child: controller.isReadLoad.value ==
-                                                                            false
-                                                                        ? Text(
-                                                                            controller.selectedBookContent[1].isRead == "no"
-                                                                                ? 'Mark as Read'
-                                                                                : "Marked as Read",
-                                                                            style: TextStyle(
-                                                                                letterSpacing: BibleInfo.letterSpacing,
-                                                                                fontSize: screenWidth > 450 ? BibleInfo.fontSizeScale * 20 : BibleInfo.fontSizeScale * 14,
-                                                                                fontWeight: FontWeight.w500,
-                                                                                color: controller.selectedBookContent[1].isRead == "no" ? Colors.white : CommanColor.darkModePrimaryWhite(context)),
-                                                                          )
-                                                                        : const SizedBox(
-                                                                            height:
-                                                                                22,
-                                                                            width:
-                                                                                22,
-                                                                            child:
-                                                                                CircularProgressIndicator(
-                                                                              color: Colors.white,
-                                                                              strokeWidth: 2.2,
-                                                                            ))),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 16),
-                                                      const Divider(
-                                                          thickness: 2),
-
-                                                      ///NEW AD BANNER
-                                                      if (controller
-                                                                  .popupBannerAdHome !=
-                                                              null &&
-                                                          controller
-                                                              .isPopupBannerAdHomeLoaded
-                                                              .value &&
-                                                          controller.adFree
-                                                                  .value ==
-                                                              false)
-                                                        Builder(
-                                                          builder: (context) {
-                                                            try {
-                                                              final ad = controller
-                                                                  .popupBannerAdHome!;
-                                                              // Check if ad has valid size (indicates it's loaded)
-                                                              if (ad.size.width >
-                                                                      0 &&
-                                                                  ad.size.height >
-                                                                      0) {
-                                                                return Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          top:
-                                                                              20,
-                                                                          bottom:
-                                                                              40),
-                                                                  child:
-                                                                      SizedBox(
-                                                                    height: ad
-                                                                        .size
-                                                                        .height
-                                                                        .toDouble(),
-                                                                    width: ad
-                                                                        .size
-                                                                        .width
-                                                                        .toDouble(),
-                                                                    child: AdWidget(
-                                                                        ad: ad),
-                                                                  ),
-                                                                );
-                                                              }
-                                                            } catch (e) {
-                                                              debugPrint(
-                                                                  'Error displaying ad: $e');
-                                                            }
-                                                            return const SizedBox
-                                                                .shrink();
-                                                          },
-                                                        ),
-                                                    ],
-                                                  ))
-                                              : const SizedBox(),
-                                      p.Provider.of<ThemeProvider>(context)
-                                                  .currentCustomTheme ==
-                                              AppCustomTheme.lightbrown
-                                          ? controller.selectedBookContent
-                                                      .length !=
-                                                  index + 1
-                                              ? Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 12),
-                                                  child: Row(
-                                                    children: List.generate(
-                                                        150 ~/ 3,
-                                                        (index) => Expanded(
-                                                              child: Container(
-                                                                color: index %
-                                                                            2 ==
-                                                                        0
-                                                                    ? Colors
-                                                                        .transparent
-                                                                    : Colors
-                                                                        .grey,
-                                                                height: 2,
-                                                              ),
-                                                            )),
-                                                  ),
-                                                )
-                                              : SizedBox()
-                                          : SizedBox(),
+                                                      }
+                                                    });
+                                              });
+                                        },
+                                        child: Container(
+                                          width: 200,
+                                          height: 40,
+                                          decoration:
+                                          BoxDecoration(
+                                            color: controller
+                                                .selectedBookContent[
+                                            1]
+                                                .isRead ==
+                                                "no"
+                                                ? Colors
+                                                .black38
+                                                : CommanColor
+                                                .whiteLightModePrimary(
+                                                context),
+                                            borderRadius:
+                                            const BorderRadius
+                                                .all(
+                                                Radius.circular(
+                                                    5)),
+                                            boxShadow: [
+                                              const BoxShadow(
+                                                  color: Colors
+                                                      .black26,
+                                                  blurRadius:
+                                                  2)
+                                            ],
+                                          ),
+                                          child: Center(
+                                              child: controller.isReadLoad.value ==
+                                                  false
+                                                  ? Text(
+                                                controller.selectedBookContent[1].isRead == "no"
+                                                    ? 'Mark as Read'
+                                                    : "Marked as Read",
+                                                style: TextStyle(
+                                                    letterSpacing: BibleInfo.letterSpacing,
+                                                    fontSize: screenWidth > 450 ? BibleInfo.fontSizeScale * 20 : BibleInfo.fontSizeScale * 14,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: controller.selectedBookContent[1].isRead == "no" ? Colors.white : CommanColor.darkModePrimaryWhite(context)),
+                                              )
+                                                  : const SizedBox(
+                                                  height:
+                                                  22,
+                                                  width:
+                                                  22,
+                                                  child:
+                                                  CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                    strokeWidth: 2.2,
+                                                  ))),
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                                const SizedBox(
+                                    height: 16),
+                                const Divider(
+                                    thickness: 2),
+
+                                ///NEW AD BANNER
+                                if (controller
+                                    .popupBannerAdHome !=
+                                    null &&
+                                    controller
+                                        .isPopupBannerAdHomeLoaded
+                                        .value &&
+                                    controller.adFree
+                                        .value ==
+                                        false)
+                                  Builder(
+                                    builder: (context) {
+                                      try {
+                                        final ad = controller
+                                            .popupBannerAdHome!;
+                                        // Check if ad has valid size (indicates it's loaded)
+                                        if (ad.size.width >
+                                            0 &&
+                                            ad.size.height >
+                                                0) {
+                                          return Padding(
+                                            padding:
+                                            const EdgeInsets
+                                                .only(
+                                                top:
+                                                20,
+                                                bottom:
+                                                40),
+                                            child:
+                                            SizedBox(
+                                              height: ad
+                                                  .size
+                                                  .height
+                                                  .toDouble(),
+                                              width: ad
+                                                  .size
+                                                  .width
+                                                  .toDouble(),
+                                              child: AdWidget(
+                                                  ad: ad),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        debugPrint(
+                                            'Error displaying ad: $e');
+                                      }
+                                      return const SizedBox
+                                          .shrink();
+                                    },
+                                  ),
+                              ],
+                            ))
+                                : const SizedBox(),
+                            p.Provider.of<ThemeProvider>(context)
+                                .currentCustomTheme ==
+                                AppCustomTheme.lightbrown
+                                ? controller.selectedBookContent
+                                .length !=
+                                index + 1
+                                ? Padding(
+                              padding:
+                              const EdgeInsets.only(
+                                  top: 12),
+                              child: Row(
+                                children: List.generate(
+                                    150 ~/ 3,
+                                        (index) => Expanded(
+                                      child: Container(
+                                        color: index %
+                                            2 ==
+                                            0
+                                            ? Colors
+                                            .transparent
+                                            : Colors
+                                            .grey,
+                                        height: 2,
+                                      ),
+                                    )),
+                              ),
+                            )
+                                : SizedBox()
+                                : SizedBox(),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
             floatingActionButton: controller.isFetchContent.value || !_showUI
                 ? const SizedBox()
-                : floatingButton(
+                : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                    onTap: () {
+                      Get.to(ChatScreen());
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Container(
+                          height: screenWidth > 450 ? 50 : 35,
+                          width: screenWidth > 450 ? 50 : 35,
+                          decoration: BoxDecoration(
+                            color: CommanColor.whiteLightModePrimary(
+                                context),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(CupertinoIcons.chat_bubble_2,
+                              size: screenWidth > 450 ? 44 : 24,
+                              color: CommanColor.darkModePrimaryWhite(
+                                  context))),
+                    )),
+                floatingButton(
                   chapterNum: controller.selectedChapter.value,
                   bookName: controller.selectedBook.value,
                   contentList: controller.selectedVersesContent,
@@ -4193,999 +4261,1001 @@ class _HomeScreenState extends State<HomeScreen>
                   textToSpeechLoad: controller.loadTextToSpeech.value,
                   audioPlayer: audioPlayer,
                 ),
+              ],
+            ),
             drawer: controller.isFetchContent.value
                 ? const SizedBox()
                 : Drawer(
-                    backgroundColor: p.Provider.of<ThemeProvider>(context)
-                                .currentCustomTheme ==
-                            AppCustomTheme.vintage
-                        ? CommanColor.white
-                        : p.Provider.of<ThemeProvider>(context).backgroundColor,
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    child: ListView(
-                      // Important: Remove any padding from the ListView.
-                      padding: EdgeInsets.zero,
-                      children: [
-                        SizedBox(
-                          height: 120,
-                          child: DrawerHeader(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: CommanColor.lightDarkPrimary(context),
-                            ),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    bibleName,
-                                    style: CommanStyle.white16600,
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
+              backgroundColor: p.Provider.of<ThemeProvider>(context)
+                  .currentCustomTheme ==
+                  AppCustomTheme.vintage
+                  ? CommanColor.white
+                  : p.Provider.of<ThemeProvider>(context).backgroundColor,
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: ListView(
+                // Important: Remove any padding from the ListView.
+                padding: EdgeInsets.zero,
+                children: [
+                  SizedBox(
+                    height: 120,
+                    child: DrawerHeader(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: CommanColor.lightDarkPrimary(context),
+                      ),
+                      child: Padding(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              bibleName,
+                              style: CommanStyle.white16600,
+                            )
+                          ],
                         ),
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            Get.back();
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(
-                                () => isLoggedIn
-                                    ? const ProfileScreen()
-                                    : LoginScreen(hasSkip: false),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/My Account.png",
-                            height: 24,
-                            width: 24,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(
+                              () => isLoggedIn
+                              ? const ProfileScreen()
+                              : LoginScreen(hasSkip: false),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/My Account.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'My Account',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    onTap: () {
+                      Get.back();
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(() => const DailyVerse(),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    dense: true,
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/Daily verse.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Daily Verses',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () async {
+                      Get.back();
+                      await SharPreferences.setString('OpenAd', '1');
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(
+                              () => SearchScreen(
+                            controller: controller,
                           ),
-                          title: Text(
-                            'My Account',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          onTap: () {
-                            Get.back();
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(() => const DailyVerse(),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          dense: true,
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/Daily verse.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Daily Verses',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: () async {
-                            Get.back();
-                            await SharPreferences.setString('OpenAd', '1');
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(
-                                () => SearchScreen(
-                                      controller: controller,
-                                    ),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/search.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Search',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            Get.back();
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(() => const LibraryScreen(),
-                                    transition: Transition.cupertinoDialog,
-                                    duration:
-                                        const Duration(milliseconds: 300))!
-                                .then((value) {
-                              controller.getSelectedChapterAndBook();
-                            });
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/My Library.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'My Library',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            Get.back();
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(() => const WallpaperScreen(),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/Wallpaper.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Wallpapers',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            Get.back();
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(() => const QuoteScreen(),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/Quotes.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Quotes',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            Get.back();
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(() => const CalendarScreen(),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading:
-                              // const Icon(
-                              //   Icons.calendar_month,
-                              //   color: Color(0XFF805531),
-                              //   size: 26,
-                              // ),
-                              Image.asset(
-                            "assets/home icons/Artboard – 35.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Calendar',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        // ListTile(
-                        //   dense: true,
-                        //   onTap: () {
-                        //     Get.back();
-                        //     if (controller.adFree.value == false) {
-                        //       controller.bannerAd?.dispose();
-                        //       controller.bannerAd?.load();
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/search.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Search',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(() => const LibraryScreen(),
+                          transition: Transition.cupertinoDialog,
+                          duration:
+                          const Duration(milliseconds: 300))!
+                          .then((value) {
+                        controller.getSelectedChapterAndBook();
+                      });
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/My Library.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'My Library',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(() => const WallpaperScreen(),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/Wallpaper.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Wallpapers',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(() => const QuoteScreen(),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/Quotes.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Quotes',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(() => const CalendarScreen(),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading:
+                    // const Icon(
+                    //   Icons.calendar_month,
+                    //   color: Color(0XFF805531),
+                    //   size: 26,
+                    // ),
+                    Image.asset(
+                      "assets/home icons/Artboard – 35.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Calendar',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  // ListTile(
+                  //   dense: true,
+                  //   onTap: () {
+                  //     Get.back();
+                  //     if (controller.adFree.value == false) {
+                  //       controller.bannerAd?.dispose();
+                  //       controller.bannerAd?.load();
+                  //     }
+                  //     if (isLoggedIn) {
+                  //       showImportExportInfo(context, () async {
+                  //         final permission =
+                  //             await ExportDb.requestStoragePermission();
+                  //         if (permission) {
+                  //           updateLoading(true,
+                  //               mess: 'Exporting the data. Please wait');
+                  //           await ExportDb.getAllDataToExport(context);
+                  //           updateLoading(false);
+                  //         } else {
+                  //           Constants.showToast(
+                  //               "Permission is required to export the data.");
+                  //         }
+                  //       });
+                  //     } else {
+                  //       backupNotification(
+                  //           context: context,
+                  //           message:
+                  //               " Account is required to access this feature ");
+                  //     }
+                  //   },
+                  //   visualDensity:
+                  //       const VisualDensity(horizontal: 0, vertical: 0),
+                  //   leading: const Icon(
+                  //     Icons.file_upload_outlined,
+                  //     color: Color(0XFF805531),
+                  //   ),
+                  //   title: Text(
+                  //     'Export',
+                  //     style: CommanStyle.bothPrimary16600(context),
+                  //   ),
+                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      if (isLoggedIn) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const MainBackupDialog(),
+                        );
+                      } else {
+                        backupNotification(
+                            context: context,
+                            message:
+                            " Account is required to access this feature ");
                         //     }
-                        //     if (isLoggedIn) {
-                        //       showImportExportInfo(context, () async {
-                        //         final permission =
-                        //             await ExportDb.requestStoragePermission();
-                        //         if (permission) {
-                        //           updateLoading(true,
-                        //               mess: 'Exporting the data. Please wait');
-                        //           await ExportDb.getAllDataToExport(context);
-                        //           updateLoading(false);
-                        //         } else {
-                        //           Constants.showToast(
-                        //               "Permission is required to export the data.");
-                        //         }
-                        //       });
-                        //     } else {
-                        //       backupNotification(
-                        //           context: context,
-                        //           message:
-                        //               " Account is required to access this feature ");
-                        //     }
-                        //   },
-                        //   visualDensity:
-                        //       const VisualDensity(horizontal: 0, vertical: 0),
-                        //   leading: const Icon(
-                        //     Icons.file_upload_outlined,
-                        //     color: Color(0XFF805531),
-                        //   ),
-                        //   title: Text(
-                        //     'Export',
-                        //     style: CommanStyle.bothPrimary16600(context),
-                        //   ),
-                        // ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            if (isLoggedIn) {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) => const MainBackupDialog(),
-                              );
-                            } else {
-                              backupNotification(
-                                  context: context,
-                                  message:
-                                      " Account is required to access this feature ");
-                              //     }
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: screenWidth > 450 ? 15 : 17),
-                                  child:
-                                      // Icon(
-                                      //   size: screenWidth > 450 ? 27 : 24,
-                                      //   Icons.cloud_download,
-                                      //   color: Color(0XFF805531),
-                                      // ),
-                                      Image.asset(
-                                    "assets/home icons/Frame 3631.png",
-                                    height: 24,
-                                    width: 24,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      right: screenWidth > 450 ? 1 : 20.0),
-                                  child: Text(
-                                    "Back up",
-                                    style:
-                                        CommanStyle.bothPrimary16600(context),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (BibleInfo.enableEShop == true)
-                          //! E-Products
-                          ListTile(
-                            dense: true,
-                            onTap: () async {
-                              Get.back();
-                              await SharPreferences.setString('OpenAd', '1');
-                              if (controller.adFree.value == false) {
-                                controller.bannerAd?.dispose();
-                                controller.bannerAd?.load();
-                              }
-                              Get.to(() => const EProductsScreen(),
-                                  transition: Transition.cupertinoDialog,
-                                  duration: const Duration(milliseconds: 300));
-                            },
-                            visualDensity:
-                                const VisualDensity(horizontal: 0, vertical: 0),
-                            leading: Image.asset(
-                              "assets/eproduct-d.png",
-                              color: CommanColor.lightModePrimary,
-                              width: 20,
-                              height: 20,
-                            ),
-                            title: Text(
-                              'e-Products',
-                              style: CommanStyle.bothPrimary16600(context),
-                            ),
-                          ),
-                        //Books
-
-                        if (controller.bookAdsStatus.value == 1)
-                          ListTile(
-                            dense: true,
-                            onTap: () async {
-                              Get.back();
-                              await SharPreferences.setString('OpenAd', '1');
-                              if (controller.adFree.value == false) {
-                                controller.bannerAd?.dispose();
-                                controller.bannerAd?.load();
-                              }
-                              Get.to(
-                                  () => BooksScreen(
-                                      bookAdId: controller.bookAdsAppId.value),
-                                  transition: Transition.cupertinoDialog,
-                                  duration: const Duration(milliseconds: 300));
-                            },
-                            visualDensity:
-                                const VisualDensity(horizontal: 0, vertical: 0),
-                            leading:
-                                // const Icon(
-                                //   Icons.menu_book,
-                                //   color: Color(0XFF805531),
-                                //   size: 26,
-                                // ),
-                                Image.asset(
-                              "assets/home icons/book.png",
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth > 450 ? 15 : 17),
+                            child:
+                            // Icon(
+                            //   size: screenWidth > 450 ? 27 : 24,
+                            //   Icons.cloud_download,
+                            //   color: Color(0XFF805531),
+                            // ),
+                            Image.asset(
+                              "assets/home icons/Frame 3631.png",
                               height: 24,
                               width: 24,
                             ),
-                            title: Text(
-                              'Books',
-                              style: CommanStyle.bothPrimary16600(context),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                                right: screenWidth > 450 ? 1 : 20.0),
+                            child: Text(
+                              "Back up",
+                              style:
+                              CommanStyle.bothPrimary16600(context),
                             ),
                           ),
-                        ListTile(
-                          dense: true,
-                          onTap: () async {
-                            Get.to(ChatScreen());
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: const Icon(
-                            CupertinoIcons.chat_bubble_2,
-                            color: Color(0XFF805531),
-                            size: 26,
-                          ),
-                          title: Text(
-                            'Chat',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        // Exit Offer / Limited Time Offer
-                        // ListTile(
-                        //   dense: true,
-                        //   onTap: () async {
-                        //     Get.back();
-                        //     if (controller.adFree.value == false) {
-                        //       controller.bannerAd?.dispose();
-                        //       controller.bannerAd?.load();
-                        //     }
-                        //     await SubscriptionScreen.showExitOfferFromHomeScreen(context, controller);
-                        //   },
-                        //   visualDensity:
-                        //   const VisualDensity(horizontal: 0, vertical: 0),
-                        //   leading: Container(
-                        //     padding: const EdgeInsets.all(4),
-                        //     decoration: BoxDecoration(
-                        //       color: Colors.red.withOpacity(0.1),
-                        //       borderRadius: BorderRadius.circular(4),
-                        //     ),
-                        //     child: const Icon(
-                        //       Icons.local_offer,
-                        //       color: Colors.red,
-                        //       size: 18,
-                        //     ),
-                        //   ),
-                        //   title: Text(
-                        //     'Limited Time Offer',
-                        //     style: CommanStyle.bothPrimary16600(context),
-                        //   ),
-                        // ),
-                        // More apps
-                        ListTile(
-                          dense: true,
-                          onTap: () async {
-                            Get.back();
-                            await SharPreferences.setString('OpenAd', '1');
-                            // Check internet connection before showing More Apps
-                            final connectivityResult =
-                                await _connectivity.checkConnectivity();
-                            if (!connectivityResult
-                                    .contains(ConnectivityResult.wifi) &&
-                                !connectivityResult
-                                    .contains(ConnectivityResult.mobile) &&
-                                !connectivityResult
-                                    .contains(ConnectivityResult.ethernet)) {
-                              Constants.showToast(
-                                  'Check Your Internet Connection');
-                              return;
-                            }
-                            if (controller.adFree.value == false) {
-                              controller.bannerAd?.dispose();
-                              controller.bannerAd?.load();
-                            }
-                            Get.to(() => const MoreAppsScreen(),
-                                transition: Transition.cupertinoDialog,
-                                duration: const Duration(milliseconds: 300));
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/More apps.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'More Apps',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        // Survey
-                        // ListTile(
-                        //   dense: true,
-                        //   onTap: () async {
-                        //     Get.back();
-                        //     if (controller.adFree.value == false) {
-                        //       controller.bannerAd?.dispose();
-                        //       controller.bannerAd?.load();
-                        //     }
-                        //     Get.to(() => const FeedbackWebView(),
-                        //         transition: Transition.cupertinoDialog,
-                        //         duration: const Duration(milliseconds: 300));
-                        //   },
-                        //   visualDensity:
-                        //       const VisualDensity(horizontal: 0, vertical: 0),
-                        //   leading: const Icon(
-                        //     Icons.edit_calendar,
-                        //     color: Color(0XFF805531),
-                        //   ),
-                        //   title: Text(
-                        //     'Survey',
-                        //     style: CommanStyle.bothPrimary16600(context),
-                        //   ),
-                        // ),
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            Get.back();
-                            SharPreferences.getBoolean(
-                                    SharPreferences.isNotificationOn)
-                                .then((value) {
-                              bool natificationValue;
-                              value != null
-                                  ? natificationValue = value
-                                  : natificationValue = true;
-                              Get.offAll(() => SettingScreen(
-                                        notificationValue: natificationValue,
-                                      ))!
-                                  .then((value) async {
-                                SharPreferences.getString(
-                                        SharPreferences.selectedFontSize)
-                                    .then((value) {
-                                  value == null
-                                      ? controller.fontSize.value = 19.0
-                                      : controller.fontSize.value =
-                                          double.parse(value.toString());
-                                });
-                                SharPreferences.getString(
-                                        SharPreferences.selectedFontFamily)
-                                    .then((value) {
-                                  value == null
-                                      ? controller.selectedFontFamily.value =
-                                          "Arial"
-                                      : controller.selectedFontFamily.value =
-                                          value;
-                                });
-                              });
-                            });
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/setting.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            "Settings",
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: () async {
-                            final appPackageName =
-                                (await PackageInfo.fromPlatform()).packageName;
-                            String message =
-                                ''; // Declare the message variable outside the if-else block
-                            String appid;
-                            appid = BibleInfo.apple_AppId;
-                            if (Platform.isAndroid) {
-                              message =
-                                  "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://play.google.com/store/apps/details?id=$appPackageName";
-                            } else if (Platform.isIOS) {
-                              message =
-                                  "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://itunes.apple.com/app/id$appid"; // Example iTunes URL
-                            }
-
-                            if (message.isNotEmpty) {
-                              Share.share(message,
-                                  sharePositionOrigin: Rect.fromPoints(
-                                      const Offset(2, 2), const Offset(3, 3)));
-                            } else {
-                              print('Message is empty or undefined');
-                            }
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            "assets/home icons/Share.png",
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Share',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        ListTile(
-                          dense: true,
-                          onTap: (() async {
-                            Get.back();
-                            // await SharPreferences.setString('OpenAd', '1');
-                            // // debugPrint(
-                            // //     "notify ${controller.connectionStatus.first}");
-                            // return await requestReview(
-                            //     controller.connectionStatus);
-                            await SharPreferences.setString('OpenAd', '1');
-                            final DeviceInfoPlugin deviceInfoPlugin =
-                                DeviceInfoPlugin();
-                            PackageInfo packageInfo =
-                                await PackageInfo.fromPlatform();
-                            final locale = ui.window.locale;
-                            String deviceType = 'ios';
-                            String groupId = '1';
-                            String packageName = '';
-                            String appName = BibleInfo.bible_shortName;
-                            String deviceId = '';
-                            String deviceModel = '';
-                            String deviceName = '';
-                            String appVersion = packageInfo.version;
-                            String osVersion = '';
-                            String appType = '';
-                            String language = locale.languageCode;
-                            String countryCode = locale.countryCode.toString();
-                            String themeColor = 'd43f8d';
-                            String themeMode = '0';
-                            String width = '100px';
-                            String height = '100px';
-                            String isDevelopOrProd = '0';
-
-                            if (Platform.isAndroid) {
-                              final androidInfo =
-                                  await deviceInfoPlugin.androidInfo;
-                              deviceType = 'Android';
-                              deviceId = androidInfo.id ?? '';
-                              deviceName = androidInfo.name;
-                              deviceModel = androidInfo.model ?? '';
-                              osVersion =
-                                  'Android ${androidInfo.version.release}';
-                              packageName = BibleInfo.android_Package_Name;
-                            } else if (Platform.isIOS) {
-                              final iosInfo = await deviceInfoPlugin.iosInfo;
-                              deviceType = 'iOS';
-                              osVersion = 'iOS ${iosInfo.systemVersion}';
-                              deviceName = iosInfo.name;
-                              packageName = BibleInfo.ios_Bundle_Id;
-                              deviceId = iosInfo.identifierForVendor ?? '';
-                              deviceModel = iosInfo.utsname.machine ?? '';
-                            }
-
-                            debugPrint(
-                                "urldata - $deviceType - $packageName - $appName - $deviceModel - $deviceId");
-
-                            final url =
-                                "https://bibleoffice.com/m_feedback/API/feedback_form/index.php?device_type=$deviceType&group_id=1&package_name=$packageName&app_name=$appName&device_id=$deviceId&device_model=$deviceModel&device_name=$deviceName&app_version=$appVersion&os_version=$osVersion&app_type=$deviceType&language=$language&country_code=$countryCode";
-
-                            if (await canLaunchUrl(Uri.parse(url))) {
-                              await launchUrl(Uri.parse(url));
-                            } else {
-                              throw 'Could not launch $url';
-                            }
-                          }),
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: Image.asset(
-                            //Images.rateUs(context),
-                            'assets/home icons/customer-service 2.png',
-                            height: 24,
-                            width: 24,
-                          ),
-                          title: Text(
-                            'Contact Us',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
-                        // ListTile(
-                        //   dense: true,
-                        //   onTap: () {
-                        //     Get.back();
-                        //     Get.to(() => const AboutUs(),
-                        //         transition: Transition.cupertinoDialog,
-                        //         duration: const Duration(milliseconds: 300));
-                        //   },
-                        //   visualDensity:
-                        //       const VisualDensity(horizontal: 0, vertical: 0),
-                        //   leading: Image.asset(
-                        //     Images.aboutUs(context),
-                        //     height: 24,
-                        //     width: 24,
-                        //   ),
-                        //   title: Text(
-                        //     'About Us',
-                        //     style: CommanStyle.bothPrimary16600(context),
-                        //   ),
-                        // ),
-                        const SizedBox(
-                          height: 2,
-                        ),
-                        controller.isAdsCompletlyDisabled.value
-                            ? const SizedBox.shrink()
-                            : controller.adFree.value
-                                ? DateTime.tryParse(
-                                            '${controller.RewardAdExpireDate}') !=
-                                        null
-                                    ? Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 3),
-                                        color: CommanColor.lightDarkPrimary(
-                                            context),
-                                        child: ListTile(
-                                          dense: true,
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                            showModalBottomSheet<void>(
-                                              context: context,
-                                              backgroundColor: Colors.white,
-                                              shape:
-                                                  const RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                  top: Radius.circular(25),
-                                                ),
-                                              ),
-                                              clipBehavior:
-                                                  Clip.antiAliasWithSaveLayer,
-                                              builder: (BuildContext context) {
-                                                final startTime = DateTime.parse(
-                                                    '${controller.RewardAdExpireDate}');
-
-                                                DateTime ExpiryDate = startTime;
-
-                                                final currentTime =
-                                                    DateTime.now();
-                                                final diffDy =
-                                                    ExpiryDate.difference(
-                                                            currentTime)
-                                                        .inDays;
-
-                                                return Stack(
-                                                  children: [
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                          border: Border.all(
-                                                              color:
-                                                                  Colors.white),
-                                                          borderRadius:
-                                                              const BorderRadius
-                                                                  .only(
-                                                                  topLeft: Radius
-                                                                      .circular(
-                                                                          20),
-                                                                  topRight: Radius
-                                                                      .circular(
-                                                                          20))),
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .height *
-                                                              0.30,
-                                                      // color: Colors.white,
-                                                      child:
-                                                          SingleChildScrollView(
-                                                        physics:
-                                                            const ScrollPhysics(),
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: <Widget>[
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                Image.asset(
-                                                                    "assets/feedbacklogo.png",
-                                                                    height: 120,
-                                                                    width: 120,
-                                                                    color: CommanColor
-                                                                        .lightDarkPrimary(
-                                                                            context)),
-                                                              ],
-                                                            ),
-                                                            // SizedBox(height: 5,),
-                                                            Text(
-                                                              'Subscription Info',
-                                                              style: TextStyle(
-                                                                  letterSpacing:
-                                                                      BibleInfo
-                                                                          .letterSpacing,
-                                                                  fontSize:
-                                                                      BibleInfo
-                                                                              .fontSizeScale *
-                                                                          16,
-                                                                  color: CommanColor
-                                                                      .lightDarkPrimary(
-                                                                          context),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500),
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 15,
-                                                            ),
-                                                            Text(
-                                                                diffDy > 365
-                                                                    ? 'Your subscription will never expire'
-                                                                    : '$diffDy day(s) left for the renewal of the subscription.',
-                                                                style: TextStyle(
-                                                                    letterSpacing:
-                                                                        BibleInfo
-                                                                            .letterSpacing,
-                                                                    fontSize: screenWidth <
-                                                                            380
-                                                                        ? BibleInfo.fontSizeScale *
-                                                                            13
-                                                                        : BibleInfo.fontSizeScale *
-                                                                            15,
-                                                                    color: CommanColor
-                                                                        .lightDarkPrimary(
-                                                                            context),
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400)),
-                                                            const SizedBox(
-                                                                height: 5),
-                                                            Text(
-                                                                diffDy > 365
-                                                                    ? 'Your subscription period is lifetime'
-                                                                    : 'Your subscription expires on ${DateFormat('dd-MM-yyyy').format(ExpiryDate)}',
-                                                                style:
-                                                                    TextStyle(
-                                                                  letterSpacing:
-                                                                      BibleInfo
-                                                                          .letterSpacing,
-                                                                  fontSize: screenWidth <
-                                                                          380
-                                                                      ? BibleInfo
-                                                                              .fontSizeScale *
-                                                                          13
-                                                                      : BibleInfo
-                                                                              .fontSizeScale *
-                                                                          15,
-                                                                  color: CommanColor
-                                                                      .lightDarkPrimary(
-                                                                          context),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                )),
-                                                            const SizedBox(
-                                                                height: 5),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Positioned(
-                                                      top: 10,
-                                                      right: 15,
-                                                      child: InkWell(
-                                                        child: Icon(
-                                                          Icons.close,
-                                                          color: CommanColor
-                                                              .lightDarkPrimary(
-                                                                  context),
-                                                          size: 25,
-                                                        ),
-                                                        onTap: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                      ),
-                                                    )
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                          visualDensity: const VisualDensity(
-                                              horizontal: 0, vertical: 0),
-                                          leading: const Icon(
-                                            Icons.info_outline_rounded,
-                                            size: 28,
-                                            color: Colors.white,
-                                          ),
-                                          title: const Text("Subscription Info",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  letterSpacing:
-                                                      BibleInfo.letterSpacing,
-                                                  fontSize:
-                                                      BibleInfo.fontSizeScale *
-                                                          16,
-                                                  fontWeight: FontWeight.w600)),
-                                        ),
-                                      )
-                                    : Visibility(
-                                        visible:
-                                            controller.isSubscriptionEnabled ??
-                                                false,
-                                        child: Container(
-                                          color: CommanColor.lightDarkPrimary(
-                                              context),
-                                          child: ListTile(
-                                            dense: true,
-                                            onTap: () async {
-                                              adsIcon = false;
-                                              Get.back();
-                                              await SharPreferences.setString(
-                                                  'OpenAd', '1');
-                                              // Use constants as fallback when SharedPreferences are empty (first time loading)
-                                              final sixMonthPlan =
-                                                  await SharPreferences
-                                                          .getString(
-                                                              'sixMonthPlan') ??
-                                                      BibleInfo.sixMonthPlanid;
-                                              final oneYearPlan =
-                                                  await SharPreferences
-                                                          .getString(
-                                                              'oneYearPlan') ??
-                                                      BibleInfo.oneYearPlanid;
-                                              final lifeTimePlan =
-                                                  await SharPreferences
-                                                          .getString(
-                                                              'lifeTimePlan') ??
-                                                      BibleInfo.lifeTimePlanid;
-                                              Get.to(
-                                                () => SubscriptionScreen(
-                                                  sixMonthPlan: sixMonthPlan,
-                                                  oneYearPlan: oneYearPlan,
-                                                  lifeTimePlan: lifeTimePlan,
-                                                  checkad: 'theme',
-                                                ),
-                                                transition:
-                                                    Transition.cupertinoDialog,
-                                                duration: const Duration(
-                                                    milliseconds: 300),
-                                              );
-                                            },
-                                            visualDensity: const VisualDensity(
-                                                horizontal: 0, vertical: 0),
-                                            leading: Image.asset(
-                                              Images.adFree(context),
-                                              height: 24,
-                                              width: 24,
-                                            ),
-                                            title: const Text("Remove Ads",
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    letterSpacing:
-                                                        BibleInfo.letterSpacing,
-                                                    fontSize: BibleInfo
-                                                            .fontSizeScale *
-                                                        16,
-                                                    fontWeight:
-                                                        FontWeight.w600)),
-                                          ),
-                                        ),
-                                      )
-                                : Visibility(
-                                    visible: controller.isSubscriptionEnabled ??
-                                        false,
-                                    child: Container(
-                                      color:
-                                          CommanColor.lightDarkPrimary(context),
-                                      child: ListTile(
-                                        dense: true,
-                                        onTap: () async {
-                                          adsIcon = false;
-                                          Get.back();
-                                          await SharPreferences.setString(
-                                              'OpenAd', '1');
-                                          // Use constants as fallback when SharedPreferences are empty (first time loading)
-                                          final sixMonthPlan =
-                                              await SharPreferences.getString(
-                                                      'sixMonthPlan') ??
-                                                  BibleInfo.sixMonthPlanid;
-                                          final oneYearPlan =
-                                              await SharPreferences.getString(
-                                                      'oneYearPlan') ??
-                                                  BibleInfo.oneYearPlanid;
-                                          final lifeTimePlan =
-                                              await SharPreferences.getString(
-                                                      'lifeTimePlan') ??
-                                                  BibleInfo.lifeTimePlanid;
-                                          Get.to(
-                                            () => SubscriptionScreen(
-                                              sixMonthPlan: sixMonthPlan,
-                                              oneYearPlan: oneYearPlan,
-                                              lifeTimePlan: lifeTimePlan,
-                                              checkad: 'theme',
-                                            ),
-                                            transition:
-                                                Transition.cupertinoDialog,
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                          );
-                                        },
-                                        visualDensity: const VisualDensity(
-                                            horizontal: 0, vertical: 0),
-                                        leading: Image.asset(
-                                          Images.adFree(context),
-                                          height: 24,
-                                          width: 24,
-                                        ),
-                                        title: const Text("Remove Ads",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                letterSpacing:
-                                                    BibleInfo.letterSpacing,
-                                                fontSize:
-                                                    BibleInfo.fontSizeScale *
-                                                        16,
-                                                fontWeight: FontWeight.w600)),
-                                      ),
-                                    ),
-                                  ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+                  if (BibleInfo.enableEShop == true)
+                  //! E-Products
+                    ListTile(
+                      dense: true,
+                      onTap: () async {
+                        Get.back();
+                        await SharPreferences.setString('OpenAd', '1');
+                        if (controller.adFree.value == false) {
+                          controller.bannerAd?.dispose();
+                          controller.bannerAd?.load();
+                        }
+                        Get.to(() => const EProductsScreen(),
+                            transition: Transition.cupertinoDialog,
+                            duration: const Duration(milliseconds: 300));
+                      },
+                      visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: 0),
+                      leading: Image.asset(
+                        "assets/eproduct-d.png",
+                        color: CommanColor.lightModePrimary,
+                        width: 20,
+                        height: 20,
+                      ),
+                      title: Text(
+                        'e-Products',
+                        style: CommanStyle.bothPrimary16600(context),
+                      ),
+                    ),
+                  //Books
+
+                  if (controller.bookAdsStatus.value == 1)
+                    ListTile(
+                      dense: true,
+                      onTap: () async {
+                        Get.back();
+                        await SharPreferences.setString('OpenAd', '1');
+                        if (controller.adFree.value == false) {
+                          controller.bannerAd?.dispose();
+                          controller.bannerAd?.load();
+                        }
+                        Get.to(
+                                () => BooksScreen(
+                                bookAdId: controller.bookAdsAppId.value),
+                            transition: Transition.cupertinoDialog,
+                            duration: const Duration(milliseconds: 300));
+                      },
+                      visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: 0),
+                      leading:
+                      // const Icon(
+                      //   Icons.menu_book,
+                      //   color: Color(0XFF805531),
+                      //   size: 26,
+                      // ),
+                      Image.asset(
+                        "assets/home icons/book.png",
+                        height: 24,
+                        width: 24,
+                      ),
+                      title: Text(
+                        'Books',
+                        style: CommanStyle.bothPrimary16600(context),
+                      ),
+                    ),
+                  ListTile(
+                    dense: true,
+                    onTap: () async {
+                      Get.to(ChatScreen());
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: const Icon(
+                      CupertinoIcons.chat_bubble_2,
+                      color: Color(0XFF805531),
+                      size: 26,
+                    ),
+                    title: Text(
+                      'Chat',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  // Exit Offer / Limited Time Offer
+                  // ListTile(
+                  //   dense: true,
+                  //   onTap: () async {
+                  //     Get.back();
+                  //     if (controller.adFree.value == false) {
+                  //       controller.bannerAd?.dispose();
+                  //       controller.bannerAd?.load();
+                  //     }
+                  //     await SubscriptionScreen.showExitOfferFromHomeScreen(context, controller);
+                  //   },
+                  //   visualDensity:
+                  //   const VisualDensity(horizontal: 0, vertical: 0),
+                  //   leading: Container(
+                  //     padding: const EdgeInsets.all(4),
+                  //     decoration: BoxDecoration(
+                  //       color: Colors.red.withOpacity(0.1),
+                  //       borderRadius: BorderRadius.circular(4),
+                  //     ),
+                  //     child: const Icon(
+                  //       Icons.local_offer,
+                  //       color: Colors.red,
+                  //       size: 18,
+                  //     ),
+                  //   ),
+                  //   title: Text(
+                  //     'Limited Time Offer',
+                  //     style: CommanStyle.bothPrimary16600(context),
+                  //   ),
+                  // ),
+                  // More apps
+                  ListTile(
+                    dense: true,
+                    onTap: () async {
+                      Get.back();
+                      await SharPreferences.setString('OpenAd', '1');
+                      // Check internet connection before showing More Apps
+                      final connectivityResult =
+                      await _connectivity.checkConnectivity();
+                      if (!connectivityResult
+                          .contains(ConnectivityResult.wifi) &&
+                          !connectivityResult
+                              .contains(ConnectivityResult.mobile) &&
+                          !connectivityResult
+                              .contains(ConnectivityResult.ethernet)) {
+                        Constants.showToast(
+                            'Check Your Internet Connection');
+                        return;
+                      }
+                      if (controller.adFree.value == false) {
+                        controller.bannerAd?.dispose();
+                        controller.bannerAd?.load();
+                      }
+                      Get.to(() => const MoreAppsScreen(),
+                          transition: Transition.cupertinoDialog,
+                          duration: const Duration(milliseconds: 300));
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/More apps.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'More Apps',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  // Survey
+                  // ListTile(
+                  //   dense: true,
+                  //   onTap: () async {
+                  //     Get.back();
+                  //     if (controller.adFree.value == false) {
+                  //       controller.bannerAd?.dispose();
+                  //       controller.bannerAd?.load();
+                  //     }
+                  //     Get.to(() => const FeedbackWebView(),
+                  //         transition: Transition.cupertinoDialog,
+                  //         duration: const Duration(milliseconds: 300));
+                  //   },
+                  //   visualDensity:
+                  //       const VisualDensity(horizontal: 0, vertical: 0),
+                  //   leading: const Icon(
+                  //     Icons.edit_calendar,
+                  //     color: Color(0XFF805531),
+                  //   ),
+                  //   title: Text(
+                  //     'Survey',
+                  //     style: CommanStyle.bothPrimary16600(context),
+                  //   ),
+                  // ),
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      SharPreferences.getBoolean(
+                          SharPreferences.isNotificationOn)
+                          .then((value) {
+                        bool natificationValue;
+                        value != null
+                            ? natificationValue = value
+                            : natificationValue = true;
+                        Get.offAll(() => SettingScreen(
+                          notificationValue: natificationValue,
+                        ))!
+                            .then((value) async {
+                          SharPreferences.getString(
+                              SharPreferences.selectedFontSize)
+                              .then((value) {
+                            value == null
+                                ? controller.fontSize.value = 19.0
+                                : controller.fontSize.value =
+                                double.parse(value.toString());
+                          });
+                          SharPreferences.getString(
+                              SharPreferences.selectedFontFamily)
+                              .then((value) {
+                            value == null
+                                ? controller.selectedFontFamily.value =
+                            "Arial"
+                                : controller.selectedFontFamily.value =
+                                value;
+                          });
+                        });
+                      });
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/setting.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      "Settings",
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: () async {
+                      final appPackageName =
+                          (await PackageInfo.fromPlatform()).packageName;
+                      String message =
+                          ''; // Declare the message variable outside the if-else block
+                      String appid;
+                      appid = BibleInfo.apple_AppId;
+                      if (Platform.isAndroid) {
+                        message =
+                        "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://play.google.com/store/apps/details?id=$appPackageName";
+                      } else if (Platform.isIOS) {
+                        message =
+                        "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://itunes.apple.com/app/id$appid"; // Example iTunes URL
+                      }
+
+                      if (message.isNotEmpty) {
+                        Share.share(message,
+                            sharePositionOrigin: Rect.fromPoints(
+                                const Offset(2, 2), const Offset(3, 3)));
+                      } else {
+                        print('Message is empty or undefined');
+                      }
+                    },
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      "assets/home icons/Share.png",
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Share',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  ListTile(
+                    dense: true,
+                    onTap: (() async {
+                      Get.back();
+                      // await SharPreferences.setString('OpenAd', '1');
+                      // // debugPrint(
+                      // //     "notify ${controller.connectionStatus.first}");
+                      // return await requestReview(
+                      //     controller.connectionStatus);
+                      await SharPreferences.setString('OpenAd', '1');
+                      final DeviceInfoPlugin deviceInfoPlugin =
+                      DeviceInfoPlugin();
+                      PackageInfo packageInfo =
+                      await PackageInfo.fromPlatform();
+                      final locale = ui.window.locale;
+                      String deviceType = 'ios';
+                      String groupId = '1';
+                      String packageName = '';
+                      String appName = BibleInfo.bible_shortName;
+                      String deviceId = '';
+                      String deviceModel = '';
+                      String deviceName = '';
+                      String appVersion = packageInfo.version;
+                      String osVersion = '';
+                      String appType = '';
+                      String language = locale.languageCode;
+                      String countryCode = locale.countryCode.toString();
+                      String themeColor = 'd43f8d';
+                      String themeMode = '0';
+                      String width = '100px';
+                      String height = '100px';
+                      String isDevelopOrProd = '0';
+
+                      if (Platform.isAndroid) {
+                        final androidInfo =
+                        await deviceInfoPlugin.androidInfo;
+                        deviceType = 'Android';
+                        deviceId = androidInfo.id ?? '';
+                        deviceName = androidInfo.name;
+                        deviceModel = androidInfo.model ?? '';
+                        osVersion =
+                        'Android ${androidInfo.version.release}';
+                        packageName = BibleInfo.android_Package_Name;
+                      } else if (Platform.isIOS) {
+                        final iosInfo = await deviceInfoPlugin.iosInfo;
+                        deviceType = 'iOS';
+                        osVersion = 'iOS ${iosInfo.systemVersion}';
+                        deviceName = iosInfo.name;
+                        packageName = BibleInfo.ios_Bundle_Id;
+                        deviceId = iosInfo.identifierForVendor ?? '';
+                        deviceModel = iosInfo.utsname.machine ?? '';
+                      }
+
+                      debugPrint(
+                          "urldata - $deviceType - $packageName - $appName - $deviceModel - $deviceId");
+
+                      final url =
+                          "https://bibleoffice.com/m_feedback/API/feedback_form/index.php?device_type=$deviceType&group_id=1&package_name=$packageName&app_name=$appName&device_id=$deviceId&device_model=$deviceModel&device_name=$deviceName&app_version=$appVersion&os_version=$osVersion&app_type=$deviceType&language=$language&country_code=$countryCode";
+
+                      if (await canLaunchUrl(Uri.parse(url))) {
+                        await launchUrl(Uri.parse(url));
+                      } else {
+                        throw 'Could not launch $url';
+                      }
+                    }),
+                    visualDensity:
+                    const VisualDensity(horizontal: 0, vertical: 0),
+                    leading: Image.asset(
+                      //Images.rateUs(context),
+                      'assets/home icons/customer-service 2.png',
+                      height: 24,
+                      width: 24,
+                    ),
+                    title: Text(
+                      'Contact Us',
+                      style: CommanStyle.bothPrimary16600(context),
+                    ),
+                  ),
+                  // ListTile(
+                  //   dense: true,
+                  //   onTap: () {
+                  //     Get.back();
+                  //     Get.to(() => const AboutUs(),
+                  //         transition: Transition.cupertinoDialog,
+                  //         duration: const Duration(milliseconds: 300));
+                  //   },
+                  //   visualDensity:
+                  //       const VisualDensity(horizontal: 0, vertical: 0),
+                  //   leading: Image.asset(
+                  //     Images.aboutUs(context),
+                  //     height: 24,
+                  //     width: 24,
+                  //   ),
+                  //   title: Text(
+                  //     'About Us',
+                  //     style: CommanStyle.bothPrimary16600(context),
+                  //   ),
+                  // ),
+                  const SizedBox(
+                    height: 2,
+                  ),
+                  controller.isAdsCompletlyDisabled.value
+                      ? const SizedBox.shrink()
+                      : controller.adFree.value
+                      ? DateTime.tryParse(
+                      '${controller.RewardAdExpireDate}') !=
+                      null
+                      ? Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 3),
+                    color: CommanColor.lightDarkPrimary(
+                        context),
+                    child: ListTile(
+                      dense: true,
+                      onTap: () {
+                        Navigator.pop(context);
+                        showModalBottomSheet<void>(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          shape:
+                          const RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.vertical(
+                              top: Radius.circular(25),
+                            ),
+                          ),
+                          clipBehavior:
+                          Clip.antiAliasWithSaveLayer,
+                          builder: (BuildContext context) {
+                            final startTime = DateTime.parse(
+                                '${controller.RewardAdExpireDate}');
+
+                            DateTime ExpiryDate = startTime;
+
+                            final currentTime =
+                            DateTime.now();
+                            final diffDy =
+                                ExpiryDate.difference(
+                                    currentTime)
+                                    .inDays;
+
+                            return Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color:
+                                          Colors.white),
+                                      borderRadius:
+                                      const BorderRadius
+                                          .only(
+                                          topLeft: Radius
+                                              .circular(
+                                              20),
+                                          topRight: Radius
+                                              .circular(
+                                              20))),
+                                  height:
+                                  MediaQuery.of(context)
+                                      .size
+                                      .height *
+                                      0.30,
+                                  // color: Colors.white,
+                                  child:
+                                  SingleChildScrollView(
+                                    physics:
+                                    const ScrollPhysics(),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .start,
+                                      mainAxisSize:
+                                      MainAxisSize.min,
+                                      children: <Widget>[
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment
+                                              .center,
+                                          children: [
+                                            Image.asset(
+                                                "assets/feedbacklogo.png",
+                                                height: 120,
+                                                width: 120,
+                                                color: CommanColor
+                                                    .lightDarkPrimary(
+                                                    context)),
+                                          ],
+                                        ),
+                                        // SizedBox(height: 5,),
+                                        Text(
+                                          'Subscription Info',
+                                          style: TextStyle(
+                                              letterSpacing:
+                                              BibleInfo
+                                                  .letterSpacing,
+                                              fontSize:
+                                              BibleInfo
+                                                  .fontSizeScale *
+                                                  16,
+                                              color: CommanColor
+                                                  .lightDarkPrimary(
+                                                  context),
+                                              fontWeight:
+                                              FontWeight
+                                                  .w500),
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        Text(
+                                            diffDy > 365
+                                                ? 'Your subscription will never expire'
+                                                : '$diffDy day(s) left for the renewal of the subscription.',
+                                            style: TextStyle(
+                                                letterSpacing:
+                                                BibleInfo
+                                                    .letterSpacing,
+                                                fontSize: screenWidth <
+                                                    380
+                                                    ? BibleInfo.fontSizeScale *
+                                                    13
+                                                    : BibleInfo.fontSizeScale *
+                                                    15,
+                                                color: CommanColor
+                                                    .lightDarkPrimary(
+                                                    context),
+                                                fontWeight:
+                                                FontWeight
+                                                    .w400)),
+                                        const SizedBox(
+                                            height: 5),
+                                        Text(
+                                            diffDy > 365
+                                                ? 'Your subscription period is lifetime'
+                                                : 'Your subscription expires on ${DateFormat('dd-MM-yyyy').format(ExpiryDate)}',
+                                            style:
+                                            TextStyle(
+                                              letterSpacing:
+                                              BibleInfo
+                                                  .letterSpacing,
+                                              fontSize: screenWidth <
+                                                  380
+                                                  ? BibleInfo
+                                                  .fontSizeScale *
+                                                  13
+                                                  : BibleInfo
+                                                  .fontSizeScale *
+                                                  15,
+                                              color: CommanColor
+                                                  .lightDarkPrimary(
+                                                  context),
+                                              fontWeight:
+                                              FontWeight
+                                                  .w400,
+                                            )),
+                                        const SizedBox(
+                                            height: 5),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 10,
+                                  right: 15,
+                                  child: InkWell(
+                                    child: Icon(
+                                      Icons.close,
+                                      color: CommanColor
+                                          .lightDarkPrimary(
+                                          context),
+                                      size: 25,
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(
+                                          context);
+                                    },
+                                  ),
+                                )
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      visualDensity: const VisualDensity(
+                          horizontal: 0, vertical: 0),
+                      leading: const Icon(
+                        Icons.info_outline_rounded,
+                        size: 28,
+                        color: Colors.white,
+                      ),
+                      title: const Text("Subscription Info",
+                          style: TextStyle(
+                              color: Colors.white,
+                              letterSpacing:
+                              BibleInfo.letterSpacing,
+                              fontSize:
+                              BibleInfo.fontSizeScale *
+                                  16,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  )
+                      : Visibility(
+                    visible:
+                    controller.isSubscriptionEnabled ??
+                        false,
+                    child: Container(
+                      color: CommanColor.lightDarkPrimary(
+                          context),
+                      child: ListTile(
+                        dense: true,
+                        onTap: () async {
+                          adsIcon = false;
+                          Get.back();
+                          await SharPreferences.setString(
+                              'OpenAd', '1');
+                          // Use constants as fallback when SharedPreferences are empty (first time loading)
+                          final sixMonthPlan =
+                              await SharPreferences
+                                  .getString(
+                                  'sixMonthPlan') ??
+                                  BibleInfo.sixMonthPlanid;
+                          final oneYearPlan =
+                              await SharPreferences
+                                  .getString(
+                                  'oneYearPlan') ??
+                                  BibleInfo.oneYearPlanid;
+                          final lifeTimePlan =
+                              await SharPreferences
+                                  .getString(
+                                  'lifeTimePlan') ??
+                                  BibleInfo.lifeTimePlanid;
+                          Get.to(
+                                () => SubscriptionScreen(
+                              sixMonthPlan: sixMonthPlan,
+                              oneYearPlan: oneYearPlan,
+                              lifeTimePlan: lifeTimePlan,
+                              checkad: 'theme',
+                            ),
+                            transition:
+                            Transition.cupertinoDialog,
+                            duration: const Duration(
+                                milliseconds: 300),
+                          );
+                        },
+                        visualDensity: const VisualDensity(
+                            horizontal: 0, vertical: 0),
+                        leading: Image.asset(
+                          Images.adFree(context),
+                          height: 24,
+                          width: 24,
+                        ),
+                        title: const Text("Remove Ads",
+                            style: TextStyle(
+                                color: Colors.white,
+                                letterSpacing:
+                                BibleInfo.letterSpacing,
+                                fontSize: BibleInfo
+                                    .fontSizeScale *
+                                    16,
+                                fontWeight:
+                                FontWeight.w600)),
+                      ),
+                    ),
+                  )
+                      : Visibility(
+                    visible: controller.isSubscriptionEnabled ??
+                        false,
+                    child: Container(
+                      color:
+                      CommanColor.lightDarkPrimary(context),
+                      child: ListTile(
+                        dense: true,
+                        onTap: () async {
+                          adsIcon = false;
+                          Get.back();
+                          await SharPreferences.setString(
+                              'OpenAd', '1');
+                          // Use constants as fallback when SharedPreferences are empty (first time loading)
+                          final sixMonthPlan =
+                              await SharPreferences.getString(
+                                  'sixMonthPlan') ??
+                                  BibleInfo.sixMonthPlanid;
+                          final oneYearPlan =
+                              await SharPreferences.getString(
+                                  'oneYearPlan') ??
+                                  BibleInfo.oneYearPlanid;
+                          final lifeTimePlan =
+                              await SharPreferences.getString(
+                                  'lifeTimePlan') ??
+                                  BibleInfo.lifeTimePlanid;
+                          Get.to(
+                                () => SubscriptionScreen(
+                              sixMonthPlan: sixMonthPlan,
+                              oneYearPlan: oneYearPlan,
+                              lifeTimePlan: lifeTimePlan,
+                              checkad: 'theme',
+                            ),
+                            transition:
+                            Transition.cupertinoDialog,
+                            duration: const Duration(
+                                milliseconds: 300),
+                          );
+                        },
+                        visualDensity: const VisualDensity(
+                            horizontal: 0, vertical: 0),
+                        leading: Image.asset(
+                          Images.adFree(context),
+                          height: 24,
+                          width: 24,
+                        ),
+                        title: const Text("Remove Ads",
+                            style: TextStyle(
+                                color: Colors.white,
+                                letterSpacing:
+                                BibleInfo.letterSpacing,
+                                fontSize:
+                                BibleInfo.fontSizeScale *
+                                    16,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             bottomNavigationBar: const SizedBox(
               height: 1,
             ),
@@ -5208,7 +5278,7 @@ class _HomeScreenState extends State<HomeScreen>
           backgroundColor: CommanColor.white,
           insetPadding: isTablet ? EdgeInsets.symmetric(horizontal: 100) : null,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Container(
             width: dialogWidth,
             padding: const EdgeInsets.all(20),
@@ -5282,9 +5352,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildEmojiOption(BuildContext context,
       {required String emoji,
-      required String text,
-      required Color color,
-      required VoidCallback onTap}) {
+        required String text,
+        required Color color,
+        required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -5319,7 +5389,7 @@ class _HomeScreenState extends State<HomeScreen>
         return Dialog(
           backgroundColor: CommanColor.white,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Container(
             width: dialogWidth,
             padding: const EdgeInsets.all(20),
@@ -5360,8 +5430,8 @@ class _HomeScreenState extends State<HomeScreen>
                     fontSize: isTablet
                         ? 19
                         : screenWidth < 380
-                            ? 12.5
-                            : 14,
+                        ? 12.5
+                        : 14,
                     color: CommanColor.black,
                   ),
                 ),
@@ -5371,7 +5441,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Navigator.pop(context);
                     // Add your rate app logic here
                     final connectivityResult =
-                        await Connectivity().checkConnectivity();
+                    await Connectivity().checkConnectivity();
                     if (connectivityResult[0] == ConnectivityResult.none) {
                       Constants.showToast("Check your Internet connection");
                     }
@@ -5379,7 +5449,7 @@ class _HomeScreenState extends State<HomeScreen>
                     _requestReview();
                   },
                   style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                  ElevatedButton.styleFrom(backgroundColor: Colors.brown),
                   child: Text(
                     "Rate the app",
                     style: TextStyle(
@@ -5435,7 +5505,7 @@ class _HomeScreenState extends State<HomeScreen>
         return Dialog(
           backgroundColor: CommanColor.white,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Container(
             width: dialogWidth,
             padding: const EdgeInsets.all(20),
@@ -5485,7 +5555,7 @@ class _HomeScreenState extends State<HomeScreen>
                     // Add your feedback logic here
                     await SharPreferences.setString('OpenAd', '1');
                     final DeviceInfoPlugin deviceInfoPlugin =
-                        DeviceInfoPlugin();
+                    DeviceInfoPlugin();
                     PackageInfo packageInfo = await PackageInfo.fromPlatform();
                     final locale = ui.window.locale;
                     String deviceType = 'ios';
@@ -5537,7 +5607,7 @@ class _HomeScreenState extends State<HomeScreen>
                     }
                   },
                   style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                  ElevatedButton.styleFrom(backgroundColor: Colors.brown),
                   child: Text(
                     "Share Feedback",
                     style: TextStyle(
@@ -5565,13 +5635,13 @@ class _HomeScreenState extends State<HomeScreen>
 
       if (lastRatingDateTime.isNotEmpty) {
         final startTime =
-            DateFormat('dd-MM-yyyy HH:mm').parse(lastViewRatingDateTime);
+        DateFormat('dd-MM-yyyy HH:mm').parse(lastViewRatingDateTime);
         final currentTime = DateTime.now();
         final diffDays = currentTime.difference(startTime).inDays;
 
         if (saveRating <= 4 && diffDays > 3) {
           Future.delayed(Duration(minutes: 2),
-              () => _showRatingDialog(state, currentTime));
+                  () => _showRatingDialog(state, currentTime));
         }
       }
     });
@@ -5583,7 +5653,7 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (BuildContext context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 15),
           content: _buildRatingDialogContent(state, currentTime),
         );
@@ -5596,7 +5666,7 @@ class _HomeScreenState extends State<HomeScreen>
       valueListenable: _rating,
       builder: (context, int value, Widget? child) {
         final (feedbackText, feedbackText1, style, style1, colour) =
-            _getFeedbackContent(value);
+        _getFeedbackContent(value);
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -5624,57 +5694,57 @@ class _HomeScreenState extends State<HomeScreen>
       int value) {
     if (value == 0) {
       return (
-        'Leave Your Experience,',
-        'Let it Shine Bright',
-        const TextStyle(
-          letterSpacing: BibleInfo.letterSpacing,
-          fontSize: BibleInfo.fontSizeScale * 13,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-        const TextStyle(
-          letterSpacing: BibleInfo.letterSpacing,
-          fontSize: BibleInfo.fontSizeScale * 13,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-        Colors.grey[500],
+      'Leave Your Experience,',
+      'Let it Shine Bright',
+      const TextStyle(
+        letterSpacing: BibleInfo.letterSpacing,
+        fontSize: BibleInfo.fontSizeScale * 13,
+        fontWeight: FontWeight.bold,
+        color: Colors.brown,
+      ),
+      const TextStyle(
+        letterSpacing: BibleInfo.letterSpacing,
+        fontSize: BibleInfo.fontSizeScale * 13,
+        fontWeight: FontWeight.bold,
+        color: Colors.brown,
+      ),
+      Colors.grey[500],
       );
     } else if (value <= 3) {
       return (
-        'Please help us',
-        'with your valuable feedback',
-        const TextStyle(
-          letterSpacing: BibleInfo.letterSpacing,
-          fontSize: BibleInfo.fontSizeScale * 13,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-        const TextStyle(
-          letterSpacing: BibleInfo.letterSpacing,
-          fontSize: BibleInfo.fontSizeScale * 13,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-        Colors.brown[500],
+      'Please help us',
+      'with your valuable feedback',
+      const TextStyle(
+        letterSpacing: BibleInfo.letterSpacing,
+        fontSize: BibleInfo.fontSizeScale * 13,
+        fontWeight: FontWeight.bold,
+        color: Colors.brown,
+      ),
+      const TextStyle(
+        letterSpacing: BibleInfo.letterSpacing,
+        fontSize: BibleInfo.fontSizeScale * 13,
+        fontWeight: FontWeight.bold,
+        color: Colors.brown,
+      ),
+      Colors.brown[500],
       );
     } else {
       return (
-        'Great!',
-        'Give your rating on store',
-        const TextStyle(
-          letterSpacing: BibleInfo.letterSpacing,
-          fontSize: BibleInfo.fontSizeScale * 13,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-        const TextStyle(
-          letterSpacing: BibleInfo.letterSpacing,
-          fontSize: BibleInfo.fontSizeScale * 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-        Colors.brown[500],
+      'Great!',
+      'Give your rating on store',
+      const TextStyle(
+        letterSpacing: BibleInfo.letterSpacing,
+        fontSize: BibleInfo.fontSizeScale * 13,
+        fontWeight: FontWeight.bold,
+        color: Colors.brown,
+      ),
+      const TextStyle(
+        letterSpacing: BibleInfo.letterSpacing,
+        fontSize: BibleInfo.fontSizeScale * 20,
+        fontWeight: FontWeight.bold,
+        color: Colors.brown,
+      ),
+      Colors.brown[500],
       );
     }
   }
@@ -5684,17 +5754,17 @@ class _HomeScreenState extends State<HomeScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
           5,
-          (i) => GestureDetector(
-                onTap: () {
-                  _setRating(i + 1);
-                  //  state.controller!.rating.value = i + 1;
-                },
-                child: Icon(
-                  Icons.star,
-                  size: 40,
-                  color: value >= i + 1 ? Colors.brown : Colors.grey,
-                ),
-              )),
+              (i) => GestureDetector(
+            onTap: () {
+              _setRating(i + 1);
+              //  state.controller!.rating.value = i + 1;
+            },
+            child: Icon(
+              Icons.star,
+              size: 40,
+              color: value >= i + 1 ? Colors.brown : Colors.grey,
+            ),
+          )),
     );
   }
 
@@ -5845,7 +5915,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _handleAdExpiration(GetXState<DashBoardController> state) async {
     final value =
-        await SharPreferences.getString(SharPreferences.isRewardAdViewTime);
+    await SharPreferences.getString(SharPreferences.isRewardAdViewTime);
     state.controller!.RewardAdExpireDate.value = value.toString();
     RewardAdExpireDate = value;
     debugPrint("RewardAdExpireDate is $RewardAdExpireDate");
@@ -5926,7 +5996,7 @@ class _HomeScreenState extends State<HomeScreen>
             widget.selectedVerseNumForRead.toString().isNotEmpty) {
           try {
             final verseIndex =
-                int.parse(widget.selectedVerseNumForRead.toString());
+            int.parse(widget.selectedVerseNumForRead.toString());
 
             // Wait for data to be loaded before scrolling and highlighting
             _waitForDataAndHighlight(state, verseIndex);
@@ -6024,7 +6094,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     // final currentDate = DateTime.now();
     final getLastOfferShown =
-        await SharPreferences.getString(SharPreferences.offerenabled);
+    await SharPreferences.getString(SharPreferences.offerenabled);
     if (getLastOfferShown == '1') {
       // appLaunchCountoffer = prefs.getInt('launchCountoffer') ?? 0;
       // appLaunchCountoffer++;
@@ -6070,7 +6140,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ? const EdgeInsets.symmetric(horizontal: 120)
                 : null,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             elevation: 16,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -6099,7 +6169,7 @@ class _HomeScreenState extends State<HomeScreen>
                         decoration: BoxDecoration(
                           color: CommanColor.darkPrimaryColor,
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(5)),
+                          const BorderRadius.all(Radius.circular(5)),
                           boxShadow: const [
                             BoxShadow(color: Colors.black26, blurRadius: 2)
                           ],
@@ -6127,7 +6197,7 @@ class _HomeScreenState extends State<HomeScreen>
                         decoration: BoxDecoration(
                           color: CommanColor.lightGrey1,
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(5)),
+                          const BorderRadius.all(Radius.circular(5)),
                           boxShadow: const [
                             BoxShadow(color: Colors.black26, blurRadius: 2)
                           ],
@@ -6241,10 +6311,10 @@ class _MyAdBannerState extends State<MyAdBanner> {
   Widget build(BuildContext context) {
     return _isLoaded
         ? SizedBox(
-            width: _bannerAd.size.width.toDouble(),
-            height: _bannerAd.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd),
-          )
+      width: _bannerAd.size.width.toDouble(),
+      height: _bannerAd.size.height.toDouble(),
+      child: AdWidget(ad: _bannerAd),
+    )
         : SizedBox.shrink();
   }
 }
@@ -6278,8 +6348,8 @@ class FramedVerseContainer extends StatelessWidget {
       height: screenWidth < 380
           ? MediaQuery.of(context).size.height * 0.72
           : screenWidth > 450
-              ? MediaQuery.of(context).size.height * 0.67
-              : MediaQuery.of(context).size.height * 0.62,
+          ? MediaQuery.of(context).size.height * 0.67
+          : MediaQuery.of(context).size.height * 0.62,
       width: MediaQuery.of(context).size.width,
       child: Stack(
         fit: StackFit.expand,
@@ -6317,8 +6387,8 @@ class FramedVerseContainer extends StatelessWidget {
             padding: EdgeInsets.all(screenWidth < 380
                 ? 19
                 : screenWidth > 450
-                    ? 34
-                    : 12),
+                ? 34
+                : 12),
             child: child,
           ),
         ],
@@ -6392,10 +6462,10 @@ class _MyAdBanner2State extends State<MyAdBanner2> {
   Widget build(BuildContext context) {
     return _isLoaded
         ? SizedBox(
-            width: _bannerAd.size.width.toDouble(),
-            height: _bannerAd.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd),
-          )
+      width: _bannerAd.size.width.toDouble(),
+      height: _bannerAd.size.height.toDouble(),
+      child: AdWidget(ad: _bannerAd),
+    )
         : SizedBox.shrink();
   }
 }
@@ -6448,7 +6518,7 @@ class PremiumWelcomeAlert {
                 // Description
                 Text(
                   "You now have full access to tools\n and verses that'll guide you daily.\n"
-                  "Let's walk closer with Jesus together.",
+                      "Let's walk closer with Jesus together.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: isTablet ? 18 : 14,
