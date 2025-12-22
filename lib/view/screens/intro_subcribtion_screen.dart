@@ -1702,6 +1702,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     .withOpacity(0.7),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
+                                decoration: TextDecoration.underline,
                               ),
                             ),
                           ),

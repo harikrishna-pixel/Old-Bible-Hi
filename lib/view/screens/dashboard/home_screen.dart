@@ -1000,9 +1000,17 @@ class _HomeScreenState extends State<HomeScreen>
     await _loadFontSize();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-//  await _checkAndShowVerse();
       await _handleAppLaunchCount();
       await checkUserLoggedIn();
+
+      // Check and show daily verse if on Reader screen
+      if (widget.From.toString() == "Read") {
+        // Small delay to ensure screen is fully initialized
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          await _checkAndShowVerse();
+        }
+      }
     });
 
     // _initializeAds();
@@ -1891,15 +1899,26 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
 
-    if (_verseShown) return; // already shown, nothing to do
+    // Reset verse shown flag when screen becomes visible to allow checking again
+    // This ensures daily verse shows even after restore/purchase navigation
+    _verseShown = false;
+    _stopwatch.reset();
 
     // start or resume stopwatch
     if (!_stopwatch.isRunning) {
       _stopwatch.start();
     }
     // start periodic checker if not running
-    _checkerTimer ??=
+    _checkerTimer?.cancel();
+    _checkerTimer =
         Timer.periodic(const Duration(seconds: 1), (_) => _checkElapsed());
+
+    // Also directly check verse when screen becomes visible (for restore/purchase cases)
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted && widget.From.toString() == "Read") {
+        _checkAndShowVerse();
+      }
+    });
     // setState(() {}); // update UI counter if desired
   }
 
