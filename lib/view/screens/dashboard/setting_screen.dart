@@ -1824,130 +1824,10 @@ class _SettingScreenState extends State<SettingScreen>
       builder: (_) => ThemeDialog(
         selected: Provider.of<ThemeProvider>(context, listen: false)
             .currentCustomTheme,
-        onPremiumRequired: () => _showPremiumThemeDialog(context),
       ),
     );
   }
 
-  Future<void> _showPremiumThemeDialog(BuildContext context) async {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final oldPaperColor = themeProvider.backgroundColor; // Get old paper theme color (Color(0xFFF3E5C2))
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: oldPaperColor, // Use old paper theme color
-          child: Container(
-            width: screenWidth > 450 ? screenWidth * 0.5 : screenWidth * 0.85, // Make dialog wider
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Title - Single line
-                Text(
-                  'Premium Access Required',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: screenWidth > 450 ? 20 : 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 20),
-                // Body text
-                Text(
-                  'Upgrade to access all themes and personalise your Bible with a richer, distraction-free reading experience.',
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: screenWidth > 450 ? 16 : 14,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                // Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: oldPaperColor, // Use old paper theme color
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: Colors.grey.shade300,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          'Maybe Later',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: screenWidth > 450 ? 15 : 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          // Don't check connectivity before navigating - similar to Rate Us
-                          // The subscription screen will handle any connectivity issues if needed
-                          Navigator.pop(context);
-                          // Use constants as fallback when SharedPreferences are empty (first time loading)
-                          final sixMonthPlan = await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
-                          final oneYearPlan = await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
-                          final lifeTimePlan = await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
-                          Get.to(
-                            () => SubscriptionScreen(
-                              sixMonthPlan: sixMonthPlan,
-                              oneYearPlan: oneYearPlan,
-                              lifeTimePlan: lifeTimePlan,
-                              checkad: 'theme',
-                            ),
-                            transition: Transition.cupertinoDialog,
-                            duration: const Duration(milliseconds: 300),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5E3C), // Dark brown
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          'Upgrade Now',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: screenWidth > 450 ? 15 : 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Future<void> showPermissionSettingsDialog(BuildContext context) async {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -2150,12 +2030,10 @@ class NotifyMeDialog extends StatelessWidget {
 
 class ThemeDialog extends StatefulWidget {
   final AppCustomTheme selected;
-  final VoidCallback onPremiumRequired;
 
   const ThemeDialog({
     super.key,
     required this.selected,
-    required this.onPremiumRequired,
   });
 
   @override
@@ -2266,22 +2144,9 @@ class _ThemeDialogState extends State<ThemeDialog> {
                     return;
                   }
 
-                  // Check subscription before setting theme
-                  final downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
-                  final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
-                  final isSubscribed = subscriptionPlan != null && 
-                                      subscriptionPlan.isNotEmpty && 
-                                      ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
-                  
-                  if (!isSubscribed) {
-                    // Close theme dialog and show premium dialog
-                    Navigator.pop(context);
-                    widget.onPremiumRequired();
-                  } else {
-                    // User is subscribed, set theme
-                    provider.setCustomTheme(_selectedTheme);
-                    Navigator.pop(context);
-                  }
+                  // Set theme directly (hard paywall ensures only subscribed users can access)
+                  provider.setCustomTheme(_selectedTheme);
+                  Navigator.pop(context);
                 },
                 child: const Text("Set", style: TextStyle(color: Colors.white)),
               ),
