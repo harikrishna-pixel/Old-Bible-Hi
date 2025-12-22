@@ -161,6 +161,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final isDark = themeProvider.themeMode == ThemeMode.dark;
     final isVintage = themeProvider.currentCustomTheme == AppCustomTheme.vintage;
     final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Load initial credits to display
+    final initialCredits = await WalletService.getCredits();
 
     await showModalBottomSheet(
       context: context,
@@ -238,6 +241,41 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             fontWeight: FontWeight.w400,
                           ),
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        // Credits display
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth > 450 ? 16 : 14,
+                            vertical: screenWidth > 450 ? 10 : 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.account_balance_wallet,
+                                color: Colors.white,
+                                size: screenWidth > 450 ? 20 : 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'You have $initialCredits credits',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenWidth > 450 ? 15 : 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

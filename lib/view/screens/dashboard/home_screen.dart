@@ -979,7 +979,8 @@ class _HomeScreenState extends State<HomeScreen>
   BuildContext? _bottomSheetContext; // Track bottom sheet context to dismiss it
 
   // dailyverse
-  static const int _targetSeconds = 2; // Show after 2 seconds on Reading screen
+  static const int _targetSeconds =
+      15; // Show after 15 seconds on Reading screen (allows app-open ad to show and dismiss first)
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _checkerTimer;
   bool _verseShown = false;
@@ -1255,8 +1256,8 @@ class _HomeScreenState extends State<HomeScreen>
 
     // Only show if we haven't shown a verse today
     if (lastShownDateFormatted != todayString) {
-      // Give a small window so the app-open ad can surface first
-      await Future.delayed(const Duration(seconds: 4));
+      // Additional delay to ensure app-open ad has been dismissed
+      await Future.delayed(const Duration(seconds: 2));
 
       // Double-check we're still on Reader screen before showing
       if (mounted && widget.From.toString() == "Read") {
