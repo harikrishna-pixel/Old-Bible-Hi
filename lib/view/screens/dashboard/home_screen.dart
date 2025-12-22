@@ -4613,23 +4613,23 @@ class _HomeScreenState extends State<HomeScreen>
                         style: CommanStyle.bothPrimary16600(context),
                       ),
                     ),
-                  ListTile(
-                    dense: true,
-                    onTap: () async {
-                      Get.to(ChatScreen());
-                    },
-                    visualDensity:
-                    const VisualDensity(horizontal: 0, vertical: 0),
-                    leading: const Icon(
-                      CupertinoIcons.chat_bubble_2,
-                      color: Color(0XFF805531),
-                      size: 26,
-                    ),
-                    title: Text(
-                      'Chat',
-                      style: CommanStyle.bothPrimary16600(context),
-                    ),
-                  ),
+                  // ListTile(
+                  //   dense: true,
+                  //   onTap: () async {
+                  //     Get.to(ChatScreen());
+                  //   },
+                  //   visualDensity:
+                  //   const VisualDensity(horizontal: 0, vertical: 0),
+                  //   leading: const Icon(
+                  //     CupertinoIcons.chat_bubble_2,
+                  //     color: Color(0XFF805531),
+                  //     size: 26,
+                  //   ),
+                  //   title: Text(
+                  //     'Chat',
+                  //     style: CommanStyle.bothPrimary16600(context),
+                  //   ),
+                  // ),
                   // Exit Offer / Limited Time Offer
                   // ListTile(
                   //   dense: true,
