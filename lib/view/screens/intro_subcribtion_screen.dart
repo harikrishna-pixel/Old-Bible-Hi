@@ -1417,8 +1417,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         height: 120,
                         width: 120,
                         decoration: BoxDecoration(
-                          image: DecorationImage(image: AssetImage("assets/jesus_symbol.png"),fit: BoxFit.cover)
-                        ),
+                            image: DecorationImage(
+                                image: AssetImage("assets/jesus_symbol.png"),
+                                fit: BoxFit.cover)),
                       ),
 
                       const SizedBox(height: 10),
@@ -1435,7 +1436,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
                       // Tagline
                       Text(
@@ -1449,7 +1450,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Feature Items with image assets
                       _buildNewFeatureItem(
@@ -1579,7 +1580,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           // LIMITED TIME OFFER Banner
                           Positioned(
                             top: -12,
-                            left: 50,
+                            left:
+                                (MediaQuery.of(context).size.width - 250) / 1.9,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -1587,7 +1589,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF8B4513), // Dark brown
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               child: const Text(
                                 "LIMITED TIME OFFER",
@@ -1603,20 +1605,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // CTA Button
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: SizedBox(
-                          width: double.infinity,
+                          height: 57,
+                          width: 280,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  const Color(0xFF8B4513), // Dark brown
-                              padding: const EdgeInsets.symmetric(vertical: 18),
+                                  const Color(0xFF805531), // Dark brown
+                              padding: const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               elevation: 0,
                             ),
@@ -2095,6 +2098,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3.5, horizontal: 20),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Image asset
           Image.asset(
@@ -2207,7 +2212,7 @@ class _ExitOfferBottomSheetContentState
                   SizedBox(height: 10),
                   // Red "LIMITED TIME OFFER" banner
                   Container(
-                    width: 220,
+                    width: 250,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.red,
