@@ -31,11 +31,11 @@ class _PrefsKeys {
 
 /// Model for the survey values
 class FaithSurveyData {
-  String? purpose; // step 1
+  List<String>? purpose; // step 1 (multi-select)
   String? ageGroup; // step 2
-  String? challenge; // step 3
+  List<String>? challenge; // step 3 (multi-select)
   String? frequency; // step 4
-  String? growthWay; // step 5
+  List<String>? growthWay; // step 5 (multi-select)
   String? theme; // step 6
 
   Map<String, dynamic> toJson() => {
@@ -49,11 +49,17 @@ class FaithSurveyData {
 
   static FaithSurveyData fromJson(Map<String, dynamic> json) =>
       FaithSurveyData()
-        ..purpose = json['purpose'] as String?
+        ..purpose = (json['purpose'] as List?)
+            ?.map((e) => e as String)
+            .toList()
         ..ageGroup = json['ageGroup'] as String?
-        ..challenge = json['challenge'] as String?
+        ..challenge = (json['challenge'] as List?)
+            ?.map((e) => e as String)
+            .toList()
         ..frequency = json['frequency'] as String?
-        ..growthWay = json['growthWay'] as String?
+        ..growthWay = (json['growthWay'] as List?)
+            ?.map((e) => e as String)
+            .toList()
         ..theme = json['theme'] as String?;
 }
 
@@ -186,15 +192,15 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
   bool _isStepAnswered(int index) {
     switch (index) {
       case 0:
-        return data.purpose != null;
+        return (data.purpose?.isNotEmpty ?? false);
       case 1:
         return data.ageGroup != null;
       case 2:
-        return data.challenge != null;
+        return (data.challenge?.isNotEmpty ?? false);
       case 3:
         return data.frequency != null;
       case 4:
-        return data.growthWay != null;
+        return (data.growthWay?.isNotEmpty ?? false);
     }
     return false;
   }
@@ -290,7 +296,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                 controller: _page,
                                 physics: const NeverScrollableScrollPhysics(),
                                 children: [
-                                  _QuestionPage(
+                                  _QuestionPageMulti(
                                     question:
                                         'What brings you to our Bible app today?',
                                     options: const [
@@ -300,9 +306,16 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                       "Overcome life's challenges",
                                       'Strengthen my connection with God',
                                     ],
-                                    getValue: () => data.purpose,
-                                    onChanged: (v) =>
-                                        setState(() => data.purpose = v),
+                                    getValues: () => data.purpose,
+                                    onToggle: (v) => setState(() {
+                                      final current = [...?data.purpose];
+                                      if (current.contains(v)) {
+                                        current.remove(v);
+                                      } else {
+                                        current.add(v);
+                                      }
+                                      data.purpose = current;
+                                    }),
                                   ),
                                   _QuestionPage(
                                     question: 'What is your age group?',
@@ -318,7 +331,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                     onChanged: (v) =>
                                         setState(() => data.ageGroup = v),
                                   ),
-                                  _QuestionPage(
+                                  _QuestionPageMulti(
                                     question:
                                         'What challenges affect your spiritual growth the most?',
                                     options: const [
@@ -328,9 +341,16 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                       'Struggle to pray regularly',
                                       'Feeling disconnected from God',
                                     ],
-                                    getValue: () => data.challenge,
-                                    onChanged: (v) =>
-                                        setState(() => data.challenge = v),
+                                    getValues: () => data.challenge,
+                                    onToggle: (v) => setState(() {
+                                      final current = [...?data.challenge];
+                                      if (current.contains(v)) {
+                                        current.remove(v);
+                                      } else {
+                                        current.add(v);
+                                      }
+                                      data.challenge = current;
+                                    }),
                                   ),
                                   _QuestionPage(
                                     question:
@@ -346,7 +366,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                     onChanged: (v) =>
                                         setState(() => data.frequency = v),
                                   ),
-                                  _QuestionPage(
+                                  _QuestionPageMulti(
                                     question:
                                         "What's your favorite way to grow spiritually?",
                                     options: const [
@@ -355,9 +375,16 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                       'Sharing verses with friends',
                                       'Setting daily reminders',
                                     ],
-                                    getValue: () => data.growthWay,
-                                    onChanged: (v) =>
-                                        setState(() => data.growthWay = v),
+                                    getValues: () => data.growthWay,
+                                    onToggle: (v) => setState(() {
+                                      final current = [...?data.growthWay];
+                                      if (current.contains(v)) {
+                                        current.remove(v);
+                                      } else {
+                                        current.add(v);
+                                      }
+                                      data.growthWay = current;
+                                    }),
                                   ),
                                 ],
                               ),
@@ -407,7 +434,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
 }
 
 /// Question page with vertical options list styled like the UI
-class _QuestionPage extends StatelessWidget {
+class _QuestionPage extends StatefulWidget {
   final String question;
   final List<String> options;
   final String? Function() getValue;
@@ -421,6 +448,11 @@ class _QuestionPage extends StatelessWidget {
   });
 
   @override
+  State<_QuestionPage> createState() => _QuestionPageState();
+}
+
+class _QuestionPageState extends State<_QuestionPage> {
+  @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final isTablet = mq.size.width >= 600;
@@ -433,7 +465,7 @@ class _QuestionPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              question,
+              widget.question,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: isTablet ? 22 : 18,
@@ -447,14 +479,80 @@ class _QuestionPage extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               physics: const BouncingScrollPhysics(),
-              itemCount: options.length,
+              itemCount: widget.options.length,
               separatorBuilder: (_, __) => const SizedBox(height: 14),
               itemBuilder: (context, i) {
-                final selected = getValue() == options[i];
+                final selected = widget.getValue() == widget.options[i];
                 return _SelectButton(
-                  label: options[i],
+                  label: widget.options[i],
                   selected: selected,
-                  onTap: () => onChanged(options[i]),
+                  onTap: () => widget.onChanged(widget.options[i]),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Multi-select question page (for steps 1, 3, 5)
+class _QuestionPageMulti extends StatefulWidget {
+  final String question;
+  final List<String> options;
+  final List<String>? Function() getValues;
+  final ValueChanged<String> onToggle;
+
+  const _QuestionPageMulti({
+    required this.question,
+    required this.options,
+    required this.getValues,
+    required this.onToggle,
+  });
+
+  @override
+  State<_QuestionPageMulti> createState() => _QuestionPageMultiState();
+}
+
+class _QuestionPageMultiState extends State<_QuestionPageMulti> {
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final isTablet = mq.size.width >= 600;
+
+    final selectedValues = widget.getValues() ?? [];
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: isTablet ? 8 : 4),
+      child: Column(
+        children: [
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              widget.question,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isTablet ? 22 : 18,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2E2C2B),
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Expanded(
+            child: ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              itemCount: widget.options.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              itemBuilder: (context, i) {
+                final selected = selectedValues.contains(widget.options[i]);
+                return _SelectButton(
+                  label: widget.options[i],
+                  selected: selected,
+                  onTap: () => widget.onToggle(widget.options[i]),
                 );
               },
             ),
