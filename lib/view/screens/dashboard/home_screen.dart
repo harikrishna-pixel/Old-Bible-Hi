@@ -1323,6 +1323,7 @@ class _HomeScreenState extends State<HomeScreen>
         "assets/im5.jpg",
       ];
       String randomBgImage = bgImages[random.nextInt(bgImages.length)];
+      debugPrint('📸 Daily verse background image selected: $randomBgImage');
 
       // Save today's date to prefs
       await prefs.setString('last_shown_verse_date', todayString);
@@ -4686,14 +4687,41 @@ class _HomeScreenState extends State<HomeScreen>
                             Get.back();
                             await SharPreferences.setString('OpenAd', '1');
                             // Check internet connection before showing More Apps
-                            final connectivityResult =
-                                await _connectivity.checkConnectivity();
-                            if (!connectivityResult
-                                    .contains(ConnectivityResult.wifi) &&
-                                !connectivityResult
-                                    .contains(ConnectivityResult.mobile) &&
-                                !connectivityResult
-                                    .contains(ConnectivityResult.ethernet)) {
+                            // Retry-friendly connectivity check to avoid false "offline" on first run
+                            bool hasConnection = false;
+                            for (int i = 0; i < 3; i++) {
+                              try {
+                                final connectivityResult =
+                                    await _connectivity.checkConnectivity();
+                                // If result is empty (occasionally on first call), retry after delay
+                                if (connectivityResult.isEmpty) {
+                                  if (i < 2) {
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 300));
+                                  }
+                                  continue;
+                                }
+                                hasConnection = connectivityResult
+                                        .contains(ConnectivityResult.wifi) ||
+                                    connectivityResult
+                                        .contains(ConnectivityResult.mobile) ||
+                                    connectivityResult
+                                        .contains(ConnectivityResult.ethernet);
+                                if (hasConnection) {
+                                  break; // Connection found, exit retry loop
+                                }
+                                // Wait a bit before retrying (only if not last attempt)
+                                if (i < 2) {
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 300));
+                                }
+                              } catch (e) {
+                                debugPrint('Connectivity check error: $e');
+                                // Continue to next retry
+                              }
+                            }
+
+                            if (!hasConnection) {
                               Constants.showToast(
                                   'Check Your Internet Connection');
                               return;
@@ -6340,32 +6368,41 @@ class FramedVerseContainer extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           // Background image with dark blend
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: Image.asset(
-              backgroundImagePath,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              errorBuilder: (context, error, stackTrace) {
-                debugPrint(
-                    'Error loading daily verse image: $backgroundImagePath - $error');
-                // Fallback to first image if error
-                return Image.asset(
-                  "assets/im1.jpg",
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    // If even fallback fails, show a colored container
-                    return Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      color: const Color(0xFF7A5435),
-                    );
-                  },
-                );
-              },
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Builder(
+                builder: (context) {
+                  debugPrint(
+                      '🖼️ Loading daily verse image: $backgroundImagePath');
+                  return Image.asset(
+                    backgroundImagePath,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      debugPrint(
+                          '❌ Error loading daily verse image: $backgroundImagePath - $error');
+                      // Fallback to first image if error
+                      return Image.asset(
+                        "assets/im1.jpg",
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('❌ Error loading fallback image: $error');
+                          // If even fallback fails, show a colored container
+                          return Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: const Color(0xFF7A5435),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
 

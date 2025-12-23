@@ -1422,80 +1422,103 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 fit: BoxFit.cover)),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 16),
 
-                      // Main Title
+                      // Main Title - Hero Headline
                       Text(
-                        "Grow Deeper in \n God's Word",
+                        "Grow Deeper in God's Word — Every Day",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: CommanColor.whiteBlack(context),
-                          fontFamily: 'Georgia',
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // Tagline
-                      Text(
-                        "Everything you need for daily spiritual growth",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 30,
                           fontWeight: FontWeight.w600,
-                          color:
-                              CommanColor.whiteBlack(context).withOpacity(0.7),
+                          color: const Color(0xFF1F1A14),
+                          fontFamily: 'Georgia',
+                          height: 1.2,
+                          letterSpacing: -0.3,
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
 
-                      // Feature Items with image assets
-                      _buildNewFeatureItem(
-                        imagePath: "assets/offer/fe1.png",
-                        text: "No Ads. No Distractions",
-                      ),
-                      _buildNewFeatureItem(
-                        imagePath: "assets/offer/fe2.png",
-                        text: "Start Every Day With Purpose",
-                      ),
-                      _buildNewFeatureItem(
-                        imagePath: "assets/offer/fe3.png",
-                        text: "Study Scripture With Clarity",
-                      ),
-                      _buildNewFeatureItem(
-                        imagePath: "assets/offer/fe4.png",
-                        text: "Never Lose Notes, Highlights",
+                      // Tagline - Subheadline
+                      Text(
+                        "Read, study, and reflect without distractions or limits.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF5B4A3A),
+                          height: 1.4,
+                        ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 28),
 
-                      // Pricing Box with LIMITED TIME OFFER banner
+                      // Feature Items with checkmarks
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            _buildNewFeatureItem(
+                              text:
+                                  "No Ads. No Distractions — focus fully on God's Word",
+                            ),
+                            _buildNewFeatureItem(
+                              text:
+                                  "Daily purpose & peace through guided reading",
+                            ),
+                            _buildNewFeatureItem(
+                              text:
+                                  "Clear study tools for deeper understanding",
+                            ),
+                            _buildNewFeatureItem(
+                              text: "Your notes & highlights saved forever",
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 36),
+
+                      // Pricing Box with Offer Badge
                       Stack(
                         clipBehavior: Clip.none,
                         children: [
                           Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(20),
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 20,
+                            ),
                             decoration: BoxDecoration(
-                              color: CommanColor.isDarkTheme(context)
-                                  ? const Color(0xFFE8DCC6)
-                                  : const Color(0xFFF5E6D6),
-                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 4),
+                                  spreadRadius: 0,
+                                ),
+                              ],
                             ),
                             child: Column(
                               children: [
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 16),
                                 // Lifetime Access Title
                                 Text(
                                   "Lifetime Access",
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: CommanColor.whiteBlack(context),
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF1F1A14),
+                                    letterSpacing: -0.3,
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -1517,12 +1540,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                                 Text(
                                                   discountedPrice,
                                                   style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
                                                     color:
-                                                        CommanColor.whiteBlack(
-                                                                context)
-                                                            .withOpacity(0.6),
+                                                        const Color(0xFF8A7A6A),
                                                     decoration: TextDecoration
                                                         .lineThrough,
                                                     decorationThickness: 2,
@@ -1539,10 +1560,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                       Text(
                                         "\$49.99",
                                         style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                          color: CommanColor.whiteBlack(context)
-                                              .withOpacity(0.6),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w400,
+                                          color: const Color(0xFF8A7A6A),
                                           decoration:
                                               TextDecoration.lineThrough,
                                           decorationThickness: 2,
@@ -1556,48 +1576,132 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                           ? lifetimeProduct.price
                                           : "\$19.99",
                                       style: TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.bold,
-                                        color: CommanColor.whiteBlack(context),
+                                        fontSize: 37,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF1F1A14),
+                                        letterSpacing: -1,
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                // Payment terms
+                                // Price Support Text
+                                Text(
+                                  "No subscriptions • No renewals • No hidden fees",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF6A5A4A),
+                                    height: 1.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                // CTA Button inside the card
+                                SizedBox(
+                                  height: 60,
+                                  width: double.infinity,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(colors: [
+                                        const Color(0xFF763201),
+                                        const Color(0xFFD5821F), // 0%
+                                        const Color(0xFFAD4D08), // 60.47%
+                                        const Color(0xFF763201),
+                                      ]),
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 18),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      onPressed: lifetimeProduct != null &&
+                                              !isPurchaseLoading
+                                          ? () async {
+                                              await SharPreferences.setString(
+                                                  'OpenAd', '1');
+                                              await SharPreferences.setBoolean(
+                                                  'startpurches', true);
+                                              _buyProduct(lifetimeProduct!);
+                                            }
+                                          : null,
+                                      child: isPurchaseLoading
+                                          ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(Colors.white),
+                                              ),
+                                            )
+                                          : const Text(
+                                              "Unlock Lifetime Access",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                // CTA Support Text
                                 Text(
                                   "One-time payment • Use forever",
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: CommanColor.whiteBlack(context)
-                                        .withOpacity(0.8),
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF6A5A4A),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          // LIMITED TIME OFFER Banner
+                          // Offer Badge
                           Positioned(
-                            top: -12,
-                            left:
-                                (MediaQuery.of(context).size.width - 250) / 1.9,
+                            top: -14,
+                            left: (MediaQuery.of(context).size.width - 300) / 2,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                                horizontal: 24,
+                                vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF8B4513), // Dark brown
-                                borderRadius: BorderRadius.circular(5),
+                                gradient: LinearGradient(colors: [
+                                  const Color(0xFF763201),
+                                  const Color(0xFFD5821F), // 0%
+                                  const Color(0xFFAD4D08), // 60.47%
+                                  const Color(0xFF763201),
+                                ]),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Text(
-                                "LIMITED TIME OFFER",
+                                "80% OFF - Special Launch Price",
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.white,
-                                  letterSpacing: 1.2,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                             ),
@@ -1605,70 +1709,33 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 28),
 
-                      // CTA Button
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: SizedBox(
-                          height: 57,
-                          width: 280,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFF805531), // Dark brown
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
+                      // Trust Text with Star Icon
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "★",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: const Color(0xFFB07A3A),
                             ),
-                            onPressed:
-                                lifetimeProduct != null && !isPurchaseLoading
-                                    ? () async {
-                                        await SharPreferences.setString(
-                                            'OpenAd', '1');
-                                        await SharPreferences.setBoolean(
-                                            'startpurches', true);
-                                        _buyProduct(lifetimeProduct!);
-                                      }
-                                    : null,
-                            child: isPurchaseLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : const Text(
-                                    "Start My Spiritual Journey",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Trusted by thousands of believers worldwide",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF5A4A3A),
+                            ),
+                          ),
+                        ],
                       ),
 
-                      const SizedBox(height: 8),
-
-                      // Reassurance text
-                      Text(
-                        "Pay once. No hidden charges",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color:
-                              CommanColor.whiteBlack(context).withOpacity(0.7),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
 
                       // Footer links
                       Row(
@@ -1680,12 +1747,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   'https://bibleoffice.com/terms_conditions.html');
                             },
                             child: Text(
-                              "Terms of Use",
+                              "Terms",
                               style: TextStyle(
-                                fontSize: 12,
-                                color: CommanColor.whiteBlack(context)
-                                    .withOpacity(0.7),
-                                decoration: TextDecoration.underline,
+                                fontSize: 13,
+                                color: const Color(0xFF7A6A5A),
+                                // decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
@@ -1695,14 +1761,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   'restorepurches', true);
                               await _restorePurchases(controller);
                             },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             child: Text(
                               "Restore",
                               style: TextStyle(
-                                color: CommanColor.whiteBlack(context)
-                                    .withOpacity(0.7),
-                                fontSize: 12,
+                                color: const Color(0xFF7A6A5A),
+                                fontSize: 13,
                                 fontWeight: FontWeight.w400,
-                                decoration: TextDecoration.underline,
+                                // decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
@@ -1714,10 +1784,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             child: Text(
                               "Privacy Policy",
                               style: TextStyle(
-                                fontSize: 12,
-                                color: CommanColor.whiteBlack(context)
-                                    .withOpacity(0.7),
-                                decoration: TextDecoration.underline,
+                                fontSize: 13,
+                                color: const Color(0xFF7A6A5A),
+                                // decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
@@ -2093,30 +2162,66 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   // New feature item builder for the new paywall design
   Widget _buildNewFeatureItem({
-    required String imagePath,
     required String text,
   }) {
+    // Define which parts should be bold
+    String boldPart = '';
+    String regularPart = '';
+
+    if (text.contains("No Ads. No Distractions")) {
+      boldPart = "No Ads. No Distractions";
+      regularPart = text.substring(boldPart.length);
+    } else if (text.contains("Daily purpose & peace")) {
+      boldPart = "Daily purpose & peace";
+      regularPart = text.substring(boldPart.length);
+    } else if (text.contains("Clear study tools")) {
+      boldPart = "Clear study tools";
+      regularPart = text.substring(boldPart.length);
+    } else if (text.contains("Your notes & highlights")) {
+      boldPart = "Your notes & highlights";
+      regularPart = text.substring(boldPart.length);
+    } else {
+      // Fallback if text doesn't match
+      regularPart = text;
+    }
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3.5, horizontal: 20),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image asset
-          Image.asset(
-            imagePath,
-            width: 32,
-            height: 32,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+          // Checkmark icon
+          Padding(
+            padding: const EdgeInsets.only(top: 3, right: 14),
             child: Text(
-              text,
+              "✔",
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: CommanColor.whiteBlack(context),
+                fontSize: 16,
+                color: const Color(0xFF8B5A2B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          // Feature text with RichText
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF3A2E23),
+                  height: 1.5,
+                ),
+                children: [
+                  if (boldPart.isNotEmpty)
+                    TextSpan(
+                      text: boldPart,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  TextSpan(text: regularPart),
+                ],
               ),
             ),
           ),
