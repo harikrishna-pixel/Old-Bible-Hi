@@ -1604,31 +1604,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     color: const Color(0xFF6A5A4A),
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-                                // Trust Text with Star Icon
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "★",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: const Color(0xFFB07A3A),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      "Trusted by thousands of believers Worldwide",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400,
-                                        color: const Color(0xFF5A4A3A),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
+
+                                const SizedBox(height: 15),
                                 // CTA Button inside the card
                                 SizedBox(
                                   height: 60,
@@ -1682,9 +1659,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                               ),
                                             )
                                           : const Text(
-                                              "Unlock Lifetime Access",
+                                              "UNLOCK LIFETIME ACCESS",
                                               style: TextStyle(
-                                                fontSize: 18,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.w700,
                                                 color: Colors.white,
                                                 letterSpacing: 0.3,
@@ -1694,6 +1671,29 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
+                                // Trust Text with Star Icon
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "★",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: const Color(0xFFB07A3A),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "Trusted by thousands of believers Worldwide",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF5A4A3A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
 
                               ],
                             ),
@@ -1730,7 +1730,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height:30),
 
                       // Footer links
                       Row(
