@@ -36,10 +36,11 @@ class WelcomeScreen extends StatelessWidget {
                   SizedBox(height: 100,),
                   // Welcome Image
                   Image.asset(
-                    "assets/img.png",
+                    "assets/new_ico.png",
                     height: isTablet ? 150 : 100,
                     width: isTablet ? 150 : 100,
                     fit: BoxFit.contain,
+
                   ),
                   SizedBox(height: 30,),
                   // Title

@@ -1463,8 +1463,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                       // Feature Items with checkmarks
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 60),
                         child: Column(
+
                           children: [
                             _buildNewFeatureItem(
                               text: "No Ads. No Distractions",
@@ -2136,27 +2137,35 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       {List<String>? highlightWords}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 20),
-      child: Row(
-        children: [
-          Image.asset(image, width: 28, height: 28), // ✅ use image, not Icon
-          const SizedBox(width: 12),
-          Expanded(
-            child: highlightWords != null && highlightWords.isNotEmpty
-                ? RichText(
-                    text: TextSpan(
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(image, width: 28, height: 28), // ✅ use image, not Icon
+            const SizedBox(width: 12),
+            Flexible(
+              child: highlightWords != null && highlightWords.isNotEmpty
+                  ? RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: CommanColor.whiteBlack(context)),
+                        children: _buildHighlightedText(
+                            text, highlightWords, context),
+                      ),
+                      textAlign: TextAlign.center,
+                    )
+                  : Text(
+                      text,
                       style: TextStyle(
                           fontSize: 14, color: CommanColor.whiteBlack(context)),
-                      children:
-                          _buildHighlightedText(text, highlightWords, context),
+                      textAlign: TextAlign.center,
                     ),
-                  )
-                : Text(
-                    text,
-                    style: TextStyle(
-                        fontSize: 14, color: CommanColor.whiteBlack(context)),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
