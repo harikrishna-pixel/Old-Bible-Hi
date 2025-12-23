@@ -913,7 +913,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     await SharPreferences.setBoolean('closead', false);
     await SharPreferences.setString('OpenAd', '1');
     await SharPreferences.setBoolean('restorepurches', false);
-    await SharPreferences.setBoolean('startpurches', false);
 
     // Provider.of<DownloadProvider>(context, listen: false).disableAd();
     WidgetsBinding.instance.addPostFrameCallback((_) {
