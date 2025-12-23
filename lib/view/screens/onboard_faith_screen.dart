@@ -162,7 +162,8 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
           ));
         }
 
-        Get.to(() => OnboardingGuidanceScreen(onContinue: goNext));
+        // Skip the guidance screen and go directly to the next step
+        goNext();
       }
       //if (mounted) Navigator.of(context).maybePop();
     }
