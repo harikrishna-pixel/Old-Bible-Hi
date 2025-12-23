@@ -1434,7 +1434,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                       // Main Title - Hero Headline
                       Text(
-                        "Grow Deeper in God's Word — Every Day",
+                        "Grow Deeper in \n God's Word — Every Day",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 30,
