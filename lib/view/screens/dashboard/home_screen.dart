@@ -1325,9 +1325,6 @@ class _HomeScreenState extends State<HomeScreen>
       String randomBgImage = bgImages[random.nextInt(bgImages.length)];
       debugPrint('📸 Daily verse background image selected: $randomBgImage');
 
-      // Save today's date to prefs
-      await prefs.setString('last_shown_verse_date', todayString);
-
       if (!mounted) {
         _isBottomSheetOpen = false;
         return;
@@ -1339,20 +1336,26 @@ class _HomeScreenState extends State<HomeScreen>
         return;
       }
 
-      await showModalBottomSheet(
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        context: context,
-        enableDrag: false,
-        builder: (context) {
-          _bottomSheetContext = context;
-          return _buildVerseBottomSheet(
-              context, randomBgImage, todayVerse, fontSize);
-        },
-      ).then((_) {
-        // Clear context when bottom sheet is dismissed
-        _bottomSheetContext = null;
-      });
+      if (mounted) {
+        await showModalBottomSheet(
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          context: context,
+          enableDrag: false,
+          isDismissible: true,
+          builder: (context) {
+            _bottomSheetContext = context;
+            return _buildVerseBottomSheet(
+                context, randomBgImage, todayVerse, fontSize);
+          },
+        ).then((_) {
+          // Clear context when bottom sheet is dismissed
+          _bottomSheetContext = null;
+        });
+
+        // Mark that today's verse has been shown after the sheet is closed
+        await prefs.setString('last_shown_verse_date', todayString);
+      }
 
       // if (!_isBottomSheetOpen) {
       //   await _checkAndShowOfferDialog();

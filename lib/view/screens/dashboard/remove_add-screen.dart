@@ -281,18 +281,21 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
                   await Future.delayed(Duration(seconds: 2));
                   EasyLoading.dismiss();
                   await SharPreferences.setBoolean('closead', true);
+                  await SharPreferences.setBoolean('startpurches', false);
                   return Get.back();
                 } else if (purchaseDetails.productID == widget.oneYearPlan) {
                   await controller.disableAd(const Duration(days: 366));
                   await Future.delayed(Duration(seconds: 2));
                   EasyLoading.dismiss();
                   await SharPreferences.setBoolean('closead', true);
+                  await SharPreferences.setBoolean('startpurches', false);
                   return Get.back();
                 } else if (purchaseDetails.productID == widget.lifeTimePlan) {
                   await controller.disableAd(const Duration(days: 3650012345));
                   await Future.delayed(Duration(seconds: 2));
                   EasyLoading.dismiss();
                   await SharPreferences.setBoolean('closead', true);
+                  await SharPreferences.setBoolean('startpurches', false);
                   return Get.back();
                 }
                 // final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
@@ -342,6 +345,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
         } else if (purchaseDetails.status == PurchaseStatus.canceled) {
           EasyLoading.dismiss();
           Constants.showToast('Something went wrong');
+          await SharPreferences.setBoolean('startpurches', false);
         }
       }
     });

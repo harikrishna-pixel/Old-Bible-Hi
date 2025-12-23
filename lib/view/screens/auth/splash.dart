@@ -36,6 +36,7 @@ import 'package:biblebookapp/view/constants/colors.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
 import 'package:biblebookapp/view/screens/calendar_screen/model/calendar_model.dart';
 import 'package:biblebookapp/view/screens/dashboard/constants.dart';
+import 'package:biblebookapp/view/screens/intro_subcribtion_screen.dart';
 import 'package:biblebookapp/view/widget/notification_service.dart';
 
 import '../../../Model/dailyVersesMainListModel.dart';
@@ -208,9 +209,8 @@ class _SplashScreenState extends State<SplashScreen> {
         // Essential: Ad consent (non-blocking, can run in background)
         AdConsentManager.initAppFlow(); // Don't await - let it run in background
         
-        // Essential: Reset purchase flags
+        // Essential: Reset purchase flags (keep pending purchase indicator intact)
         await SharPreferences.setBoolean('restorepurches', false);
-        await SharPreferences.setBoolean('startpurches', false);
         
         // Initialize wallet (gives 100 free credits to new users)
         await WalletService.initializeWallet();
@@ -314,7 +314,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
 // ✅ Save to SharedPreferences
       await SharPreferences.setBoolean('restorepurches', false);
-      await SharPreferences.setBoolean('startpurches', false);
       await prefs.setString(
         'otBookList',
         jsonEncode(downloadProvider.otBookList.map((e) => e.toJson()).toList()),
@@ -381,6 +380,27 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   handleNavigation() async {
+    final pendingPurchase =
+        await SharPreferences.getBoolean('startpurches') ?? false;
+
+    // If user initiated a purchase and force-closed, take them back to paywall
+    if (pendingPurchase) {
+      final sixMonthPlan =
+          await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
+      final oneYearPlan =
+          await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
+      final lifeTimePlan =
+          await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
+
+      Get.offAll(() => SubscriptionScreen(
+            sixMonthPlan: sixMonthPlan,
+            oneYearPlan: oneYearPlan,
+            lifeTimePlan: lifeTimePlan,
+            checkad: 'pending_purchase',
+          ));
+      return;
+    }
+
     final isOnboardingCompleted =
         await SharPreferences.getBoolean(SharPreferences.onboarding);
 

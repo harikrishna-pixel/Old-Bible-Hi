@@ -10,7 +10,6 @@ import 'package:biblebookapp/view/constants/theme_provider.dart';
 import 'package:biblebookapp/view/screens/bible_select_screen.dart';
 import 'package:biblebookapp/view/screens/dashboard/constants.dart';
 import 'package:biblebookapp/view/screens/dashboard/preference_selection_screen.dart';
-import 'package:biblebookapp/view/screens/onboarding_guidance_screen.dart';
 import 'package:biblebookapp/view/widget/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -149,26 +148,22 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
         // Request notification permission after completing all questions
         await _requestNotificationPermission();
 
-        void goNext() {
-          // Show theme selection screen after OnboardingGuidanceScreen
-          Get.to(() => OnboardingThemeSelectionScreen(
-            onThemeSelected: () {
-              debugPrint("folders leng - ${BibleInfo.folders.length}");
-              if (BibleInfo.folders.length == 1) {
-                Get.to(() => PreferenceSelectionScreen(
-                      isSetting: false,
-                      selectedbible: BibleInfo.folders.first,
-                    ));
-              } else {
-                Get.to(() => BibleVersionsScreen(
-                      from: 'onboard',
-                    ));
-              }
-            },
-          ));
-        }
-
-        Get.to(() => OnboardingGuidanceScreen(onContinue: goNext));
+        // Route directly to theme selection screen
+        Get.to(() => OnboardingThemeSelectionScreen(
+          onThemeSelected: () {
+            debugPrint("folders leng - ${BibleInfo.folders.length}");
+            if (BibleInfo.folders.length == 1) {
+              Get.to(() => PreferenceSelectionScreen(
+                    isSetting: false,
+                    selectedbible: BibleInfo.folders.first,
+                  ));
+            } else {
+              Get.to(() => BibleVersionsScreen(
+                    from: 'onboard',
+                  ));
+            }
+          },
+        ));
       }
       //if (mounted) Navigator.of(context).maybePop();
     }

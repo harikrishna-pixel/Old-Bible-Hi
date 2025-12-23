@@ -353,6 +353,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       _myProvider?.enableAd();
     }
     SharPreferences.setBoolean('closead', true);
+    SharPreferences.setBoolean('startpurches', false);
 
     // If came from Settings (theme), route back to Settings
     if (widget.checkad == 'theme') {
@@ -710,6 +711,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
+        await SharPreferences.setBoolean('startpurches', false);
         return Get.offAll(() => HomeScreen(
               From: "premium",
               selectedVerseNumForRead: "",
@@ -725,6 +727,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
+        await SharPreferences.setBoolean('startpurches', false);
         return Get.offAll(() => HomeScreen(
               From: "premium",
               selectedVerseNumForRead: "",
@@ -740,6 +743,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
+        await SharPreferences.setBoolean('startpurches', false);
         return Get.offAll(() => HomeScreen(
               From: "premium",
               selectedVerseNumForRead: "",
@@ -828,6 +832,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   }
                   EasyLoading.dismiss();
                   await SharPreferences.setBoolean('closead', true);
+                  await SharPreferences.setBoolean('startpurches', false);
                   debugPrint("restore data 2");
                   return Get.offAll(() => HomeScreen(
                         From: "premium",
@@ -846,6 +851,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   }
                   EasyLoading.dismiss();
                   await SharPreferences.setBoolean('closead', true);
+                  await SharPreferences.setBoolean('startpurches', false);
                   debugPrint("restore data 3 ");
                   return Get.offAll(() => HomeScreen(
                         From: "premium",
@@ -864,6 +870,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   }
                   EasyLoading.dismiss();
                   await SharPreferences.setBoolean('closead', true);
+                  await SharPreferences.setBoolean('startpurches', false);
                   debugPrint("restore data 4 ");
                   return Get.offAll(() => HomeScreen(
                         From: "premium",
@@ -893,6 +900,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         } else if (purchaseDetails.status == PurchaseStatus.canceled) {
           EasyLoading.dismiss();
           Constants.showToast('Something went wrong');
+          await SharPreferences.setBoolean('startpurches', false);
 
           // Check if this is the first time showing paywall and user canceled
           await _checkAndShowExitOffer(controller);
@@ -1463,13 +1471,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               text: "No Ads. No Distractions",
                             ),
                             _buildNewFeatureItem(
-                              text: "Start Every Day With Purpose",
+                              text: "Daily Purpose & Focus",
                             ),
                             _buildNewFeatureItem(
-                              text: "Study Scripture With Clarity",
+                              text: "Clear Scripture Understanding",
                             ),
                             _buildNewFeatureItem(
-                              text: "Your notes & saved forever",
+                              text: "Your Notes Saved Forever",
                             ),
                           ],
                         ),
@@ -1694,7 +1702,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     ),
                                   ],
                                 ),
-
                               ],
                             ),
                           ),
@@ -1730,7 +1737,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ],
                       ),
 
-                      const SizedBox(height:30),
+                      const SizedBox(height: 30),
 
                       // Footer links
                       Row(
@@ -2166,14 +2173,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     if (text.contains("No Ads. No Distractions")) {
       boldPart = "No Ads. No Distractions";
       regularPart = text.substring(boldPart.length);
-    } else if (text.contains("Start Every Day With Purpose")) {
-      boldPart = "Start Every Day With Purpose";
+    } else if (text.contains("Daily Purpose & Focus")) {
+      boldPart = "Daily Purpose & Focus";
       regularPart = text.substring(boldPart.length);
-    } else if (text.contains("Study Scripture With Clarity")) {
-      boldPart = "Study Scripture With Clarity";
+    } else if (text.contains("Clear Scripture Understanding")) {
+      boldPart = "Clear Scripture Understanding";
       regularPart = text.substring(boldPart.length);
-    } else if (text.contains("Your notes & saved forever")) {
-      boldPart = "Your notes & saved forever";
+    } else if (text.contains("Your Notes Saved Forever")) {
+      boldPart = "Your Notes Saved Forever";
       regularPart = text.substring(boldPart.length);
     } else {
       // Fallback if text doesn't match

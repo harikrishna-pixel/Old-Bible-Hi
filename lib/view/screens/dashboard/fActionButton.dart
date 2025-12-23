@@ -819,6 +819,17 @@ class floatingButtonState extends State<floatingButton>
                           )),
             onTap: () async {
               log('On Tap');
+              // Sync isSpeech with actual TTS state before checking
+              if (ttsState == TtsState.playing && !isSpeech) {
+                setState(() {
+                  isSpeech = true;
+                });
+              } else if (ttsState == TtsState.stopped && isSpeech) {
+                setState(() {
+                  isSpeech = false;
+                });
+              }
+              
               if (isSpeech) {
                 _stop();
                 setState(() {
@@ -998,6 +1009,17 @@ class floatingButtonState extends State<floatingButton>
                               size: isOpenAudio == false ? 28 : 22,
                             )),
               onTap: () async {
+                // Sync isSpeech with actual TTS state before checking
+                if (ttsState == TtsState.playing && !isSpeech) {
+                  setState(() {
+                    isSpeech = true;
+                  });
+                } else if (ttsState == TtsState.stopped && isSpeech) {
+                  setState(() {
+                    isSpeech = false;
+                  });
+                }
+                
                 if (isSpeech) {
                   _stop();
                   setState(() {
@@ -2556,12 +2578,26 @@ class floatingButtonState extends State<floatingButton>
 
   Future textToSpeechBottomSheet() {
     if (widget.textToSpeechLoad == false) {
+      // Sync isSpeech with actual TTS state when opening bottom sheet
+      if (ttsState == TtsState.playing) {
+        isSpeech = true;
+      } else {
+        isSpeech = false;
+      }
+      
       return showModalBottomSheet(
         backgroundColor: Colors.black12,
         context: context,
         builder: (context) {
           return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
+              // Sync isSpeech with ttsState when bottom sheet opens
+              if (ttsState == TtsState.playing && !isSpeech) {
+                isSpeech = true;
+              } else if (ttsState == TtsState.stopped && isSpeech) {
+                isSpeech = false;
+              }
+              
               flutterTts.setProgressHandler(
                   (String text, int startOffset, int endOffset, String word) {
                 Future.delayed(
@@ -2618,11 +2654,20 @@ class floatingButtonState extends State<floatingButton>
                               ),
                               InkWell(
                                   onTap: () {
-                                    _stop();
-                                    setState(() {
+                                    // Don't stop TTS if it's playing - just close the bottom sheet
+                                    // This allows the pause icon to show correctly when reopening
+                                    if (ttsState == TtsState.playing) {
+                                      // Keep isSpeech true if TTS is still playing
+                                      isSpeech = true;
+                                    } else {
+                                      // Only stop if TTS is not playing
+                                      _stop();
                                       isSpeech = false;
-                                    });
+                                    }
                                     Navigator.pop(context);
+                                    if (mounted) {
+                                      setState(() {});
+                                    }
                                   },
                                   child: Icon(
                                     Icons.close,
@@ -2811,6 +2856,8 @@ class floatingButtonState extends State<floatingButton>
                                       shouldAutoAdvance = false; // Disable auto-advance when paused
                                     }
                                   });
+                                  // Also refresh parent UI so the pause icon updates
+                                  this.setState(() {});
                                 }
 
                                 isSpeech == true ? _speak() : _stop();
@@ -2819,6 +2866,7 @@ class floatingButtonState extends State<floatingButton>
                                     end = _newVoiceText?.length ?? 0;
                                     isInitialTime = false;
                                   });
+                                  this.setState(() {});
                                 }
                               },
                               child: Container(
