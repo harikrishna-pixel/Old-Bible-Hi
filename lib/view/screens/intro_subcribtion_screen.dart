@@ -1730,7 +1730,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 10),
 
                       // Footer links
                       Row(
