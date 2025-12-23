@@ -92,6 +92,9 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
   final data = FaithSurveyData();
   int step = 0; // 0..4 (5 questions)
   bool _hasRequestedNotification = false;
+  final Set<String> _purposeSelections = {};
+  final Set<String> _challengeSelections = {};
+  final Set<String> _growthWaySelections = {};
 
   // UI palette
   static const Color _brown = Color(0xFF7A5435);
@@ -108,7 +111,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
   Future<void> _requestNotificationPermission() async {
     // Initialize notifications first - this will show the permission pop-up
     await NotificationsServices().initialiseNotifications();
-    
+
     // Then request permission explicitly if needed
     if (Platform.isAndroid) {
       final status = await Permission.notification.request();
@@ -128,11 +131,14 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
   void _next() async {
     if (step < 4) {
       // Show Apple notification permission AFTER answering the 4th question (when moving from step 3 to step 4)
-      if (Platform.isIOS && step == 3 && _isStepAnswered(3) && !_hasRequestedNotification) {
+      if (Platform.isIOS &&
+          step == 3 &&
+          _isStepAnswered(3) &&
+          !_hasRequestedNotification) {
         _hasRequestedNotification = true;
         await _requestNotificationPermission();
       }
-      
+
       setState(() => step += 1);
       _page.nextPage(
           duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
@@ -146,20 +152,20 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
         void goNext() {
           // Show theme selection screen after OnboardingGuidanceScreen
           Get.to(() => OnboardingThemeSelectionScreen(
-            onThemeSelected: () {
-              debugPrint("folders leng - ${BibleInfo.folders.length}");
-              if (BibleInfo.folders.length == 1) {
-                Get.to(() => PreferenceSelectionScreen(
-                      isSetting: false,
-                      selectedbible: BibleInfo.folders.first,
-                    ));
-              } else {
-                Get.to(() => BibleVersionsScreen(
-                      from: 'onboard',
-                    ));
-              }
-            },
-          ));
+                onThemeSelected: () {
+                  debugPrint("folders leng - ${BibleInfo.folders.length}");
+                  if (BibleInfo.folders.length == 1) {
+                    Get.to(() => PreferenceSelectionScreen(
+                          isSetting: false,
+                          selectedbible: BibleInfo.folders.first,
+                        ));
+                  } else {
+                    Get.to(() => BibleVersionsScreen(
+                          from: 'onboard',
+                        ));
+                  }
+                },
+              ));
         }
 
         Get.to(() => OnboardingGuidanceScreen(onContinue: goNext));
@@ -168,19 +174,29 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
     }
   }
 
+  void _toggleMultiSelect(
+      Set<String> bucket, String option, void Function(String?) setter) {
+    setState(() {
+      if (!bucket.add(option)) {
+        bucket.remove(option);
+      }
+      setter(bucket.isEmpty ? null : bucket.join(', '));
+    });
+  }
+
   void _back() {
     if (step == 0) {
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
-    } else {
+      } else {
         Get.offAll(() => const WelcomeScreen());
       }
       return;
     }
 
-      setState(() => step -= 1);
-      _page.previousPage(
-          duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    setState(() => step -= 1);
+    _page.previousPage(
+        duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
   }
 
   bool _isStepAnswered(int index) {
@@ -290,7 +306,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                 controller: _page,
                                 physics: const NeverScrollableScrollPhysics(),
                                 children: [
-                                  _QuestionPage(
+                                  _MultiSelectQuestionPage(
                                     question:
                                         'What brings you to our Bible app today?',
                                     options: const [
@@ -300,9 +316,12 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                       "Overcome life's challenges",
                                       'Strengthen my connection with God',
                                     ],
-                                    getValue: () => data.purpose,
-                                    onChanged: (v) =>
-                                        setState(() => data.purpose = v),
+                                    selections: _purposeSelections,
+                                    onToggle: (option) => _toggleMultiSelect(
+                                      _purposeSelections,
+                                      option,
+                                      (value) => data.purpose = value,
+                                    ),
                                   ),
                                   _QuestionPage(
                                     question: 'What is your age group?',
@@ -318,7 +337,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                     onChanged: (v) =>
                                         setState(() => data.ageGroup = v),
                                   ),
-                                  _QuestionPage(
+                                  _MultiSelectQuestionPage(
                                     question:
                                         'What challenges affect your spiritual growth the most?',
                                     options: const [
@@ -328,9 +347,12 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                       'Struggle to pray regularly',
                                       'Feeling disconnected from God',
                                     ],
-                                    getValue: () => data.challenge,
-                                    onChanged: (v) =>
-                                        setState(() => data.challenge = v),
+                                    selections: _challengeSelections,
+                                    onToggle: (option) => _toggleMultiSelect(
+                                      _challengeSelections,
+                                      option,
+                                      (value) => data.challenge = value,
+                                    ),
                                   ),
                                   _QuestionPage(
                                     question:
@@ -346,7 +368,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                     onChanged: (v) =>
                                         setState(() => data.frequency = v),
                                   ),
-                                  _QuestionPage(
+                                  _MultiSelectQuestionPage(
                                     question:
                                         "What's your favorite way to grow spiritually?",
                                     options: const [
@@ -355,9 +377,12 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                       'Sharing verses with friends',
                                       'Setting daily reminders',
                                     ],
-                                    getValue: () => data.growthWay,
-                                    onChanged: (v) =>
-                                        setState(() => data.growthWay = v),
+                                    selections: _growthWaySelections,
+                                    onToggle: (option) => _toggleMultiSelect(
+                                      _growthWaySelections,
+                                      option,
+                                      (value) => data.growthWay = value,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -401,6 +426,66 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Question page variant that allows multiple selections
+class _MultiSelectQuestionPage extends StatelessWidget {
+  final String question;
+  final List<String> options;
+  final Set<String> selections;
+  final ValueChanged<String> onToggle;
+
+  const _MultiSelectQuestionPage({
+    required this.question,
+    required this.options,
+    required this.selections,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final isTablet = mq.size.width >= 600;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: isTablet ? 8 : 4),
+      child: Column(
+        children: [
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              question,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isTablet ? 22 : 18,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2E2C2B),
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Expanded(
+            child: ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              itemCount: options.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              itemBuilder: (context, i) {
+                final option = options[i];
+                final selected = selections.contains(option);
+                return _SelectButton(
+                  label: option,
+                  selected: selected,
+                  onTap: () => onToggle(option),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -565,10 +650,12 @@ class OnboardingThemeSelectionScreen extends StatefulWidget {
   });
 
   @override
-  State<OnboardingThemeSelectionScreen> createState() => _OnboardingThemeSelectionScreenState();
+  State<OnboardingThemeSelectionScreen> createState() =>
+      _OnboardingThemeSelectionScreenState();
 }
 
-class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectionScreen> {
+class _OnboardingThemeSelectionScreenState
+    extends State<OnboardingThemeSelectionScreen> {
   late AppCustomTheme _selectedTheme;
   String? _selectedThemeName;
 
@@ -669,9 +756,7 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                             ),
                           ),
                         ),
-                        const Opacity(
-                            opacity: 0,
-                            child: SizedBox(width: 40)),
+                        const Opacity(opacity: 0, child: SizedBox(width: 40)),
                       ],
                     ),
                   ),
@@ -682,13 +767,15 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                     child: ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: maxContentWidth),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: isTablet ? 8 : 4),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16, vertical: isTablet ? 8 : 4),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const SizedBox(height: 4),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
                                 'Which theme do you love most?',
                                 textAlign: TextAlign.center,
@@ -723,17 +810,21 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                                       AppCustomTheme.vintage
                                   ? BoxDecoration(
                                       image: DecorationImage(
-                                          image: AssetImage(Images.bgImage(context)),
+                                          image: AssetImage(
+                                              Images.bgImage(context)),
                                           fit: BoxFit.cover),
                                       border: Border.all(
-                                        color: const Color(0xFFB08D6E).withValues(alpha: 0.7),
+                                        color: const Color(0xFFB08D6E)
+                                            .withValues(alpha: 0.7),
                                       ),
                                     )
                                   : BoxDecoration(
-                                      color: Provider.of<ThemeProvider>(context).backgroundColor,
+                                      color: Provider.of<ThemeProvider>(context)
+                                          .backgroundColor,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: const Color(0xFFB08D6E).withValues(alpha: 0.7),
+                                        color: const Color(0xFFB08D6E)
+                                            .withValues(alpha: 0.7),
                                       ),
                                     ),
                               padding: const EdgeInsets.all(14),
@@ -763,7 +854,8 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF7A5435),
                                     disabledBackgroundColor:
-                                        const Color(0xFF7A5435).withValues(alpha: 0.35),
+                                        const Color(0xFF7A5435)
+                                            .withValues(alpha: 0.35),
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
@@ -1004,8 +1096,12 @@ class _SelectButton extends StatelessWidget {
     );
 
     // Selected option: background color 805531 with 20% opacity
-    final bg = selected ? const Color(0xFF805531).withOpacity(0.2) : Colors.transparent;
-    final fg = selected ? const Color(0xFF2E2C2B) : const Color(0xFF2E2C2B); // Keep text color same for both states
+    final bg = selected
+        ? const Color(0xFF805531).withOpacity(0.2)
+        : Colors.transparent;
+    final fg = selected
+        ? const Color(0xFF2E2C2B)
+        : const Color(0xFF2E2C2B); // Keep text color same for both states
 
     return Material(
       color: Colors.transparent,
@@ -1016,7 +1112,8 @@ class _SelectButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: borderRadius,
-            border: baseBorder, // Always show border with thickness based on selection
+            border:
+                baseBorder, // Always show border with thickness based on selection
           ),
           padding: EdgeInsets.symmetric(
               horizontal: 18, vertical: isTablet ? 18 : 16),
