@@ -636,7 +636,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      // barrierDismissible: false,
+      isDismissible:
+          false, // Prevent auto-dismiss on iPad - user must take action
       enableDrag: false,
       builder: (BuildContext context) {
         return _ExitOfferBottomSheetContent(
@@ -2132,184 +2133,190 @@ class _ExitOfferBottomSheetContentState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: CommanColor.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+    return PopScope(
+      canPop:
+          false, // Prevent back button dismissal on iPad - user must take action
+      child: Container(
+        decoration: BoxDecoration(
+          color: CommanColor.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Close button (X) at top right
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 10),
-                  // Red "LIMITED TIME OFFER" banner
-                  Container(
-                    width: 220,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(8),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Close button (X) at top right
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 10),
+                    // Red "LIMITED TIME OFFER" banner
+                    Container(
+                      width: 220,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "LIMITED TIME OFFER !",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ),
-                    child: const Text(
-                      "LIMITED TIME OFFER !",
+                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
+                    // Description
+                    RichText(
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: widget.screenWidth > 450 ? 16 : 18,
+                          color: Colors.black87,
+                          height: 1.4,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: widget.exitOffer.item_2?.isNotEmpty == true
+                                ? widget.exitOffer.item_2!.replaceAll("30%", "")
+                                : "Unlock every Premium Bible feature. Now ",
+                          ),
+                          TextSpan(
+                            text: "30% Off",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text: widget.exitOffer.item_2?.isNotEmpty == true
+                                ? ""
+                                : " for the next 10 minutes",
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const SizedBox(height: 12),
-                  // Description
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: widget.screenWidth > 450 ? 16 : 18,
-                        color: Colors.black87,
-                        height: 1.4,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: widget.exitOffer.item_2?.isNotEmpty == true
-                              ? widget.exitOffer.item_2!.replaceAll("30%", "")
-                              : "Unlock every Premium Bible feature. Now ",
-                        ),
-                        TextSpan(
-                          text: "30% Off",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        TextSpan(
-                          text: widget.exitOffer.item_2?.isNotEmpty == true
-                              ? ""
-                              : " for the next 10 minutes",
-                        ),
-                      ],
-                    ),
-                  ),
 
-                  const SizedBox(height: 20),
-                  // Purple offer box
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: CommanColor.backgrondcolor, // Light purple
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFF9B7EDE),
-                        width: 1.5,
+                    const SizedBox(height: 20),
+                    // Purple offer box
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: CommanColor.backgrondcolor, // Light purple
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF9B7EDE),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            "Lifetime Premium",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.lifetimePrice,
+                            style: TextStyle(
+                              fontSize: widget.screenWidth > 450 ? 32 : 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Enjoy 30% Savings today!",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.access_time,
+                                size: 16,
+                                color: Colors.red,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Offer ends in ${_countdownMinutes.toString().padLeft(2, '0')}:${_countdownSeconds.toString().padLeft(2, '0')}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Lifetime Premium",
+                    const SizedBox(height: 24),
+                    // Unlock Bible Premium button (purple)
+                    SizedBox(
+                      width: 250,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _countdownTimer?.cancel();
+                          widget.onUnlockPremium();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              CommanColor.darkPrimaryColor, // Purple
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Text(
+                          'Unlock Bible Premium',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: widget.screenWidth > 450 ? 18 : 18,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.lifetimePrice,
-                          style: TextStyle(
-                            fontSize: widget.screenWidth > 450 ? 32 : 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Enjoy 30% Savings today!",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Colors.red,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              "Offer ends in ${_countdownMinutes.toString().padLeft(2, '0')}:${_countdownSeconds.toString().padLeft(2, '0')}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.red,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Unlock Bible Premium button (purple)
-                  SizedBox(
-                    width: 250,
-                    child: ElevatedButton(
+                    const SizedBox(height: 12),
+                    // Maybe Later text
+                    TextButton(
                       onPressed: () {
                         _countdownTimer?.cancel();
-                        widget.onUnlockPremium();
+                        widget.onMaybeLater();
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CommanColor.darkPrimaryColor, // Purple
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
                       child: Text(
-                        'Unlock Bible Premium',
+                        "Maybe later",
                         style: TextStyle(
-                          fontSize: widget.screenWidth > 450 ? 18 : 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontSize: widget.screenWidth > 450 ? 16 : 14,
+                          color: Colors.grey.shade600,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Maybe Later text
-                  TextButton(
-                    onPressed: () {
-                      _countdownTimer?.cancel();
-                      widget.onMaybeLater();
-                    },
-                    child: Text(
-                      "Maybe later",
-                      style: TextStyle(
-                        fontSize: widget.screenWidth > 450 ? 16 : 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
