@@ -1481,11 +1481,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       _buildFeatureItem("assets/offer/fe4.png",
                           "Backup & Sync across all devices",
                           highlightWords: ["Backup & Sync"]),
-                      _buildFeatureItem("assets/guidance.png",
-                          "Scripture Explanations & Answers",
-                          highlightWords: ["Explanations & Answers"]),
-                      _buildFeatureItem("assets/coins.png", _currentBonusLabel,
-                          highlightWords: [_currentBonusHighlight]),
+                      // _buildFeatureItem("assets/guidance.png",
+                      //     "Scripture Explanations & Answers",
+                      //     highlightWords: ["Explanations & Answers"]),
+                      // _buildFeatureItem("assets/coins.png", _currentBonusLabel,
+                      //     highlightWords: [_currentBonusHighlight]),
 
                       const SizedBox(height: 17),
                       Row(
