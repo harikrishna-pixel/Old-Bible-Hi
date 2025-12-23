@@ -1452,7 +1452,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
 
                       // Feature Items with checkmarks
                       Padding(
@@ -1460,25 +1460,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         child: Column(
                           children: [
                             _buildNewFeatureItem(
-                              text:
-                                  "No Ads. No Distractions — focus fully on God's Word",
+                              text: "No Ads. No Distractions",
                             ),
                             _buildNewFeatureItem(
-                              text:
-                                  "Daily purpose & peace through guided reading",
+                              text: "Start Every Day With Purpose",
                             ),
                             _buildNewFeatureItem(
-                              text:
-                                  "Clear study tools for deeper understanding",
+                              text: "Study Scripture With Clarity",
                             ),
                             _buildNewFeatureItem(
-                              text: "Your notes & highlights saved forever",
+                              text: "Your notes & saved forever",
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 36),
+                      const SizedBox(height: 20),
 
                       // Pricing Box with Offer Badge
                       Stack(
@@ -1509,7 +1506,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             ),
                             child: Column(
                               children: [
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 // Lifetime Access Title
                                 Text(
                                   "Lifetime Access",
@@ -1521,7 +1518,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     letterSpacing: -0.3,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 // Price Section
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1584,10 +1581,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 10),
                                 // Price Support Text
                                 Text(
-                                  "No subscriptions • No renewals • No hidden fees",
+                                  "No subscriptions • No hidden fees",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14.5,
@@ -1595,6 +1592,41 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     color: const Color(0xFF6A5A4A),
                                     height: 1.4,
                                   ),
+                                ),
+                                const SizedBox(height: 10),
+                                // CTA Support Text
+                                Text(
+                                  "One-time payment • Use forever",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF6A5A4A),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                // Trust Text with Star Icon
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "★",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: const Color(0xFFB07A3A),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "Trusted by thousands of believers Worldwide",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF5A4A3A),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 20),
                                 // CTA Button inside the card
@@ -1604,8 +1636,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(colors: [
-                                        const Color(0xFF763201),
-                                        const Color(0xFFD5821F), // 0%
                                         const Color(0xFFAD4D08), // 60.47%
                                         const Color(0xFF763201),
                                       ]),
@@ -1664,16 +1694,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                // CTA Support Text
-                                Text(
-                                  "One-time payment • Use forever",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: const Color(0xFF6A5A4A),
-                                  ),
-                                ),
+
                               ],
                             ),
                           ),
@@ -1709,33 +1730,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
-
-                      // Trust Text with Star Icon
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "★",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: const Color(0xFFB07A3A),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "Trusted by thousands of believers worldwide",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF5A4A3A),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 6),
 
                       // Footer links
                       Row(
@@ -1964,7 +1959,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           Text("One Time Payment",
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: CommanColor.whiteBlack(context)))
+                                  color: CommanColor.whiteBlack(context))),
                         ],
                       ),
                       // Prices on right
@@ -2171,14 +2166,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     if (text.contains("No Ads. No Distractions")) {
       boldPart = "No Ads. No Distractions";
       regularPart = text.substring(boldPart.length);
-    } else if (text.contains("Daily purpose & peace")) {
-      boldPart = "Daily purpose & peace";
+    } else if (text.contains("Start Every Day With Purpose")) {
+      boldPart = "Start Every Day With Purpose";
       regularPart = text.substring(boldPart.length);
-    } else if (text.contains("Clear study tools")) {
-      boldPart = "Clear study tools";
+    } else if (text.contains("Study Scripture With Clarity")) {
+      boldPart = "Study Scripture With Clarity";
       regularPart = text.substring(boldPart.length);
-    } else if (text.contains("Your notes & highlights")) {
-      boldPart = "Your notes & highlights";
+    } else if (text.contains("Your notes & saved forever")) {
+      boldPart = "Your notes & saved forever";
       regularPart = text.substring(boldPart.length);
     } else {
       // Fallback if text doesn't match
