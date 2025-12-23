@@ -1497,15 +1497,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               vertical: 20,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
+                              color: Color(0XFFF5EDE3),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Color(0XFFF5EDE3),
                                 width: 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
+                                  color: Colors.black.withOpacity(0.50),
                                   blurRadius: 20,
                                   offset: const Offset(0, 4),
                                   spreadRadius: 0,
@@ -2203,21 +2203,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           // Checkmark icon
           Padding(
             padding: const EdgeInsets.only(top: 3, right: 14),
-            child: Text(
-              "✔",
-              style: TextStyle(
-                fontSize: 16,
-                color: const Color(0xFF8B5A2B),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Image.asset("assets/Vector.png", width: 17, height: 17),
           ),
           // Feature text with RichText
           Expanded(
             child: RichText(
               text: TextSpan(
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13.2 ,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF3A2E23),
                   height: 1.5,
