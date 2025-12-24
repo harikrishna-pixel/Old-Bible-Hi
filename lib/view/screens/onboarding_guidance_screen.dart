@@ -75,27 +75,47 @@ class OnboardingGuidanceScreen extends StatelessWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      onPressed: onContinue,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7B5C3D),
-                        padding: EdgeInsets.symmetric(
-                          vertical: isTablet ? 20 : 14,
-                        ),
+                        padding: EdgeInsets.zero, // REQUIRED
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: onContinue,
-                      child: Text(
-                        'Continue',
-                        style: TextStyle(
-                          fontSize: isTablet ? 20 : 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF763201),
+                              Color(0xFFD5821F),
+                              Color(0xFFAD4D08),
+                              Color(0xFF763201),
+                            ],
+                            stops: [0.0, 0.3, 0.6, 1.0],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: isTablet ? 20 : 14,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontSize: isTablet ? 20 : 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
+
                 SizedBox(height: isTablet ? 20 : 16),
               ],
             ),

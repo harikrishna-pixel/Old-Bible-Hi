@@ -393,24 +393,42 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                               child: SizedBox(
                                 width: double.infinity,
                                 height: isTablet ? 64 : 56,
-                                child: ElevatedButton(
-                                  onPressed:
-                                      _isStepAnswered(step) ? _next : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: _brown,
-                                    disabledBackgroundColor:
-                                        _brown.withValues(alpha: 0.35),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: _isStepAnswered(step)
+                                        ? const LinearGradient(
+                                            colors: [
+                                              Color(0xFF763201),
+                                              Color(0xFFD5821F),
+                                              Color(0xFFAD4D08),
+                                              Color(0xFF763201),
+                                            ],
+                                          )
+                                        : null,
+                                    color: _isStepAnswered(step)
+                                        ? null
+                                        : _brown.withValues(alpha: 0.35),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: Text(
-                                    step == 5 ? 'Continue' : 'Continue',
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 20 : 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        _isStepAnswered(step) ? _next : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      disabledBackgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      step == 5 ? 'Continue' : 'Continue',
+                                      style: TextStyle(
+                                        fontSize: isTablet ? 20 : 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -847,26 +865,38 @@ class _OnboardingThemeSelectionScreenState
                               child: SizedBox(
                                 width: double.infinity,
                                 height: isTablet ? 64 : 56,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    widget.onThemeSelected();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF7A5435),
-                                    disabledBackgroundColor:
-                                        const Color(0xFF7A5435)
-                                            .withValues(alpha: 0.35),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF763201),
+                                        Color(0xFFD5821F),
+                                        Color(0xFFAD4D08),
+                                        Color(0xFF763201),
+                                      ],
                                     ),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: Text(
-                                    'Continue',
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 20 : 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      widget.onThemeSelected();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      disabledBackgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Continue',
+                                      style: TextStyle(
+                                        fontSize: isTablet ? 20 : 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
