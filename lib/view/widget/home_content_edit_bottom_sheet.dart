@@ -16,7 +16,7 @@ import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/screens/dashboard/constants.dart';
 import 'package:biblebookapp/view/screens/dashboard/home_screen.dart';
-import 'package:biblebookapp/view/screens/dashboard/remove_add-screen.dart';
+import 'package:biblebookapp/view/screens/intro_subcribtion_screen.dart';
 import 'package:biblebookapp/view/screens/dashboard/setting_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -4058,12 +4058,11 @@ class PremiumAccessDialog extends StatelessWidget {
                   Navigator.pop(context);
                 }
 
-                Get.to(() => RemoveAddScreen(
+                Get.to(() => SubscriptionScreen(
                   sixMonthPlan: sixMonthPlan,
                   oneYearPlan: oneYearPlan,
                   lifeTimePlan: lifeTimePlan,
-                  onclick: () {},
-                  checkad: 'home',
+                  checkad: 'onboard',
                 ));
               },
               style: ElevatedButton.styleFrom(
