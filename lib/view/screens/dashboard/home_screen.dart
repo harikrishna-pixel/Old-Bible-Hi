@@ -1000,6 +1000,31 @@ class _HomeScreenState extends State<HomeScreen>
     await _loadFontSize();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      
+      // Check subscription status - block access to Reader Screen without subscription
+      final downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
+      final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
+      final isSubscribed = subscriptionPlan != null &&
+          subscriptionPlan.isNotEmpty &&
+          ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
+
+      // If user is not subscribed, redirect to subscription screen
+      if (!isSubscribed) {
+        // Use constants as fallback when SharedPreferences are empty
+        final sixMonthPlan = await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
+        final oneYearPlan = await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
+        final lifeTimePlan = await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
+        Get.offAll(() => SubscriptionScreen(
+          sixMonthPlan: sixMonthPlan,
+          oneYearPlan: oneYearPlan,
+          lifeTimePlan: lifeTimePlan,
+          checkad: 'home',
+        ));
+        return; // Exit early, don't proceed with initialization
+      }
+
+      // User is subscribed, continue with normal initialization
       await _handleAppLaunchCount();
       await checkUserLoggedIn();
 
@@ -1011,10 +1036,10 @@ class _HomeScreenState extends State<HomeScreen>
           await _checkAndShowVerse();
         }
       }
+      
+      // _initializeAds();
+      loadAds();
     });
-
-    // _initializeAds();
-    loadAds();
   }
 
   Future<void> _handleAppLaunchCount() async {
