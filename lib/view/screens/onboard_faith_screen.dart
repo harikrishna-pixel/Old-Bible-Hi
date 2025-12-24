@@ -1221,7 +1221,17 @@ class _StepperDots extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: isActive ? activeColor : inactiveColor,
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [
+                    Color(0xFF763201),
+                    Color(0xFFD5821F),
+                    Color(0xFFAD4D08),
+                    Color(0xFF763201),
+                  ],
+                )
+              : null,
+          color: isActive ? null : inactiveColor,
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
