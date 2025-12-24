@@ -48,17 +48,13 @@ class FaithSurveyData {
 
   static FaithSurveyData fromJson(Map<String, dynamic> json) =>
       FaithSurveyData()
-        ..purpose = (json['purpose'] as List?)
-            ?.map((e) => e as String)
-            .toList()
+        ..purpose = (json['purpose'] as List?)?.map((e) => e as String).toList()
         ..ageGroup = json['ageGroup'] as String?
-        ..challenge = (json['challenge'] as List?)
-            ?.map((e) => e as String)
-            .toList()
+        ..challenge =
+            (json['challenge'] as List?)?.map((e) => e as String).toList()
         ..frequency = json['frequency'] as String?
-        ..growthWay = (json['growthWay'] as List?)
-            ?.map((e) => e as String)
-            .toList()
+        ..growthWay =
+            (json['growthWay'] as List?)?.map((e) => e as String).toList()
         ..theme = json['theme'] as String?;
 }
 
@@ -113,7 +109,7 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
   Future<void> _requestNotificationPermission() async {
     // Initialize notifications first - this will show the permission pop-up
     await NotificationsServices().initialiseNotifications();
-    
+
     // Then request permission explicitly if needed
     if (Platform.isAndroid) {
       final status = await Permission.notification.request();
@@ -133,11 +129,14 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
   void _next() async {
     if (step < 4) {
       // Show Apple notification permission AFTER answering the 4th question (when moving from step 3 to step 4)
-      if (Platform.isIOS && step == 3 && _isStepAnswered(3) && !_hasRequestedNotification) {
+      if (Platform.isIOS &&
+          step == 3 &&
+          _isStepAnswered(3) &&
+          !_hasRequestedNotification) {
         _hasRequestedNotification = true;
         await _requestNotificationPermission();
       }
-      
+
       setState(() => step += 1);
       _page.nextPage(
           duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
@@ -150,20 +149,20 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
 
         // Route directly to theme selection screen
         Get.to(() => OnboardingThemeSelectionScreen(
-          onThemeSelected: () {
-            debugPrint("folders leng - ${BibleInfo.folders.length}");
-            if (BibleInfo.folders.length == 1) {
-              Get.to(() => PreferenceSelectionScreen(
-                    isSetting: false,
-                    selectedbible: BibleInfo.folders.first,
-                  ));
-            } else {
-              Get.to(() => BibleVersionsScreen(
-                    from: 'onboard',
-                  ));
-            }
-          },
-        ));
+              onThemeSelected: () {
+                debugPrint("folders leng - ${BibleInfo.folders.length}");
+                if (BibleInfo.folders.length == 1) {
+                  Get.to(() => PreferenceSelectionScreen(
+                        isSetting: false,
+                        selectedbible: BibleInfo.folders.first,
+                      ));
+                } else {
+                  Get.to(() => BibleVersionsScreen(
+                        from: 'onboard',
+                      ));
+                }
+              },
+            ));
       }
       //if (mounted) Navigator.of(context).maybePop();
     }
@@ -173,15 +172,15 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
     if (step == 0) {
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
-    } else {
+      } else {
         Get.offAll(() => const WelcomeScreen());
       }
       return;
     }
 
-      setState(() => step -= 1);
-      _page.previousPage(
-          duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    setState(() => step -= 1);
+    _page.previousPage(
+        duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
   }
 
   bool _isStepAnswered(int index) {
@@ -411,7 +410,9 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                     child: Material(
                                       color: Colors.transparent,
                                       child: InkWell(
-                                        onTap: _isStepAnswered(step) ? _next : null,
+                                        onTap: _isStepAnswered(step)
+                                            ? _next
+                                            : null,
                                         child: Container(
                                           width: double.infinity,
                                           height: double.infinity,
@@ -676,10 +677,12 @@ class OnboardingThemeSelectionScreen extends StatefulWidget {
   });
 
   @override
-  State<OnboardingThemeSelectionScreen> createState() => _OnboardingThemeSelectionScreenState();
+  State<OnboardingThemeSelectionScreen> createState() =>
+      _OnboardingThemeSelectionScreenState();
 }
 
-class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectionScreen> {
+class _OnboardingThemeSelectionScreenState
+    extends State<OnboardingThemeSelectionScreen> {
   late AppCustomTheme _selectedTheme;
   String? _selectedThemeName;
 
@@ -780,9 +783,7 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                             ),
                           ),
                         ),
-                        const Opacity(
-                            opacity: 0,
-                            child: SizedBox(width: 40)),
+                        const Opacity(opacity: 0, child: SizedBox(width: 40)),
                       ],
                     ),
                   ),
@@ -793,13 +794,15 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                     child: ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: maxContentWidth),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: isTablet ? 8 : 4),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16, vertical: isTablet ? 8 : 4),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const SizedBox(height: 4),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
                                 'Which theme do you love most?',
                                 textAlign: TextAlign.center,
@@ -834,17 +837,21 @@ class _OnboardingThemeSelectionScreenState extends State<OnboardingThemeSelectio
                                       AppCustomTheme.vintage
                                   ? BoxDecoration(
                                       image: DecorationImage(
-                                          image: AssetImage(Images.bgImage(context)),
+                                          image: AssetImage(
+                                              Images.bgImage(context)),
                                           fit: BoxFit.cover),
                                       border: Border.all(
-                                        color: const Color(0xFFB08D6E).withValues(alpha: 0.7),
+                                        color: const Color(0xFFB08D6E)
+                                            .withValues(alpha: 0.7),
                                       ),
                                     )
                                   : BoxDecoration(
-                                      color: Provider.of<ThemeProvider>(context).backgroundColor,
+                                      color: Provider.of<ThemeProvider>(context)
+                                          .backgroundColor,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: const Color(0xFFB08D6E).withValues(alpha: 0.7),
+                                        color: const Color(0xFFB08D6E)
+                                            .withValues(alpha: 0.7),
                                       ),
                                     ),
                               padding: const EdgeInsets.all(14),
@@ -1129,8 +1136,12 @@ class _SelectButton extends StatelessWidget {
     );
 
     // Selected option: background color 805531 with 20% opacity
-    final bg = selected ? const Color(0xFF805531).withOpacity(0.2) : Colors.transparent;
-    final fg = selected ? const Color(0xFF2E2C2B) : const Color(0xFF2E2C2B); // Keep text color same for both states
+    final bg = selected
+        ? const Color(0xFF805531).withOpacity(0.2)
+        : Colors.transparent;
+    final fg = selected
+        ? const Color(0xFF2E2C2B)
+        : const Color(0xFF2E2C2B); // Keep text color same for both states
 
     return Material(
       color: Colors.transparent,
@@ -1141,7 +1152,8 @@ class _SelectButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: borderRadius,
-            border: baseBorder, // Always show border with thickness based on selection
+            border:
+                baseBorder, // Always show border with thickness based on selection
           ),
           padding: EdgeInsets.symmetric(
               horizontal: 18, vertical: isTablet ? 18 : 16),
@@ -1219,7 +1231,17 @@ class _StepperDots extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: isActive ? activeColor : inactiveColor,
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [
+                    Color(0xFF763201),
+                    Color(0xFFD5821F),
+                    Color(0xFFAD4D08),
+                    Color(0xFF763201),
+                  ],
+                )
+              : null,
+          color: isActive ? null : inactiveColor,
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
