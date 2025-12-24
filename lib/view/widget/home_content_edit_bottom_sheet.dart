@@ -41,6 +41,7 @@ import '../../Model/verseBookContentModel.dart';
 import '../constants/colors.dart';
 import 'package:screenshot/screenshot.dart';
 import '../constants/theme_provider.dart';
+import '../screens/intro_subcribtion_screen.dart';
 
 // Future<dynamic> homeContentEditBottomSheet(BuildContext context,
 //     {String? verNum,
@@ -4058,12 +4059,11 @@ class PremiumAccessDialog extends StatelessWidget {
                   Navigator.pop(context);
                 }
 
-                Get.to(() => RemoveAddScreen(
+                Get.to(() => SubscriptionScreen(
                   sixMonthPlan: sixMonthPlan,
                   oneYearPlan: oneYearPlan,
                   lifeTimePlan: lifeTimePlan,
-                  onclick: () {},
-                  checkad: 'home',
+                  checkad: 'onboard',
                 ));
               },
               style: ElevatedButton.styleFrom(
