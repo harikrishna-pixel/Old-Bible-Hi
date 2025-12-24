@@ -703,56 +703,64 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     await SharPreferences.setString('OpenAd', '1');
     final dateTime = DateTime.tryParse(date) ?? DateTime.now();
     await Future.delayed(Duration(seconds: 2));
-    final data = await SharPreferences.getBoolean('restorepurches');
-    debugPrint("restore data 1 is $data");
-    if (data == true) {
-      if (productId == widget.lifeTimePlan) {
-        await controller.disableAd(const Duration(days: 3650012345));
-        await Future.delayed(Duration(seconds: 1));
-        EasyLoading.dismiss();
-        await SharPreferences.setBoolean('closead', true);
-        await SharPreferences.setBoolean('startpurches', false);
-        return Get.offAll(() => HomeScreen(
-              From: "premium",
-              selectedVerseNumForRead: "",
-              selectedBookForRead: "",
-              selectedChapterForRead: "",
-              selectedBookNameForRead: "",
-              selectedVerseForRead: "",
-            ));
-      } else if (productId == widget.oneYearPlan) {
-        final dur = DateTime(dateTime.year + 1, dateTime.month, dateTime.day);
-        final diff = dur.difference(DateTime.now());
-        await controller.disableAd(diff);
-        await Future.delayed(Duration(seconds: 1));
-        EasyLoading.dismiss();
-        await SharPreferences.setBoolean('closead', true);
-        await SharPreferences.setBoolean('startpurches', false);
-        return Get.offAll(() => HomeScreen(
-              From: "premium",
-              selectedVerseNumForRead: "",
-              selectedBookForRead: "",
-              selectedChapterForRead: "",
-              selectedBookNameForRead: "",
-              selectedVerseForRead: "",
-            ));
-      } else if (productId == widget.sixMonthPlan) {
-        final dur = addSixMonths(customDate: dateTime);
-        final diff = dur.difference(DateTime.now());
-        await controller.disableAd(diff);
-        await Future.delayed(Duration(seconds: 1));
-        EasyLoading.dismiss();
-        await SharPreferences.setBoolean('closead', true);
-        await SharPreferences.setBoolean('startpurches', false);
-        return Get.offAll(() => HomeScreen(
-              From: "premium",
-              selectedVerseNumForRead: "",
-              selectedBookForRead: "",
-              selectedChapterForRead: "",
-              selectedBookNameForRead: "",
-              selectedVerseForRead: "",
-            ));
-      }
+
+    // Get DownloadProvider to set subscription plan
+    final downloadProvider =
+        Provider.of<DownloadProvider>(context, listen: false);
+    debugPrint("Restore purchase handle - productId: $productId");
+
+    if (productId == widget.lifeTimePlan) {
+      // Set subscription plan to platinum for lifetime
+      await downloadProvider.setSubscriptionPlan('platinum');
+      await controller.disableAd(const Duration(days: 3650012345));
+      await Future.delayed(Duration(seconds: 1));
+      EasyLoading.dismiss();
+      await SharPreferences.setBoolean('closead', true);
+      await SharPreferences.setBoolean('startpurches', false);
+      return Get.offAll(() => HomeScreen(
+            From: "premium",
+            selectedVerseNumForRead: "",
+            selectedBookForRead: "",
+            selectedChapterForRead: "",
+            selectedBookNameForRead: "",
+            selectedVerseForRead: "",
+          ));
+    } else if (productId == widget.oneYearPlan) {
+      // Set subscription plan to gold for one year
+      await downloadProvider.setSubscriptionPlan('gold');
+      final dur = DateTime(dateTime.year + 1, dateTime.month, dateTime.day);
+      final diff = dur.difference(DateTime.now());
+      await controller.disableAd(diff);
+      await Future.delayed(Duration(seconds: 1));
+      EasyLoading.dismiss();
+      await SharPreferences.setBoolean('closead', true);
+      await SharPreferences.setBoolean('startpurches', false);
+      return Get.offAll(() => HomeScreen(
+            From: "premium",
+            selectedVerseNumForRead: "",
+            selectedBookForRead: "",
+            selectedChapterForRead: "",
+            selectedBookNameForRead: "",
+            selectedVerseForRead: "",
+          ));
+    } else if (productId == widget.sixMonthPlan) {
+      // Set subscription plan to silver for six months
+      await downloadProvider.setSubscriptionPlan('silver');
+      final dur = addSixMonths(customDate: dateTime);
+      final diff = dur.difference(DateTime.now());
+      await controller.disableAd(diff);
+      await Future.delayed(Duration(seconds: 1));
+      EasyLoading.dismiss();
+      await SharPreferences.setBoolean('closead', true);
+      await SharPreferences.setBoolean('startpurches', false);
+      return Get.offAll(() => HomeScreen(
+            From: "premium",
+            selectedVerseNumForRead: "",
+            selectedBookForRead: "",
+            selectedChapterForRead: "",
+            selectedBookNameForRead: "",
+            selectedVerseForRead: "",
+          ));
     }
     // final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
     //     _inAppPurchase
@@ -1465,7 +1473,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 60),
                         child: Column(
-
                           children: [
                             _buildNewFeatureItem(
                               text: "No Ads. No Distractions",
@@ -2210,7 +2217,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             child: RichText(
               text: TextSpan(
                 style: TextStyle(
-                  fontSize: 13.2 ,
+                  fontSize: 13.2,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF3A2E23),
                   height: 1.5,
