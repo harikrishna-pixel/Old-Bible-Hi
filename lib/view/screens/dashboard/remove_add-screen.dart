@@ -53,7 +53,7 @@ rewardEarned(BuildContext context, Function() onTap) {
       return Dialog(
           backgroundColor: CommanColor.white,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 16,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -74,7 +74,7 @@ rewardEarned(BuildContext context, Function() onTap) {
                       decoration: BoxDecoration(
                         color: CommanColor.whiteLightModePrimary(context),
                         borderRadius:
-                            const BorderRadius.all(Radius.circular(5)),
+                        const BorderRadius.all(Radius.circular(5)),
                         boxShadow: const [
                           BoxShadow(color: Colors.black26, blurRadius: 2)
                         ],
@@ -104,11 +104,11 @@ class RemoveAddScreen extends StatefulWidget {
   Function? onclick;
   RemoveAddScreen(
       {super.key,
-      required this.sixMonthPlan,
-      required this.oneYearPlan,
-      required this.lifeTimePlan,
-      required this.checkad,
-      this.onclick});
+        required this.sixMonthPlan,
+        required this.oneYearPlan,
+        required this.lifeTimePlan,
+        required this.checkad,
+        this.onclick});
 
   @override
   State<RemoveAddScreen> createState() => _RemoveAddScreenState();
@@ -144,7 +144,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
       Constants.showToast("No Internet connection");
       return; // Return early - don't show loader or proceed
     }
-    
+
     if (!userTap) {
       log("Buy Product");
       try {
@@ -256,7 +256,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
                   },
                   body: {
                     'receipt-data':
-                        purchaseDetails.verificationData.localVerificationData,
+                    purchaseDetails.verificationData.localVerificationData,
                     'exclude-old-transactions': true,
                     'password': controller.sharedSecret
                   },
@@ -270,7 +270,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
                 // DebugConsole.log(" purchases sucess - $data");
                 await purchaseSubmit(
                     receiptData:
-                        '${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
+                    '${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
                 final todayDate = DateTime.now();
                 await SharPreferences.setBoolean("downloadreward", true);
                 await Future.delayed(Duration(seconds: 1));
@@ -414,12 +414,12 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
     // setState(() {});
     await SharPreferences.setBoolean('closead', false);
     final productprovider =
-        Provider.of<DownloadProvider>(context, listen: false);
+    Provider.of<DownloadProvider>(context, listen: false);
 
     if (Platform.isIOS) {
       final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-          _inAppPurchase
-              .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+      _inAppPurchase
+          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
       await iosPlatformAddition.setDelegate(ExamplePaymentQueueDelegate());
 
       Set<String> ids = {
@@ -446,7 +446,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
 
       if (_products.isEmpty && datacheck.isEmpty) {
         ProductDetailsResponse response =
-            await _inAppPurchase.queryProductDetails(ids);
+        await _inAppPurchase.queryProductDetails(ids);
         debugPrint(
             "all plans product 1 - ${response.error} ${response.notFoundIDs} ${response.productDetails}  ");
         await Future.delayed(Duration(seconds: 10));
@@ -525,7 +525,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
     // });
     _purchaseUpdatedStream = InAppPurchase.instance.purchaseStream;
     _purchaseUpdatedStream.listen(
-      (purchases) => _listenToPurchaseUpdated(purchases, controller),
+          (purchases) => _listenToPurchaseUpdated(purchases, controller),
       onDone: () {
         // _subscription?.cancel();
       },
@@ -549,8 +549,8 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
   void alldispose() async {
     if (Platform.isIOS) {
       final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-          _inAppPurchase
-              .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+      _inAppPurchase
+          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
       await iosPlatformAddition.setDelegate(null);
       //  await _subscription?.cancel();
     }
@@ -571,9 +571,9 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
 
   /// 🔹 Handle restored purchases (after pressing restore button)
   Future<void> _handleRestore(
-    PurchaseDetails purchaseDetails,
-    DashBoardController controller,
-  ) async {
+      PurchaseDetails purchaseDetails,
+      DashBoardController controller,
+      ) async {
     //EasyLoading.dismiss();
     debugPrint("Restored Purchase: ${purchaseDetails.productID}");
 
@@ -592,7 +592,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
       Constants.showToast("Check your Internet connection");
       return;
     }
-    
+
     // if (!Platform.isIOS) {
     //   Constants.showToast("Restore is only available on iOS");
     //   return;
@@ -709,11 +709,11 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           decoration: Provider.of<ThemeProvider>(context).currentCustomTheme ==
-                  AppCustomTheme.vintage
+              AppCustomTheme.vintage
               ? BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage(Images.bgImage(context)),
-                      fit: BoxFit.fill))
+              image: DecorationImage(
+                  image: AssetImage(Images.bgImage(context)),
+                  fit: BoxFit.fill))
               : null,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -811,203 +811,203 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
                       duration: const Duration(milliseconds: 200),
                       child: isPurchaseLoading
                           ? Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: SizedBox(
-                                  height: 100,
-                                  width: 200,
-                                  child: Center(
-                                      child: Column(
-                                    children: [
-                                      const CircularProgressIndicator
-                                          .adaptive(),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text('Please wait...',
-                                            style:
-                                                CommanStyle.appBarStyle(context)
-                                                    .copyWith(fontSize: 12)),
-                                      )
-                                    ],
-                                  ))),
-                            )
+                        padding: const EdgeInsets.only(top: 12),
+                        child: SizedBox(
+                            height: 100,
+                            width: 200,
+                            child: Center(
+                                child: Column(
+                                  children: [
+                                    const CircularProgressIndicator
+                                        .adaptive(),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text('Please wait...',
+                                          style:
+                                          CommanStyle.appBarStyle(context)
+                                              .copyWith(fontSize: 12)),
+                                    )
+                                  ],
+                                ))),
+                      )
                           : _products.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    "We're unable to load subscription options right now.\n Please try again later",
-                                    style: CommanStyle.appBarStyle(context)
-                                        .copyWith(fontSize: 12),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )
-                              : MediaQuery.removePadding(
-                                  context: context,
-                                  removeTop: true,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    padding: EdgeInsets.zero,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: _products.length,
-                                    itemBuilder: (context, index) {
-                                      // Move these helper functions outside the builder
+                          ? Center(
+                        child: Text(
+                          "We're unable to load subscription options right now.\n Please try again later",
+                          style: CommanStyle.appBarStyle(context)
+                              .copyWith(fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                          : MediaQuery.removePadding(
+                        context: context,
+                        removeTop: true,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          physics:
+                          const NeverScrollableScrollPhysics(),
+                          itemCount: _products.length,
+                          itemBuilder: (context, index) {
+                            // Move these helper functions outside the builder
 
-                                      return InkWell(
-                                        onTap: () async {
-                                          await SharPreferences.setString(
-                                              'OpenAd', '1');
-                                          setState(() {
-                                            selectedindex = index;
-                                          });
+                            return InkWell(
+                              onTap: () async {
+                                await SharPreferences.setString(
+                                    'OpenAd', '1');
+                                setState(() {
+                                  selectedindex = index;
+                                });
 
-                                          // _buyProduct(_products[index]);
-                                        },
-                                        child: Stack(
-                                          alignment: Alignment.topRight,
-                                          children: [
-                                            Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 8),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 12),
-                                              decoration: BoxDecoration(
-                                                color: selectedindex == index
-                                                    ? Provider.of<ThemeProvider>(
-                                                                    context)
-                                                                .themeMode ==
-                                                            ThemeMode.dark
-                                                        ? const Color.fromARGB(
-                                                            255, 41, 1, 1)
-                                                        : Colors.brown
-                                                    : const Color.fromARGB(
-                                                        156, 158, 158, 158),
-                                                border: Border.all(
+                                // _buyProduct(_products[index]);
+                              },
+                              child: Stack(
+                                alignment: Alignment.topRight,
+                                children: [
+                                  Container(
+                                    margin:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8),
+                                    padding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: selectedindex == index
+                                          ? Provider.of<ThemeProvider>(
+                                          context)
+                                          .themeMode ==
+                                          ThemeMode.dark
+                                          ? const Color.fromARGB(
+                                          255, 41, 1, 1)
+                                          : Colors.brown
+                                          : const Color.fromARGB(
+                                          156, 158, 158, 158),
+                                      border: Border.all(
+                                          color: selectedindex ==
+                                              index
+                                              ? Colors.brown
+                                              : const Color.fromARGB(
+                                              156, 158, 158, 158),
+                                          width: 2),
+                                      borderRadius:
+                                      BorderRadiusDirectional
+                                          .circular(10),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment
+                                                .stretch,
+                                            children: [
+                                              Text(
+                                                  _products[index]
+                                                      .description,
+                                                  style: CommanStyle
+                                                      .bw14500(
+                                                      context)
+                                                      .copyWith(
                                                     color: selectedindex ==
-                                                            index
-                                                        ? Colors.brown
-                                                        : const Color.fromARGB(
-                                                            156, 158, 158, 158),
-                                                    width: 2),
-                                                borderRadius:
-                                                    BorderRadiusDirectional
-                                                        .circular(10),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .stretch,
-                                                      children: [
-                                                        Text(
-                                                            _products[index]
-                                                                .description,
-                                                            style: CommanStyle
-                                                                    .bw14500(
-                                                                        context)
-                                                                .copyWith(
-                                                              color: selectedindex ==
-                                                                      index
-                                                                  ? CommanColor
-                                                                      .white
-                                                                  : CommanColor
-                                                                      .black,
-                                                            )),
-                                                        Visibility(
-                                                          visible:
-                                                              getDiscountedPrice(
-                                                                      _products[
-                                                                          index])
-                                                                  .isNotEmpty,
-                                                          child: Text(
-                                                            getDiscountedPrice(
-                                                                _products[
-                                                                    index]),
-                                                            style: CommanStyle
-                                                                    .bw14400(
-                                                                        context)
-                                                                .copyWith(
-                                                                    color: selectedindex ==
-                                                                            index
-                                                                        ? CommanColor
-                                                                            .white
-                                                                        : CommanColor
-                                                                            .black,
-                                                                    decoration:
-                                                                        TextDecoration
-                                                                            .lineThrough),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                      '${_products[index].price}  ',
-                                                      style:
-                                                          CommanStyle.bw17500(
-                                                                  context)
-                                                              .copyWith(
-                                                        color: selectedindex ==
-                                                                index
-                                                            ? CommanColor.white
-                                                            : CommanColor.black,
-                                                      )),
-                                                  const SizedBox(width: 24),
-                                                ],
-                                              ),
-                                            ),
-                                            Positioned(
-                                              right: 8,
-                                              top: -2,
-                                              child: Visibility(
-                                                visible: fakeOffer(
-                                                        _products[index]) !=
-                                                    null,
-                                                child: Image.asset(
-                                                  'assets/offer.png',
-                                                  height: 70,
+                                                        index
+                                                        ? CommanColor
+                                                        .white
+                                                        : CommanColor
+                                                        .black,
+                                                  )),
+                                              Visibility(
+                                                visible:
+                                                getDiscountedPrice(
+                                                    _products[
+                                                    index])
+                                                    .isNotEmpty,
+                                                child: Text(
+                                                  getDiscountedPrice(
+                                                      _products[
+                                                      index]),
+                                                  style: CommanStyle
+                                                      .bw14400(
+                                                      context)
+                                                      .copyWith(
+                                                      color: selectedindex ==
+                                                          index
+                                                          ? CommanColor
+                                                          .white
+                                                          : CommanColor
+                                                          .black,
+                                                      decoration:
+                                                      TextDecoration
+                                                          .lineThrough),
                                                 ),
                                               ),
-                                            ),
-                                            Positioned(
-                                              right: 13,
-                                              top: 14,
-                                              child: Visibility(
-                                                visible: fakeOffer(
-                                                        _products[index]) !=
-                                                    null,
-                                                child: RotationTransition(
-                                                  turns:
-                                                      const AlwaysStoppedAnimation(
-                                                          45 / 360),
-                                                  child: Text(
-                                                    '${fakeOffer(_products[index])?.toStringAsFixed(0)}% off',
-                                                    style: const TextStyle(
-                                                      letterSpacing: BibleInfo
-                                                          .letterSpacing,
-                                                      fontSize: BibleInfo
-                                                              .fontSizeScale *
-                                                          10,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      );
-                                    },
+                                        Text(
+                                            '${_products[index].price}  ',
+                                            style:
+                                            CommanStyle.bw17500(
+                                                context)
+                                                .copyWith(
+                                              color: selectedindex ==
+                                                  index
+                                                  ? CommanColor.white
+                                                  : CommanColor.black,
+                                            )),
+                                        const SizedBox(width: 24),
+                                      ],
+                                    ),
                                   ),
-                                ),
+                                  Positioned(
+                                    right: 8,
+                                    top: -2,
+                                    child: Visibility(
+                                      visible: fakeOffer(
+                                          _products[index]) !=
+                                          null,
+                                      child: Image.asset(
+                                        'assets/offer.png',
+                                        height: 70,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    right: 13,
+                                    top: 14,
+                                    child: Visibility(
+                                      visible: fakeOffer(
+                                          _products[index]) !=
+                                          null,
+                                      child: RotationTransition(
+                                        turns:
+                                        const AlwaysStoppedAnimation(
+                                            45 / 360),
+                                        child: Text(
+                                          '${fakeOffer(_products[index])?.toStringAsFixed(0)}% off',
+                                          style: const TextStyle(
+                                            letterSpacing: BibleInfo
+                                                .letterSpacing,
+                                            fontSize: BibleInfo
+                                                .fontSizeScale *
+                                                10,
+                                            fontWeight:
+                                            FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
 
                     // const SizedBox(height: 6),
@@ -1029,10 +1029,10 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              Provider.of<ThemeProvider>(context).themeMode ==
-                                      ThemeMode.dark
-                                  ? Colors.black
-                                  : const Color(0xFF7B5C3D),
+                          Provider.of<ThemeProvider>(context).themeMode ==
+                              ThemeMode.dark
+                              ? Colors.black
+                              : const Color(0xFF7B5C3D),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1053,10 +1053,10 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color:
-                                Provider.of<ThemeProvider>(context).themeMode ==
-                                        ThemeMode.dark
-                                    ? Colors.white
-                                    : Colors.white,
+                            Provider.of<ThemeProvider>(context).themeMode ==
+                                ThemeMode.dark
+                                ? Colors.white
+                                : Colors.white,
                           ),
                         ),
                       ),
@@ -1683,7 +1683,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
     final fakeOfferPercentage = fakeOffer(product);
     if (fakeOfferPercentage != null) {
       final fakePrice =
-          calculateOriginalPrice(fakeOfferPercentage, product.rawPrice);
+      calculateOriginalPrice(fakeOfferPercentage, product.rawPrice);
       return '${product.currencySymbol}${fakePrice.toStringAsFixed(2)}';
     }
     return '';
