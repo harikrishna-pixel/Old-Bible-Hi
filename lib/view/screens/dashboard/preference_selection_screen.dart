@@ -452,15 +452,14 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                 AppCustomTheme.vintage
             ? null
             : backgroundColor,
-        decoration:
-            Provider.of<ThemeProvider>(context).currentCustomTheme ==
-                    AppCustomTheme.vintage
-                ? BoxDecoration(
-                    color: backgroundColor,
-                    image: DecorationImage(
-                        image: AssetImage(Images.bgImage(context)),
-                        fit: BoxFit.fill))
-                : null,
+        decoration: Provider.of<ThemeProvider>(context).currentCustomTheme ==
+                AppCustomTheme.vintage
+            ? BoxDecoration(
+                color: backgroundColor,
+                image: DecorationImage(
+                    image: AssetImage(Images.bgImage(context)),
+                    fit: BoxFit.fill))
+            : null,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -547,10 +546,12 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                             // Border with increased thickness when selected
                             border: Border.all(
                               // Border stroke color: 9E9E9E in light mode, lighter grey in dark mode for visibility
-                              color: isDark 
-                                  ? Colors.grey.shade400 
+                              color: isDark
+                                  ? Colors.grey.shade400
                                   : const Color(0xFF9E9E9E),
-                              width: selected ? 2.0 : 1.0, // Increase thickness when selected
+                              width: selected
+                                  ? 2.0
+                                  : 1.0, // Increase thickness when selected
                             ),
                             borderRadius: BorderRadius.circular(7),
                           ),
@@ -562,10 +563,10 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                   // White/Black for normal (unselected) based on theme
                                   // Theme color (805531) when selected in light mode, white when selected in dark mode
                                   selected
-                                      ? (isDark 
-                                          ? Colors.white 
+                                      ? (isDark
+                                          ? Colors.white
                                           : const Color(0xFF805531))
-                                      : (isDark 
+                                      : (isDark
                                           ? CommanColor.whiteBlack(context)
                                           : const Color(0xFF805531)),
                                   BlendMode.srcIn,
@@ -591,10 +592,10 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                   // White/Black for normal (unselected) based on theme
                                   // Theme color (805531) when selected in light mode, white when selected in dark mode
                                   color: selected
-                                      ? (isDark 
-                                          ? Colors.white 
+                                      ? (isDark
+                                          ? Colors.white
                                           : const Color(0xFF805531))
-                                      : (isDark 
+                                      : (isDark
                                           ? CommanColor.whiteBlack(context)
                                           : const Color(0xFF805531)),
                                 ),
@@ -696,7 +697,8 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                     isLoading = false;
                                   });
                                   Navigator.pop(context); // Close loading
-                                  FaithJourneyDialog.showSuccessDialog(context, isFromOnboarding: !widget.isSetting);
+                                  FaithJourneyDialog.showSuccessDialog(context,
+                                      isFromOnboarding: !widget.isSetting);
                                 } else {
                                   await loadBookContent(widget.selectedbible);
                                   await loadBookList(widget.selectedbible);
@@ -739,7 +741,8 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                     isLoading = false;
                                   });
                                   Navigator.pop(context); // Close loading
-                                  FaithJourneyDialog.showSuccessDialog(context, isFromOnboarding: !widget.isSetting);
+                                  FaithJourneyDialog.showSuccessDialog(context,
+                                      isFromOnboarding: !widget.isSetting);
                                 }
                                 // Get.offAll(() => HomeScreen(
                                 //       From: "splash",
@@ -763,51 +766,57 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                           }
                         : null,
                 child: Center(
-                  child: Container(
-                    width: screenWidth > 600 ? 130 : 100,
-                    height: screenWidth > 600 ? 65 : 40,
-                    decoration: BoxDecoration(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(9),
+                    child: Container(
+                      width: screenWidth > 600 ? 130 : 100,
+                      height: screenWidth > 600 ? 65 : 40,
+                      decoration: BoxDecoration(
+                        gradient: _selectedCategories.isNotEmpty
+                            ? (Provider.of<ThemeProvider>(context,
+                                            listen: false)
+                                        .themeMode ==
+                                    ThemeMode.dark
+                                ? null
+                                : const LinearGradient(
+                                    colors: [
+                                      Color(0xFF763201),
+                                      Color(0xFFD5821F),
+                                      Color(0xFFAD4D08),
+                                      Color(0xFF763201),
+                                    ],
+                                  ))
+                            : null,
                         color: _selectedCategories.isNotEmpty
-                            ? Provider.of<ThemeProvider>(context, listen: false)
+                            ? (Provider.of<ThemeProvider>(context,
+                                            listen: false)
                                         .themeMode ==
                                     ThemeMode.dark
                                 ? CommanColor.backgrondcolor
-                                : const Color(0xFF8B5E3C)
+                                : null)
                             : Colors.grey,
-                        borderRadius: BorderRadius.circular(9) // Brown color
-                        ),
-                    // onPressed: _selectedCategories.length == 4
-                    //     ? () {
-                    //         _savePreferences();
-                    //         ScaffoldMessenger.of(context).showSnackBar(
-                    //           const SnackBar(
-                    //             content: Text('Preferences saved!'),
-                    //           ),
-                    //         );
-                    //       }
-                    //     : null,
-                    // style: ElevatedButton.styleFrom(
-                    //   backgroundColor: const Color(0xFF8B5E3C),
-                    //   padding: const EdgeInsets.symmetric(
-                    //       horizontal: 40, vertical: 12),
-                    // ),
-                    child: Center(
-                      child: Text(
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: Center(
+                        child: Text(
                           isLoading
                               ? "Loading..."
                               : widget.isSetting == true
                                   ? "Save"
                                   : "Continue",
                           style: TextStyle(
-                              fontSize: screenWidth > 600 ? 20 : 17,
-                              color: _selectedCategories.isNotEmpty
-                                  ? Provider.of<ThemeProvider>(context,
-                                                  listen: false)
-                                              .themeMode ==
-                                          ThemeMode.dark
-                                      ? CommanColor.darkPrimaryColor
-                                      : CommanColor.white
-                                  : null)),
+                            fontSize: screenWidth > 600 ? 20 : 17,
+                            color: _selectedCategories.isNotEmpty
+                                ? Provider.of<ThemeProvider>(context,
+                                                listen: false)
+                                            .themeMode ==
+                                        ThemeMode.dark
+                                    ? CommanColor.darkPrimaryColor
+                                    : CommanColor.white
+                                : null,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1125,7 +1134,8 @@ class FaithJourneyDialog {
   }
 
   /// Show Success Dialog
-  static Future<void> showSuccessDialog(BuildContext context, {bool isFromOnboarding = false}) async {
+  static Future<void> showSuccessDialog(BuildContext context,
+      {bool isFromOnboarding = false}) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1173,75 +1183,71 @@ class FaithJourneyDialog {
                   ),
                 ),
                 SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF763201),
+                          Color(0xFFD5821F),
+                          Color(0xFFAD4D08),
+                          Color(0xFF763201),
+                        ],
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 40 : 24,
-                      vertical: isTablet ? 16 : 12,
-                    ),
-                  ),
-                  onPressed: () async {
-                    Navigator.of(ctx).pop(); // Close dialog
-                    if (isFromOnboarding) {
-                      // Navigate to paywall screen after onboarding preference selection
-                      // Use constants as fallback when SharedPreferences are empty (first time loading)
-                      final sixMonthPlan = await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
-                      final oneYearPlan = await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
-                      final lifeTimePlan = await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
-                      Get.offAll(() => SubscriptionScreen(
-                            sixMonthPlan: sixMonthPlan,
-                            oneYearPlan: oneYearPlan,
-                            lifeTimePlan: lifeTimePlan,
-                            checkad: 'onboard',
-                          ));
-                    } else {
-                      Get.offAll(() => HomeScreen(
-                            From: "splash",
-                            selectedVerseNumForRead: "",
-                            selectedBookForRead: "",
-                            selectedChapterForRead: "",
-                            selectedBookNameForRead: "",
-                            selectedVerseForRead: "",
-                          ));
-                    }
-
-                    // final sixMonthPlan =
-                    //     await SharPreferences.getString('sixMonthPlan') ?? '';
-                    // final oneYearPlan =
-                    //     await SharPreferences.getString('oneYearPlan') ?? '';
-                    // final lifeTimePlan =
-                    //     await SharPreferences.getString('lifeTimePlan') ?? "";
-                    //
-                    // final iapdatacheck =
-                    //     await SharPreferences.getString('Iapdatacheck') ?? "";
-                    //
-                    // if (iapdatacheck.isNotEmpty) {
-                    //   return Get.to(() => SubscriptionScreen(
-                    //         sixMonthPlan: sixMonthPlan,
-                    //         oneYearPlan: oneYearPlan,
-                    //         lifeTimePlan: lifeTimePlan,
-                    //         checkad: 'home',
-                    //       ));
-                    // } else {
-                    //   Get.offAll(() => HomeScreen(
-                    //         From: "home",
-                    //         selectedVerseNumForRead: "",
-                    //         selectedBookForRead: "",
-                    //         selectedChapterForRead: "",
-                    //         selectedBookNameForRead: "",
-                    //         selectedVerseForRead: "",
-                    //       ));
-                    // }
-                  },
-                  child: Text(
-                    "Start now",
-                    style: TextStyle(
-                      fontSize: isTablet ? 18 : 14,
-                      color: Colors.white,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () async {
+                          Navigator.of(ctx).pop(); // Close dialog
+                          if (isFromOnboarding) {
+                            // Navigate to paywall screen after onboarding preference selection
+                            // Use constants as fallback when SharedPreferences are empty (first time loading)
+                            final sixMonthPlan =
+                                await SharPreferences.getString(
+                                        'sixMonthPlan') ??
+                                    BibleInfo.sixMonthPlanid;
+                            final oneYearPlan = await SharPreferences.getString(
+                                    'oneYearPlan') ??
+                                BibleInfo.oneYearPlanid;
+                            final lifeTimePlan =
+                                await SharPreferences.getString(
+                                        'lifeTimePlan') ??
+                                    BibleInfo.lifeTimePlanid;
+                            Get.offAll(() => SubscriptionScreen(
+                                  sixMonthPlan: sixMonthPlan,
+                                  oneYearPlan: oneYearPlan,
+                                  lifeTimePlan: lifeTimePlan,
+                                  checkad: 'onboard',
+                                ));
+                          } else {
+                            Get.offAll(() => HomeScreen(
+                                  From: "splash",
+                                  selectedVerseNumForRead: "",
+                                  selectedBookForRead: "",
+                                  selectedChapterForRead: "",
+                                  selectedBookNameForRead: "",
+                                  selectedVerseForRead: "",
+                                ));
+                          }
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 40 : 24,
+                            vertical: isTablet ? 16 : 12,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontSize: isTablet ? 18 : 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
