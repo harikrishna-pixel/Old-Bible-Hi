@@ -1597,42 +1597,49 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
+                            onPressed: () async {
+                              await SharPreferences.setString('OpenAd', '1');
+                              await SharPreferences.setBoolean('startpurches', true);
+                              _buyProduct(_products[selectedindex]);
+                            },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: CommanColor.isDarkTheme(context)
-                                  ? Colors.black
-                                  : const Color(0xFF7B5C3D),
-                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              padding: EdgeInsets.zero, // REQUIRED for gradient
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () async {
-                              await SharPreferences.setString('OpenAd', '1');
-                              await SharPreferences.setBoolean(
-                                  'startpurches', true);
-                              _buyProduct(_products[selectedindex]);
-                              // await controller.disableAd(const Duration(days: 3));
-                              // return Get.offAll(() => HomeScreen(
-                              //       From: "premium",
-                              //       selectedVerseNumForRead: "",
-                              //       selectedBookForRead: "",
-                              //       selectedChapterForRead: "",
-                              //       selectedBookNameForRead: "",
-                              //       selectedVerseForRead: "",
-                              //     ));
-                            },
-                            child: const Text(
-                              // "Start My Free Trial",
-                              'Get Full Access',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF763201),
+                                    Color(0xFFD5821F),
+                                    Color(0xFFAD4D08),
+                                    Color(0xFF763201),
+                                  ],
+                                  stops: [0.0, 0.3, 0.6, 1.0],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'Get Full Access',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
+
 
                       const SizedBox(height: 5),
                       TextButton(
@@ -2279,24 +2286,43 @@ class _ExitOfferBottomSheetContentState
                           widget.onUnlockPremium();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              CommanColor.darkPrimaryColor, // Purple
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.zero, // REQUIRED for gradient
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 2,
                         ),
-                        child: Text(
-                          'Unlock Bible Premium',
-                          style: TextStyle(
-                            fontSize: widget.screenWidth > 450 ? 18 : 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF763201),
+                                Color(0xFFD5821F),
+                                Color(0xFFAD4D08),
+                                Color(0xFF763201),
+                              ],
+                              stops: [0.0, 0.3, 0.6, 1.0],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Unlock Bible Premium',
+                              style: TextStyle(
+                                fontSize: widget.screenWidth > 450 ? 18 : 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 12),
                     // Maybe Later text
                     TextButton(

@@ -4242,11 +4242,14 @@ class _HomeScreenState extends State<HomeScreen>
                                 height: screenWidth > 450 ? 50 : 35,
                                 width: screenWidth > 450 ? 50 : 35,
                                 decoration: BoxDecoration(
-                                  // color: CommanColor.whiteLightModePrimary(
-                                  //     context),
+                                  color: CommanColor.whiteLightModePrimary(
+                                      context),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Image.asset("assets/chat.png",height: screenWidth > 450 ? 44 : 24,)),
+                                child: Icon(CupertinoIcons.chat_bubble_2,
+                                    size: screenWidth > 450 ? 44 : 24,
+                                    color: CommanColor.darkModePrimaryWhite(
+                                        context))),
                           )),
                       floatingButton(
                         chapterNum: controller.selectedChapter.value,

@@ -1194,21 +1194,9 @@ class FaithJourneyDialog {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 40 : 24,
-                      vertical: isTablet ? 16 : 12,
-                    ),
-                  ),
                   onPressed: () async {
                     Navigator.of(ctx).pop(); // Close dialog
                     if (isFromOnboarding) {
-                      // Navigate to paywall screen after onboarding preference selection
-                      // Use constants as fallback when SharedPreferences are empty (first time loading)
                       final sixMonthPlan =
                           await SharPreferences.getString('sixMonthPlan') ??
                               BibleInfo.sixMonthPlanid;
@@ -1219,58 +1207,60 @@ class FaithJourneyDialog {
                           await SharPreferences.getString('lifeTimePlan') ??
                               BibleInfo.lifeTimePlanid;
                       Get.offAll(() => SubscriptionScreen(
-                            sixMonthPlan: sixMonthPlan,
-                            oneYearPlan: oneYearPlan,
-                            lifeTimePlan: lifeTimePlan,
-                            checkad: 'onboard',
-                          ));
+                        sixMonthPlan: sixMonthPlan,
+                        oneYearPlan: oneYearPlan,
+                        lifeTimePlan: lifeTimePlan,
+                        checkad: 'onboard',
+                      ));
                     } else {
                       Get.offAll(() => HomeScreen(
-                            From: "splash",
-                            selectedVerseNumForRead: "",
-                            selectedBookForRead: "",
-                            selectedChapterForRead: "",
-                            selectedBookNameForRead: "",
-                            selectedVerseForRead: "",
-                          ));
+                        From: "splash",
+                        selectedVerseNumForRead: "",
+                        selectedBookForRead: "",
+                        selectedChapterForRead: "",
+                        selectedBookNameForRead: "",
+                        selectedVerseForRead: "",
+                      ));
                     }
-
-                    // final sixMonthPlan =
-                    //     await SharPreferences.getString('sixMonthPlan') ?? '';
-                    // final oneYearPlan =
-                    //     await SharPreferences.getString('oneYearPlan') ?? '';
-                    // final lifeTimePlan =
-                    //     await SharPreferences.getString('lifeTimePlan') ?? "";
-                    //
-                    // final iapdatacheck =
-                    //     await SharPreferences.getString('Iapdatacheck') ?? "";
-                    //
-                    // if (iapdatacheck.isNotEmpty) {
-                    //   return Get.to(() => SubscriptionScreen(
-                    //         sixMonthPlan: sixMonthPlan,
-                    //         oneYearPlan: oneYearPlan,
-                    //         lifeTimePlan: lifeTimePlan,
-                    //         checkad: 'home',
-                    //       ));
-                    // } else {
-                    //   Get.offAll(() => HomeScreen(
-                    //         From: "home",
-                    //         selectedVerseNumForRead: "",
-                    //         selectedBookForRead: "",
-                    //         selectedChapterForRead: "",
-                    //         selectedBookNameForRead: "",
-                    //         selectedVerseForRead: "",
-                    //       ));
-                    // }
                   },
-                  child: Text(
-                    "Start now",
-                    style: TextStyle(
-                      fontSize: isTablet ? 18 : 14,
-                      color: Colors.white,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero, // REQUIRED
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF763201),
+                          Color(0xFFD5821F),
+                          Color(0xFFAD4D08),
+                          Color(0xFF763201),
+                        ],
+                        stops: [0.0, 0.3, 0.6, 1.0],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 40 : 24,
+                        vertical: isTablet ? 16 : 12,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Start now",
+                        style: TextStyle(
+                          fontSize: isTablet ? 18 : 14,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
+
               ],
             ),
           ),

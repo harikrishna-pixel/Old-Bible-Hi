@@ -31,7 +31,7 @@ class OnboardingGuidanceScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 50),
                 Image.asset(
-                  'assets/on_chat.png',
+                  'assets/chat.png',
                   height: isTablet ? 140 : 120,
                   fit: BoxFit.contain,
                 ),
