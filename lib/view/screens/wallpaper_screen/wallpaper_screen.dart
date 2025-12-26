@@ -1,5 +1,6 @@
 import 'package:biblebookapp/services/statsig/statsig_service.dart';
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
 import 'package:biblebookapp/view/screens/wallpaper_screen/bloc/wallpaper_category_bloc.dart';
@@ -17,13 +18,34 @@ class WallpaperScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wallpaperCategoryState =
         ref.watch(wallpaperCategoryBloc).wallpaperCategoryState;
+    final hasShownToast = useRef(false);
+    
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((callback) {
         ref.read(wallpaperCategoryBloc).getWallpaperCategory();
         // Track Wallpaper event
         StatsigService.trackWallpaper();
+        // Reset toast flag when starting to load
+        hasShownToast.value = false;
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      if (wallpaperCategoryState.isLoading && !hasShownToast.value) {
+        bool cancelled = false;
+        Future.delayed(const Duration(seconds: 3), () {
+          if (!cancelled && wallpaperCategoryState.isLoading && !hasShownToast.value) {
+            Constants.showToast('Check Your Internet Connection');
+            hasShownToast.value = true;
+          }
+        });
+        return () {
+          cancelled = true;
+        };
+      }
+      return null;
+    }, [wallpaperCategoryState.isLoading]);
     return Scaffold(
         body: Container(
       height: MediaQuery.of(context).size.height,
@@ -121,3 +143,4 @@ class WallpaperScreen extends HookConsumerWidget {
     ));
   }
 }
+

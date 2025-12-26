@@ -1,5 +1,6 @@
 import 'package:biblebookapp/services/statsig/statsig_service.dart';
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
@@ -19,13 +20,34 @@ class BooksScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookState = ref.watch(bookBloc);
+    final hasShownToast = useRef(false);
+    
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(bookBloc).getBooks(bookAdId);
         // Track Books event
         StatsigService.trackBooks();
+        // Reset toast flag when starting to load
+        hasShownToast.value = false;
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      if (bookState.isLoading && bookState.books.isEmpty && !hasShownToast.value) {
+        bool cancelled = false;
+        Future.delayed(const Duration(seconds: 3), () {
+          if (!cancelled && bookState.isLoading && bookState.books.isEmpty && !hasShownToast.value) {
+            Constants.showToast('Check Your Internet Connection');
+            hasShownToast.value = true;
+          }
+        });
+        return () {
+          cancelled = true;
+        };
+      }
+      return null;
+    }, [bookState.isLoading, bookState.books.isEmpty]);
     double screenWidth = MediaQuery.of(context).size.width;
     debugPrint("sz current width - $screenWidth ");
 
@@ -192,3 +214,4 @@ class BooksScreen extends HookConsumerWidget {
     ));
   }
 }
+

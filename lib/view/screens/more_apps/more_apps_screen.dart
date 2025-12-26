@@ -1,4 +1,5 @@
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
@@ -18,12 +19,32 @@ class MoreAppsScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appState = ref.watch(moreAppBloc);
+    final hasShownToast = useRef(false);
 
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(moreAppBloc).getApps(reset: true);
+        // Reset toast flag when starting to load
+        hasShownToast.value = false;
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      if (appState.isLoading && appState.apps.isEmpty && !hasShownToast.value) {
+        bool cancelled = false;
+        Future.delayed(const Duration(seconds: 3), () {
+          if (!cancelled && appState.isLoading && appState.apps.isEmpty && !hasShownToast.value) {
+            Constants.showToast('Check Your Internet Connection');
+            hasShownToast.value = true;
+          }
+        });
+        return () {
+          cancelled = true;
+        };
+      }
+      return null;
+    }, [appState.isLoading, appState.apps.isEmpty]);
 
     double screenWidth = MediaQuery.of(context).size.width;
     debugPrint("sz current width - $screenWidth ");
@@ -187,3 +208,4 @@ class MoreAppsScreen extends HookConsumerWidget {
     ));
   }
 }
+
