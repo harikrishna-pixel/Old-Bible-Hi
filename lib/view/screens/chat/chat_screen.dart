@@ -10,6 +10,7 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:biblebookapp/controller/dashboard_controller.dart';
 import 'package:biblebookapp/view/constants/colors.dart';
 import 'package:biblebookapp/view/constants/constant.dart';
+import 'package:biblebookapp/constant/app_api_constant.dart';
 import 'package:biblebookapp/utils/rating_dialog_helper.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
@@ -1408,6 +1409,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 10. Always respond in plain text format without using asterisks (*), markdown formatting, or special characters
 
 ${answerLengthInstruction}
+${AppApiConstant.chatLanguage != null ? '\nIMPORTANT: Always respond in ${AppApiConstant.chatLanguage == 'TN' ? 'Tamil' : AppApiConstant.chatLanguage} language. All your responses must be in ${AppApiConstant.chatLanguage == 'TN' ? 'Tamil' : AppApiConstant.chatLanguage}.' : ''}
 
 Remember: You are assisting users with the Geneva Bible, so provide responses that honor the sacred nature of the text while being informative and helpful.
 ''';

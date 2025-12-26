@@ -15,4 +15,7 @@ class AppApiConstant {
       'https://bibleoffice.com/authhub/API/public/api/delete-account';
   static const bookofferapi =
       "https://saveigm.com/bookads/admin/api/book/book_list_by_cat";
+  
+  // Language code for chat responses (e.g., 'TN' for Tamil, 'EN' for English, null for default)
+  static const String? chatLanguage = "TN"; // Set to 'TN' for Tamil, 'EN' for English, or null for default
 }
