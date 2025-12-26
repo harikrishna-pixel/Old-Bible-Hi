@@ -175,246 +175,254 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setBottomSheetState) {
-            return Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? CommanColor.darkPrimaryColor
-                    : Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.9,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header Section with Gradient
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          CommanColor.lightDarkPrimary(context),
-                          CommanColor.lightDarkPrimary(context).withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? CommanColor.darkPrimaryColor
+                      : Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                    // Header Section with Gradient
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            CommanColor.lightDarkPrimary(context),
+                            CommanColor.lightDarkPrimary(context).withOpacity(0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
                       ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenWidth > 450 ? 28 : 24,
+                        horizontal: screenWidth > 450 ? 24 : 20,
                       ),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      vertical: screenWidth > 450 ? 28 : 24,
-                      horizontal: screenWidth > 450 ? 24 : 20,
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.stars_rounded,
-                            color: Colors.white,
-                            size: screenWidth > 450 ? 36 : 32,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'Welcome to Bible Chat',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: screenWidth > 450 ? 22 : 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Choose your preferred answer style',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: screenWidth > 450 ? 15 : 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        // Credits display
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth > 450 ? 16 : 14,
-                            vertical: screenWidth > 450 ? 10 : 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1,
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.stars_rounded,
+                              color: Colors.white,
+                              size: screenWidth > 450 ? 36 : 32,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.account_balance_wallet,
-                                color: Colors.white,
-                                size: screenWidth > 450 ? 20 : 18,
+                          const SizedBox(height: 14),
+                          Text(
+                            'Welcome to Bible Chat',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: screenWidth > 450 ? 22 : 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Choose your preferred answer style',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: screenWidth > 450 ? 15 : 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          // Credits display
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth > 450 ? 16 : 14,
+                              vertical: screenWidth > 450 ? 10 : 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 1,
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'You have $initialCredits credits',
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet,
+                                  color: Colors.white,
+                                  size: screenWidth > 450 ? 20 : 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'You have $initialCredits credits',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: screenWidth > 450 ? 15 : 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Content Section
+                    Padding(
+                      padding: EdgeInsets.all(screenWidth > 450 ? 24 : 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Info Card
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.05)
+                                  : CommanColor.lightDarkPrimary(context).withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.1)
+                                    : CommanColor.lightDarkPrimary(context).withOpacity(0.1),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: CommanColor.lightDarkPrimary(context),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Each answer uses credits. You can change this anytime in your Wallet.',
+                                    style: TextStyle(
+                                      color: CommanColor.whiteBlack(context).withOpacity(0.8),
+                                      fontSize: screenWidth > 450 ? 14 : 13,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          
+                          // Answer Length Options
+                          Text(
+                            'Select Answer Length',
+                            style: TextStyle(
+                              color: CommanColor.whiteBlack(context),
+                              fontSize: screenWidth > 450 ? 17 : 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildIntroAnswerLengthOption(
+                            context,
+                            screenWidth,
+                            isDark,
+                            'small',
+                            'Short Answer',
+                            'Quick & concise response',
+                            20,
+                            setBottomSheetState,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildIntroAnswerLengthOption(
+                            context,
+                            screenWidth,
+                            isDark,
+                            'medium',
+                            'Medium Answer',
+                            'Balanced explanation',
+                            50,
+                            setBottomSheetState,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildIntroAnswerLengthOption(
+                            context,
+                            screenWidth,
+                            isDark,
+                            'large',
+                            'Full Study',
+                            'Detailed & comprehensive',
+                            100,
+                            setBottomSheetState,
+                          ),
+                          const SizedBox(height: 24),
+                          
+                          // Action Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark
+                                    ? CommanColor.lightDarkPrimary200(context)
+                                    : CommanColor.lightDarkPrimary(context),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: isDark
+                                      ? const BorderSide(
+                                          color: Colors.white,
+                                          width: 1.5,
+                                        )
+                                      : BorderSide.none,
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: screenWidth > 450 ? 16 : 14,
+                                ),
+                                elevation: 0,
+                                shadowColor: Colors.transparent,
+                              ),
+                              onPressed: () async {
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setBool('chat_intro_seen', true);
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: Text(
+                                'Got it, Let\'s Chat!',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: screenWidth > 450 ? 15 : 14,
+                                  fontSize: screenWidth > 450 ? 17 : 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 10),
+                        ],
+                      ),
                     ),
-                  ),
-                  
-                  // Content Section
-                  Padding(
-                    padding: EdgeInsets.all(screenWidth > 450 ? 24 : 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Info Card
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : CommanColor.lightDarkPrimary(context).withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : CommanColor.lightDarkPrimary(context).withOpacity(0.1),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.lightbulb_outline,
-                                color: CommanColor.lightDarkPrimary(context),
-                                size: 20,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Each answer uses credits. You can change this anytime in your Wallet.',
-                                  style: TextStyle(
-                                    color: CommanColor.whiteBlack(context).withOpacity(0.8),
-                                    fontSize: screenWidth > 450 ? 14 : 13,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        
-                        // Answer Length Options
-                        Text(
-                          'Select Answer Length',
-                          style: TextStyle(
-                            color: CommanColor.whiteBlack(context),
-                            fontSize: screenWidth > 450 ? 17 : 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildIntroAnswerLengthOption(
-                          context,
-                          screenWidth,
-                          isDark,
-                          'small',
-                          'Short Answer',
-                          'Quick & concise response',
-                          20,
-                          setBottomSheetState,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildIntroAnswerLengthOption(
-                          context,
-                          screenWidth,
-                          isDark,
-                          'medium',
-                          'Medium Answer',
-                          'Balanced explanation',
-                          50,
-                          setBottomSheetState,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildIntroAnswerLengthOption(
-                          context,
-                          screenWidth,
-                          isDark,
-                          'large',
-                          'Full Study',
-                          'Detailed & comprehensive',
-                          100,
-                          setBottomSheetState,
-                        ),
-                        const SizedBox(height: 24),
-                        
-                        // Action Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? CommanColor.lightDarkPrimary200(context)
-                                  : CommanColor.lightDarkPrimary(context),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: isDark
-                                    ? const BorderSide(
-                                        color: Colors.white,
-                                        width: 1.5,
-                                      )
-                                    : BorderSide.none,
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                vertical: screenWidth > 450 ? 16 : 14,
-                              ),
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
-                            ),
-                            onPressed: () async {
-                              final prefs = await SharedPreferences.getInstance();
-                              await prefs.setBool('chat_intro_seen', true);
-                              if (mounted) {
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: Text(
-                              'Got it, Let\'s Chat!',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: screenWidth > 450 ? 17 : 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 10),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ),
             );
           },
         );

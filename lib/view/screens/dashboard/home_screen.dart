@@ -4408,11 +4408,29 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         ListTile(
                           dense: true,
-                          onTap: () {
+                          onTap: () async {
                             Get.back();
                             if (controller.adFree.value == false) {
                               controller.bannerAd?.dispose();
                               controller.bannerAd?.load();
+                            }
+                            // Check internet connection before navigating
+                            final hasInternet = await InternetConnection().hasInternetAccess;
+                            if (!hasInternet) {
+                              Constants.showToast('Check Your Internet Connection');
+                              return;
+                            }
+                            // Check if connection is slow (mobile only, likely 2G)
+                            final connectivity = Connectivity();
+                            final connectivityResult = await connectivity.checkConnectivity();
+                            final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
+                                !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                !connectivityResult.contains(ConnectivityResult.ethernet);
+                            if (isMobileOnly) {
+                              // Show toast after a delay if still loading (slow connection)
+                              Future.delayed(const Duration(seconds: 2), () {
+                                Constants.showToast('Internet is Slow');
+                              });
                             }
                             Get.to(() => const WallpaperScreen(),
                                 transition: Transition.cupertinoDialog,
@@ -4432,11 +4450,29 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         ListTile(
                           dense: true,
-                          onTap: () {
+                          onTap: () async {
                             Get.back();
                             if (controller.adFree.value == false) {
                               controller.bannerAd?.dispose();
                               controller.bannerAd?.load();
+                            }
+                            // Check internet connection before navigating
+                            final hasInternet = await InternetConnection().hasInternetAccess;
+                            if (!hasInternet) {
+                              Constants.showToast('Check Your Internet Connection');
+                              return;
+                            }
+                            // Check if connection is slow (mobile only, likely 2G)
+                            final connectivity = Connectivity();
+                            final connectivityResult = await connectivity.checkConnectivity();
+                            final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
+                                !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                !connectivityResult.contains(ConnectivityResult.ethernet);
+                            if (isMobileOnly) {
+                              // Show toast after a delay if still loading (slow connection)
+                              Future.delayed(const Duration(seconds: 2), () {
+                                Constants.showToast('Internet is Slow');
+                              });
                             }
                             Get.to(() => const QuoteScreen(),
                                 transition: Transition.cupertinoDialog,
@@ -4614,6 +4650,24 @@ class _HomeScreenState extends State<HomeScreen>
                                 controller.bannerAd?.dispose();
                                 controller.bannerAd?.load();
                               }
+                              // Check internet connection before navigating
+                              final hasInternet = await InternetConnection().hasInternetAccess;
+                              if (!hasInternet) {
+                                Constants.showToast('Check Your Internet Connection');
+                                return;
+                              }
+                              // Check if connection is slow (mobile only, likely 2G)
+                              final connectivity = Connectivity();
+                              final connectivityResult = await connectivity.checkConnectivity();
+                              final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
+                                  !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                  !connectivityResult.contains(ConnectivityResult.ethernet);
+                              if (isMobileOnly) {
+                                // Show toast after a delay if still loading (slow connection)
+                                Future.delayed(const Duration(seconds: 2), () {
+                                  Constants.showToast('Internet is Slow');
+                                });
+                              }
                               Get.to(
                                   () => BooksScreen(
                                       bookAdId: controller.bookAdsAppId.value),
@@ -4692,17 +4746,22 @@ class _HomeScreenState extends State<HomeScreen>
                             Get.back();
                             await SharPreferences.setString('OpenAd', '1');
                             // Check internet connection before showing More Apps
-                            final connectivityResult =
-                                await _connectivity.checkConnectivity();
-                            if (!connectivityResult
-                                    .contains(ConnectivityResult.wifi) &&
-                                !connectivityResult
-                                    .contains(ConnectivityResult.mobile) &&
-                                !connectivityResult
-                                    .contains(ConnectivityResult.ethernet)) {
-                              Constants.showToast(
-                                  'Check Your Internet Connection');
+                            final hasInternet = await InternetConnection().hasInternetAccess;
+                            if (!hasInternet) {
+                              Constants.showToast('Check Your Internet Connection');
                               return;
+                            }
+                            final connectivity = Connectivity();
+                            final connectivityResult = await connectivity.checkConnectivity();
+                            // Check if connection is slow (mobile only, likely 2G)
+                            final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
+                                !connectivityResult.contains(ConnectivityResult.wifi) &&
+                                !connectivityResult.contains(ConnectivityResult.ethernet);
+                            if (isMobileOnly) {
+                              // Show toast after a delay if still loading (slow connection)
+                              Future.delayed(const Duration(seconds: 2), () {
+                                Constants.showToast('Internet is Slow');
+                              });
                             }
                             if (controller.adFree.value == false) {
                               controller.bannerAd?.dispose();

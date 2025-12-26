@@ -1121,7 +1121,7 @@ class _SelectButton extends StatelessWidget {
     final borderRadius = BorderRadius.circular(7);
     // Border with increased thickness when selected
     final baseBorder = Border.all(
-      color: const Color(0xFF9E9E9E), // Border stroke color: 9E9E9E
+      color: selected ? const Color(0xFF805531) : const Color(0xFF9E9E9E), // Border color: #805531 when selected, 9E9E9E when not
       width: selected ? 2.0 : 1.0, // Increase thickness when selected
     );
 

@@ -3183,16 +3183,16 @@ import '../screens/intro_subcribtion_screen.dart';
 // }
 
 Future<dynamic> homeContentEditBottomSheet(
-    BuildContext context, {
-      String? verNum,
-      VerseBookContentModel? verseBookdata,
-      required Function(DashBoardController) loadInterstitial,
-      int? selectedColor,
-      DashBoardController? controller,
-      Function? callback,
-      Function? callback2,
-      int? clickcount,
-    }) async {
+  BuildContext context, {
+  String? verNum,
+  VerseBookContentModel? verseBookdata,
+  required Function(DashBoardController) loadInterstitial,
+  int? selectedColor,
+  DashBoardController? controller,
+  Function? callback,
+  Function? callback2,
+  int? clickcount,
+}) async {
   return await Get.bottomSheet(
     barrierColor: Colors.black12,
     shape: const RoundedRectangleBorder(
@@ -3220,21 +3220,23 @@ String normalizeHtml(String htmlContent) {
   final document = html_parser.parse(htmlContent);
   //final plainText = document.body?.text ?? htmlContent;
   final normalized =
-  unescape.convert(document.body?.text ?? htmlContent).trim();
+      unescape.convert(document.body?.text ?? htmlContent).trim();
   return normalized.replaceAll("'", '').replaceAll('"', '');
   // return unescape.convert(plainText).trim().toLowerCase();
 }
 
-Future saveAndShare(Uint8List bytes, String imgname, String mesage, {BuildContext? context}) async {
+Future saveAndShare(Uint8List bytes, String imgname, String mesage,
+    {BuildContext? context}) async {
   // Check and show rating dialog on first share if context is provided
   bool ratingShown = false;
   if (context != null) {
-    ratingShown = await RatingDialogHelper.showRatingDialogOnFirstShare(context);
+    ratingShown =
+        await RatingDialogHelper.showRatingDialogOnFirstShare(context);
   }
   if (ratingShown) {
     await Future.delayed(const Duration(milliseconds: 300));
   }
-  
+
   final directory = await getApplicationDocumentsDirectory();
   final image = File("${directory.path}/$imgname.png");
   image.writeAsBytesSync(bytes);
@@ -3245,7 +3247,7 @@ Future saveAndShare(Uint8List bytes, String imgname, String mesage, {BuildContex
       subject: 'Bible Book app',
       text: mesage,
       sharePositionOrigin:
-      Rect.fromPoints(const Offset(2, 2), const Offset(3, 3)));
+          Rect.fromPoints(const Offset(2, 2), const Offset(3, 3)));
 }
 
 Future<bool> requestPermission([context]) async {
@@ -3414,7 +3416,7 @@ Future<void> showGiftDialog2(
               },
               child: Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 17, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 17, vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -3501,7 +3503,7 @@ Future<void> showGiftDialog2(
                         borderRadius: BorderRadius.circular(30),
                       ),
                       padding:
-                      EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -3557,7 +3559,7 @@ Future<bool> showNotificationDialog(BuildContext context, onclick) async {
                     GestureDetector(
                       onTap: () async {
                         SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
+                            await SharedPreferences.getInstance();
                         await prefs.setString("alrt", "1");
                         final data = prefs.getString("notifiyalrt");
                         if (data != '1') {
@@ -3594,7 +3596,7 @@ Future<bool> showNotificationDialog(BuildContext context, onclick) async {
                 ),
                 Container(
                   padding:
-                  const EdgeInsets.symmetric(vertical: 7, horizontal: 28),
+                      const EdgeInsets.symmetric(vertical: 7, horizontal: 28),
                   // decoration: const BoxDecoration(
                   //     image: DecorationImage(
                   //         fit: BoxFit.fitWidth,
@@ -3630,19 +3632,19 @@ Future<bool> showNotificationDialog(BuildContext context, onclick) async {
                   onTap: () async {
                     Navigator.of(context).pop();
                     SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                     await prefs.setString("alrt", "1");
                     final data = prefs.getString("notifiyalrt");
                     if (data != '1') {
                       await prefs.setString("notifiyalrt", '0');
                     }
                     Get.to(() => SettingScreen(
-                      notificationValue: true,
-                    ));
+                          notificationValue: true,
+                        ));
                   },
                   child: Container(
                     padding:
-                    const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                        const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(18),
                       color: CommanColor.darkPrimaryColor,
@@ -3807,7 +3809,7 @@ Future<void> showGiftDialog(BuildContext context, GetBookOfferData data) async {
                 },
                 child: Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 17, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 17, vertical: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -3850,7 +3852,7 @@ Future<void> showGiftDialog(BuildContext context, GetBookOfferData data) async {
                           color: Colors.transparent, // Brownish banner color
                           image: DecorationImage(
                               image:
-                              AssetImage('assets/offer/offerbanner.png'))),
+                                  AssetImage('assets/offer/offerbanner.png'))),
                       child: Center(
                         child: Text(
                           "Welcome Gift for You!",
@@ -3908,19 +3910,20 @@ Future<void> showGiftDialog(BuildContext context, GetBookOfferData data) async {
                         appid = BibleInfo.apple_AppId;
                         if (Platform.isAndroid) {
                           message =
-                          "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://play.google.com/store/apps/details?id=$appPackageName";
+                              "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://play.google.com/store/apps/details?id=$appPackageName";
                         } else if (Platform.isIOS) {
                           message =
-                          "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://itunes.apple.com/app/id$appid"; // Example iTunes URL
+                              "Hey, I've been using this Bible app that has transformed my daily Bible study experience. Try it now at : https://itunes.apple.com/app/id$appid"; // Example iTunes URL
                         }
 
                         if (message.isNotEmpty) {
                           // Check and show rating dialog on first share
-                          await RatingDialogHelper.showRatingDialogOnFirstShare(context);
-                          
+                          await RatingDialogHelper.showRatingDialogOnFirstShare(
+                              context);
+
                           Share.share(message,
-                              sharePositionOrigin: Rect.fromPoints(
-                                  const Offset(2, 2), const Offset(3, 3)))
+                                  sharePositionOrigin: Rect.fromPoints(
+                                      const Offset(2, 2), const Offset(3, 3)))
                               .then((v) {
                             if (context.mounted) {
                               showGiftDialog2(context, data);
@@ -3934,7 +3937,7 @@ Future<void> showGiftDialog(BuildContext context, GetBookOfferData data) async {
                         fixedSize: Size(Sizecf.scrnWidth! * 0.65,
                             Sizecf.scrnHeight! * 0.05),
                         backgroundColor:
-                        Color(0xFF9B6B34), // Brown button color
+                            Color(0xFF9B6B34), // Brown button color
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -4046,25 +4049,28 @@ class PremiumAccessDialog extends StatelessWidget {
               onPressed: () async {
                 await SharPreferences.setString("premium", 'yes');
                 final countprovider =
-                Provider.of<DownloadProvider>(context, listen: false);
+                    Provider.of<DownloadProvider>(context, listen: false);
                 await countprovider.resetCount();
                 // Use constants as fallback when SharedPreferences are empty (first time loading)
                 final sixMonthPlan =
-                    await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
+                    await SharPreferences.getString('sixMonthPlan') ??
+                        BibleInfo.sixMonthPlanid;
                 final oneYearPlan =
-                    await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
+                    await SharPreferences.getString('oneYearPlan') ??
+                        BibleInfo.oneYearPlanid;
                 final lifeTimePlan =
-                    await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
+                    await SharPreferences.getString('lifeTimePlan') ??
+                        BibleInfo.lifeTimePlanid;
                 if (context.mounted) {
                   Navigator.pop(context);
                 }
 
                 Get.to(() => SubscriptionScreen(
-                  sixMonthPlan: sixMonthPlan,
-                  oneYearPlan: oneYearPlan,
-                  lifeTimePlan: lifeTimePlan,
-                  checkad: 'onboard',
-                ));
+                      sixMonthPlan: sixMonthPlan,
+                      oneYearPlan: oneYearPlan,
+                      lifeTimePlan: lifeTimePlan,
+                      checkad: 'onboard',
+                    ));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: CommanColor.lightModePrimary,
@@ -4072,7 +4078,7 @@ class PremiumAccessDialog extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
               child: Text(
                 'ACTIVATE PREMIUM ACCESS',
@@ -4109,11 +4115,11 @@ class AutoSizeHtmlWidget extends StatefulWidget {
 
   const AutoSizeHtmlWidget(
       {super.key,
-        required this.html,
-        this.maxLines = 3,
-        this.maxFontSize = 31,
-        this.minFontSize = 14,
-        this.color});
+      required this.html,
+      this.maxLines = 3,
+      this.maxFontSize = 31,
+      this.minFontSize = 14,
+      this.color});
 
   @override
   AutoSizeHtmlWidgetState createState() => AutoSizeHtmlWidgetState();
@@ -4148,13 +4154,13 @@ class AutoSizeHtmlWidgetState extends State<AutoSizeHtmlWidget> {
   }
 
   double _calculateOptimalFontSize(
-      BuildContext context,
-      String text,
-      double maxWidth,
-      int maxLines,
-      double maxFontSize,
-      double minFontSize,
-      ) {
+    BuildContext context,
+    String text,
+    double maxWidth,
+    int maxLines,
+    double maxFontSize,
+    double minFontSize,
+  ) {
     final textSpan = TextSpan(
       text: _stripHtmlTags(text), // Helper to get plain text for measurement
       style: TextStyle(fontSize: maxFontSize),
@@ -4269,7 +4275,7 @@ class HomeContentEditBottomSheetState
     isBookmarked = verseBookdata.isBookmarked == "yes";
     isUnderlined = verseBookdata.isUnderlined == "yes";
     final dat =
-    await DBHelper().getColorByContent(widget.verseBookdata?.content);
+        await DBHelper().getColorByContent(widget.verseBookdata?.content);
     setState(() {
       datac = dat;
     });
@@ -4315,7 +4321,7 @@ class HomeContentEditBottomSheetState
                       color: CommanColor.lightDarkPrimary(context),
                       letterSpacing: BibleInfo.letterSpacing,
                       fontSize:
-                      BibleInfo.fontSizeScale * screenWidth > 450 ? 25 : 14,
+                          BibleInfo.fontSizeScale * screenWidth > 450 ? 25 : 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -4353,7 +4359,7 @@ class HomeContentEditBottomSheetState
                     final int verseIndex =
                         int.parse(widget.verNum.toString()) - 1;
                     final verseData =
-                    controller.selectedBookContent[verseIndex];
+                        controller.selectedBookContent[verseIndex];
 
                     final bool isHighlightedColor =
                         verseData.isHighlighted != null &&
@@ -4392,16 +4398,16 @@ class HomeContentEditBottomSheetState
                           final int verseIndex =
                               int.parse(widget.verNum.toString()) - 1;
                           final selectedVerse =
-                          controller.selectedBookContent[verseIndex];
+                              controller.selectedBookContent[verseIndex];
 
                           final bool isSameColor = (int.tryParse(
-                              verseBookdata.isHighlighted ?? '') ??
-                              0) ==
+                                      verseBookdata.isHighlighted ?? '') ??
+                                  0) ==
                               color.value;
 
                           final updatedVerse = selectedVerse.copyWith(
                             isHighlighted:
-                            isSameColor ? "no" : color.value.toString(),
+                                isSameColor ? "no" : color.value.toString(),
                           );
 
                           setState(() {
@@ -4410,9 +4416,9 @@ class HomeContentEditBottomSheetState
                           });
 
                           controller.colorsCheack.value =
-                          isSameColor ? -1 : indexVal;
+                              isSameColor ? -1 : indexVal;
                           controller.selectedColorOrNot.value =
-                          isSameColor ? "no" : indexVal.toString();
+                              isSameColor ? "no" : indexVal.toString();
 
                           await DBHelper().updateVersesData(
                             int.parse(verseBookdata.id.toString()),
@@ -4432,7 +4438,7 @@ class HomeContentEditBottomSheetState
                           await DBHelper().deleteHighlightByContent(
                               controller.printText.value);
                           final data =
-                          normalizeHtml(controller.printText.value);
+                              normalizeHtml(controller.printText.value);
                           widget.callback?.call('0x00000000');
                           await Future.delayed(
                               const Duration(milliseconds: 300));
@@ -4447,7 +4453,7 @@ class HomeContentEditBottomSheetState
                                   controller.selectedChapter.value.toString()),
                               content: controller.printText.value,
                               bookName:
-                              controller.selectedBook.value.toString(),
+                                  controller.selectedBook.value.toString(),
                               color: color.value.toString(),
                               timestamp: DateTime.now().toString(),
                               verseNum: int.parse(widget.verNum.toString()),
@@ -4468,9 +4474,9 @@ class HomeContentEditBottomSheetState
                           });
                         },
                         child:
-                        // Builder(
-                        //   builder: (context) {return
-                        Container(
+                            // Builder(
+                            //   builder: (context) {return
+                            Container(
                           margin: const EdgeInsets.all(10),
                           width: 30,
                           height: 40,
@@ -4480,10 +4486,10 @@ class HomeContentEditBottomSheetState
                           ),
                           child: shouldShowCheckIcon
                               ? Icon(
-                            Icons.check_circle_rounded,
-                            size: 20,
-                            color: CommanColor.lightDarkPrimary(context),
-                          )
+                                  Icons.check_circle_rounded,
+                                  size: 20,
+                                  color: CommanColor.lightDarkPrimary(context),
+                                )
                               : const SizedBox(),
                         ));
                     //   },
@@ -4659,7 +4665,7 @@ class HomeContentEditBottomSheetState
                 await SharPreferences.setString('OpenAd', '1');
                 if (controller.adFree.value == false) {
                   final countProvider =
-                  Provider.of<DownloadProvider>(context, listen: false);
+                      Provider.of<DownloadProvider>(context, listen: false);
                   await countProvider.decrementCount(context);
                 }
                 final int index = int.parse(widget.verNum.toString()) - 1;
@@ -4674,9 +4680,9 @@ class HomeContentEditBottomSheetState
 
                 final bookmarkModel = BookMarkModel(
                   bookNum:
-                  int.parse(controller.selectedBookNum.value.toString()),
+                      int.parse(controller.selectedBookNum.value.toString()),
                   chapterNum:
-                  int.parse(controller.selectedChapter.value.toString()),
+                      int.parse(controller.selectedChapter.value.toString()),
                   content: controller.printText.value.toString(),
                   plaincontent: originalData.id.toString(),
                   bookName: controller.selectedBook.value.toString(),
@@ -4696,20 +4702,20 @@ class HomeContentEditBottomSheetState
                 );
               },
               child: controller
-                  .selectedBookContent[
-              int.parse(widget.verNum.toString()) - 1]
-                  .isBookmarked ==
-                  "yes"
+                          .selectedBookContent[
+                              int.parse(widget.verNum.toString()) - 1]
+                          .isBookmarked ==
+                      "yes"
                   ? Image.asset(
-                "assets/Bookmark icons/cloud-fog2-fill.png",
-                height: screenWidth > 450 ? 60 : 50,
-                width: screenWidth > 450 ? 45 : 35,
-              )
+                      "assets/Bookmark icons/cloud-fog2-fill.png",
+                      height: screenWidth > 450 ? 60 : 50,
+                      width: screenWidth > 450 ? 45 : 35,
+                    )
                   : Image.asset(
-                "assets/Bookmark icons/cloud-fog2-fill-1.png",
-                height: screenWidth > 450 ? 60 : 50,
-                width: screenWidth > 450 ? 45 : 35,
-              ),
+                      "assets/Bookmark icons/cloud-fog2-fill-1.png",
+                      height: screenWidth > 450 ? 60 : 50,
+                      width: screenWidth > 450 ? 45 : 35,
+                    ),
             ),
             const SizedBox(height: 10),
             Text(
@@ -4739,7 +4745,7 @@ class HomeContentEditBottomSheetState
                 await SharPreferences.setString('OpenAd', '1');
                 if (controller.adFree.value == false) {
                   final countProvider =
-                  Provider.of<DownloadProvider>(context, listen: false);
+                      Provider.of<DownloadProvider>(context, listen: false);
                   await countProvider.decrementCount(context);
                 }
 
@@ -4755,9 +4761,9 @@ class HomeContentEditBottomSheetState
 
                 final underlineModel = BookMarkModel(
                   bookNum:
-                  int.parse(controller.selectedBookNum.value.toString()),
+                      int.parse(controller.selectedBookNum.value.toString()),
                   chapterNum:
-                  int.parse(controller.selectedChapter.value.toString()),
+                      int.parse(controller.selectedChapter.value.toString()),
                   content: controller.printText.value,
                   plaincontent: originalData.id.toString(),
                   bookName: controller.selectedBook.value,
@@ -4777,20 +4783,20 @@ class HomeContentEditBottomSheetState
                 );
               },
               child: controller
-                  .selectedBookContent[
-              int.parse(widget.verNum.toString()) - 1]
-                  .isUnderlined ==
-                  "yes"
+                          .selectedBookContent[
+                              int.parse(widget.verNum.toString()) - 1]
+                          .isUnderlined ==
+                      "yes"
                   ? Image.asset(
-                "assets/Bookmark icons/cloud-fog2-fill-2.png",
-                height: screenWidth > 450 ? 60 : 50,
-                width: screenWidth > 450 ? 45 : 35,
-              )
+                      "assets/Bookmark icons/cloud-fog2-fill-2.png",
+                      height: screenWidth > 450 ? 60 : 50,
+                      width: screenWidth > 450 ? 45 : 35,
+                    )
                   : Image.asset(
-                "assets/Bookmark icons/cloud-fog2-fill-3.png",
-                height: screenWidth > 450 ? 60 : 50,
-                width: screenWidth > 450 ? 45 : 35,
-              ),
+                      "assets/Bookmark icons/cloud-fog2-fill-3.png",
+                      height: screenWidth > 450 ? 60 : 50,
+                      width: screenWidth > 450 ? 45 : 35,
+                    ),
             ),
             const SizedBox(height: 10),
             Text(
@@ -4939,9 +4945,9 @@ class HomeContentEditBottomSheetState
           onTap: () async {
             await SharPreferences.setString('OpenAd', '1');
             if (controller
-                .selectedBookContent[
-            int.parse(widget.verNum.toString()) - 1]
-                .isNoted !=
+                    .selectedBookContent[
+                        int.parse(widget.verNum.toString()) - 1]
+                    .isNoted !=
                 "no") {
               controller.notesController.value.text = controller
                   .selectedBookContent[int.parse(widget.verNum.toString()) - 1]
@@ -4955,27 +4961,27 @@ class HomeContentEditBottomSheetState
           child: Column(
             children: [
               controller
-                  .selectedBookContent[
-              int.parse(widget.verNum.toString()) - 1]
-                  .isNoted ==
-                  "no"
+                          .selectedBookContent[
+                              int.parse(widget.verNum.toString()) - 1]
+                          .isNoted ==
+                      "no"
                   ? Image.asset(
-                "assets/Bookmark icons/stickynote.png",
-                height: screenWidth > 450 ? 60 : 50,
-                width: screenWidth > 450 ? 45 : 35,
-              )
+                      "assets/Bookmark icons/stickynote.png",
+                      height: screenWidth > 450 ? 60 : 50,
+                      width: screenWidth > 450 ? 45 : 35,
+                    )
                   : Image.asset(
-                "assets/Bookmark icons/stickynote-1.png",
-                height: screenWidth > 450 ? 60 : 50,
-                width: screenWidth > 450 ? 45 : 35,
-              ),
+                      "assets/Bookmark icons/stickynote-1.png",
+                      height: screenWidth > 450 ? 60 : 50,
+                      width: screenWidth > 450 ? 45 : 35,
+                    ),
               const SizedBox(height: 10),
               Text(
                 "Notes",
                 style: TextStyle(
                   letterSpacing: BibleInfo.letterSpacing,
                   fontSize:
-                  BibleInfo.fontSizeScale * screenWidth > 450 ? 16 : 12,
+                      BibleInfo.fontSizeScale * screenWidth > 450 ? 16 : 12,
                   fontWeight: FontWeight.bold,
                   color: CommanColor.lightDarkPrimary(context),
                 ),
@@ -5166,8 +5172,8 @@ class HomeContentEditBottomSheetState
 
               controller.selectedBookContent[verseIndex] =
                   controller.selectedBookContent[verseIndex].copyWith(
-                    isHighlighted: newColorValue,
-                  );
+                isHighlighted: newColorValue,
+              );
               setState(() {
                 selectedIndex = index;
                 selectedColor = currentColor;
@@ -5186,17 +5192,17 @@ class HomeContentEditBottomSheetState
               ),
               child: shouldShowCheck && !fnselect
                   ? Icon(
-                Icons.check_circle_rounded,
-                size: 20,
-                color: CommanColor.lightDarkPrimary(context),
-              )
+                      Icons.check_circle_rounded,
+                      size: 20,
+                      color: CommanColor.lightDarkPrimary(context),
+                    )
                   : isDataMatch && !fnselect
-                  ? Icon(
-                Icons.check_circle_rounded,
-                size: 20,
-                color: CommanColor.lightDarkPrimary(context),
-              )
-                  : const SizedBox(),
+                      ? Icon(
+                          Icons.check_circle_rounded,
+                          size: 20,
+                          color: CommanColor.lightDarkPrimary(context),
+                        )
+                      : const SizedBox(),
             ),
           );
         },
@@ -5382,7 +5388,7 @@ class HomeContentEditBottomSheetState
       controller.selectedBookContent[verseIndex] = updatedVerse;
       controller.colorsCheack.value = isSameColor ? -1 : indexVal;
       controller.selectedColorOrNot.value =
-      isSameColor ? "no" : indexVal.toString();
+          isSameColor ? "no" : indexVal.toString();
     });
 
     await DBHelper().updateVersesData(
@@ -5439,7 +5445,7 @@ class HomeContentEditBottomSheetState
             await SharPreferences.setString('OpenAd', '1');
             if (controller.adFree.value == false) {
               final countprovider =
-              Provider.of<DownloadProvider>(context, listen: false);
+                  Provider.of<DownloadProvider>(context, listen: false);
               await countprovider.decrementCount(context);
             }
             String appId = BibleInfo.apple_AppId;
@@ -5449,12 +5455,12 @@ class HomeContentEditBottomSheetState
             if (Platform.isAndroid) {
               await Clipboard.setData(ClipboardData(
                 text:
-                "${controller.printText.value.toString()} \n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\n Read more at  \n\nhttps://play.google.com/store/apps/details?id=$appPackageName",
+                    "${controller.printText.value.toString()} \n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\n Read more at  \n\nhttps://play.google.com/store/apps/details?id=$appPackageName",
               ));
             } else if (Platform.isIOS) {
               await Clipboard.setData(ClipboardData(
                 text:
-                "${controller.printText.value.toString()} \n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\n Read more at  \n\nhttps://itunes.apple.com/app/id$appId",
+                    "${controller.printText.value.toString()} \n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\n Read more at  \n\nhttps://itunes.apple.com/app/id$appId",
               ));
             }
 
@@ -5490,30 +5496,30 @@ class HomeContentEditBottomSheetState
                 await SharPreferences.setString('OpenAd', '1');
                 if (controller.adFree.value == false) {
                   final countprovider =
-                  Provider.of<DownloadProvider>(context, listen: false);
+                      Provider.of<DownloadProvider>(context, listen: false);
                   await countprovider.decrementCount(context);
                 }
                 // Create reset data
                 var data = VerseBookContentModel(
                   id: controller
                       .selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1]
+                          int.parse(widget.verNum.toString()) - 1]
                       .id,
                   bookNum: controller
                       .selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1]
+                          int.parse(widget.verNum.toString()) - 1]
                       .bookNum,
                   chapterNum: controller
                       .selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1]
+                          int.parse(widget.verNum.toString()) - 1]
                       .chapterNum,
                   verseNum: controller
                       .selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1]
+                          int.parse(widget.verNum.toString()) - 1]
                       .verseNum,
                   content: controller
                       .selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1]
+                          int.parse(widget.verNum.toString()) - 1]
                       .content,
                   isBookmarked: "no",
                   isHighlighted: "no",
@@ -5521,7 +5527,7 @@ class HomeContentEditBottomSheetState
                   isUnderlined: "no",
                   isRead: controller
                       .selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1]
+                          int.parse(widget.verNum.toString()) - 1]
                       .isRead,
                 );
 
@@ -5533,7 +5539,7 @@ class HomeContentEditBottomSheetState
                   bookmarkProvider.setIsBookmarked = false;
                   bookmarkProvider.setIsNoted = false;
                   controller.selectedBookContent[
-                  int.parse(widget.verNum.toString()) - 1] = data;
+                      int.parse(widget.verNum.toString()) - 1] = data;
                 });
 
                 // Reset in database
@@ -5542,7 +5548,7 @@ class HomeContentEditBottomSheetState
                   content: controller.printText.value.toString(),
                   updateVerseCallback: (updated) {
                     controller.selectedBookContent[
-                    int.parse(widget.verNum.toString()) - 1] = updated;
+                        int.parse(widget.verNum.toString()) - 1] = updated;
                   },
                 );
 
@@ -5550,7 +5556,8 @@ class HomeContentEditBottomSheetState
                 await _showSuccessDialog("Reset Successfully!");
               },
               child: Image(
-                image: const AssetImage("assets/Bookmark icons/arrow-refresh-03.png"),
+                image: const AssetImage(
+                    "assets/Bookmark icons/arrow-refresh-03.png"),
                 color: CommanColor.lightDarkPrimary(context),
                 height: screenWidth > 450 ? 60 : 50,
                 width: screenWidth > 450 ? 45 : 35,
@@ -5562,7 +5569,7 @@ class HomeContentEditBottomSheetState
                 color: CommanColor.lightDarkPrimary(context),
                 letterSpacing: BibleInfo.letterSpacing,
                 fontSize:
-                BibleInfo.fontSizeScale * (screenWidth > 450 ? 16 : 12),
+                    BibleInfo.fontSizeScale * (screenWidth > 450 ? 16 : 12),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -5580,7 +5587,7 @@ class HomeContentEditBottomSheetState
             await SharPreferences.setString('OpenAd', '1');
             if (controller.adFree.value == false) {
               final countprovider =
-              Provider.of<DownloadProvider>(context, listen: false);
+                  Provider.of<DownloadProvider>(context, listen: false);
               await countprovider.decrementCount(context);
             }
             final appPackageName =
@@ -5590,16 +5597,16 @@ class HomeContentEditBottomSheetState
 
             if (Platform.isAndroid) {
               message =
-              "${controller.printText.value} \n\n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\nRead more at \nhttps://play.google.com/store/apps/details?id=$appPackageName";
+                  "${controller.printText.value} \n\n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\nRead more at \nhttps://play.google.com/store/apps/details?id=$appPackageName";
             } else if (Platform.isIOS) {
               message =
-              "${controller.printText.value} \n\n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\nRead more at \nhttps://itunes.apple.com/app/id$appid";
+                  "${controller.printText.value} \n\n${controller.selectedBook.value} ${controller.selectedChapter.value}:${widget.verNum} \n\nRead more at \nhttps://itunes.apple.com/app/id$appid";
             }
 
             if (message.isNotEmpty) {
               // Check and show rating dialog on first share
               await RatingDialogHelper.showRatingDialogOnFirstShare(context);
-              
+
               Share.share(
                 message,
                 sharePositionOrigin: Rect.fromPoints(
@@ -5638,11 +5645,12 @@ class HomeContentEditBottomSheetState
     if (!mounted) return;
 
     // Check if user is subscribed (premium user)
-    final downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
+    final downloadProvider =
+        Provider.of<DownloadProvider>(context, listen: false);
     final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
-    final isSubscribed = subscriptionPlan != null && 
-                         subscriptionPlan.isNotEmpty && 
-                         ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
+    final isSubscribed = subscriptionPlan != null &&
+        subscriptionPlan.isNotEmpty &&
+        ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
 
     // For subscribed users, show toast instead of alert dialog
     if (isSubscribed) {
@@ -5664,43 +5672,43 @@ class HomeContentEditBottomSheetState
               mainAxisSize: MainAxisSize.min,
               children: [
                 (controller.isPopupBannerAdLoaded.value &&
-                    controller.popupBannerAd != null &&
-                    controller.adFree.value == false)
+                        controller.popupBannerAd != null &&
+                        controller.adFree.value == false)
                     ? Builder(
-                  builder: (context) {
-                    try {
-                      final ad = controller.popupBannerAd!;
-                      // Check if ad has valid size (indicates it's loaded)
-                      if (ad.size.width > 0 && ad.size.height > 0) {
-                        return SizedBox(
-                          height: ad.size.height.toDouble(),
-                          width: ad.size.width.toDouble(),
-                          child: AdWidget(ad: ad),
-                        );
-                      }
-                    } catch (e) {
-                      debugPrint('Error displaying ad: $e');
-                    }
-                    return SizedBox(
-                      height: 150,
-                      child: Image.asset(
-                        Images.aboutPlaceHolder(context),
-                        height: 150,
-                        width: 150,
-                        color: Colors.brown,
-                      ),
-                    );
-                  },
-                )
+                        builder: (context) {
+                          try {
+                            final ad = controller.popupBannerAd!;
+                            // Check if ad has valid size (indicates it's loaded)
+                            if (ad.size.width > 0 && ad.size.height > 0) {
+                              return SizedBox(
+                                height: ad.size.height.toDouble(),
+                                width: ad.size.width.toDouble(),
+                                child: AdWidget(ad: ad),
+                              );
+                            }
+                          } catch (e) {
+                            debugPrint('Error displaying ad: $e');
+                          }
+                          return SizedBox(
+                            height: 150,
+                            child: Image.asset(
+                              "assets/star.png",
+                              height: 150,
+                              width: 150,
+                              color: Colors.brown,
+                            ),
+                          );
+                        },
+                      )
                     : SizedBox(
-                  height: 150,
-                  child: Image.asset(
-                    Images.aboutPlaceHolder(context),
-                    height: 150,
-                    width: 150,
-                    color: Colors.brown,
-                  ),
-                ),
+                        height: 150,
+                        child: Image.asset(
+                          "assets/star.png",
+                          height: 150,
+                          width: 150,
+                          color: Colors.brown,
+                        ),
+                      ),
                 const SizedBox(height: 20),
                 const Divider(thickness: 2, color: Colors.brown),
                 const SizedBox(height: 20),
@@ -5797,8 +5805,8 @@ class NotesBottomSheet extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3),
                 color: Provider.of<ThemeProvider>(context, listen: false)
-                    .themeMode ==
-                    ThemeMode.dark
+                            .themeMode ==
+                        ThemeMode.dark
                     ? CommanColor.darkPrimaryColor
                     : CommanColor.lightModePrimary,
               ),
@@ -5881,16 +5889,16 @@ class NotesBottomSheet extends StatelessWidget {
                       await SharPreferences.setString('OpenAd', '1');
                       FocusScope.of(context).unfocus();
                       final bookmarkProvider =
-                      Provider.of<HomeContentEditProvider>(context,
-                          listen: false);
+                          Provider.of<HomeContentEditProvider>(context,
+                              listen: false);
                       await bookmarkProvider.deleteNote(
                         verseData: controller.selectedBookContent[
-                        int.parse(verNum.toString()) - 1],
+                            int.parse(verNum.toString()) - 1],
                         verseId: int.parse(verseBookdata!.id.toString()),
                         content: controller.printText.value.toString(),
                         updateVerseCallback: (updated) {
                           controller.selectedBookContent[
-                          int.parse(verNum.toString()) - 1] = updated;
+                              int.parse(verNum.toString()) - 1] = updated;
                         },
                         onSuccess: () {
                           Navigator.pop(context);
@@ -5903,22 +5911,22 @@ class NotesBottomSheet extends StatelessWidget {
                     },
                     style: const ButtonStyle(
                       backgroundColor:
-                      WidgetStatePropertyAll(Color(0xfffd5d5d5)),
+                          WidgetStatePropertyAll(Color(0xfffd5d5d5)),
                     ),
                     child: Text(
                       controller
-                          .selectedBookContent[
-                      int.parse(verNum.toString()) - 1]
-                          .isNoted ==
-                          "no"
+                                  .selectedBookContent[
+                                      int.parse(verNum.toString()) - 1]
+                                  .isNoted ==
+                              "no"
                           ? "Cancel"
                           : "Delete",
                       style: TextStyle(
                         color: controller
-                            .selectedBookContent[
-                        int.parse(verNum.toString()) - 1]
-                            .isNoted ==
-                            "no"
+                                    .selectedBookContent[
+                                        int.parse(verNum.toString()) - 1]
+                                    .isNoted ==
+                                "no"
                             ? Colors.black
                             : Colors.black,
                         letterSpacing: BibleInfo.letterSpacing,
@@ -5932,7 +5940,8 @@ class NotesBottomSheet extends StatelessWidget {
                   valueListenable: controller.notesController.value,
                   builder: (context, noteValue, _) {
                     final hasExistingNote = controller
-                            .selectedBookContent[int.parse(verNum.toString()) - 1]
+                            .selectedBookContent[
+                                int.parse(verNum.toString()) - 1]
                             .isNoted !=
                         "no";
                     final hasTypedText = noteValue.text.trim().isNotEmpty;
@@ -5945,82 +5954,81 @@ class NotesBottomSheet extends StatelessWidget {
                             : CommanColor.lightModePrimary;
 
                     return SizedBox(
-                  width: 100,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      FocusScope.of(context).unfocus();
-                      try {
-                        await SharPreferences.setString('OpenAd', '1');
-                        if (controller.adFree.value == false) {
+                      width: 100,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          FocusScope.of(context).unfocus();
+                          try {
+                            await SharPreferences.setString('OpenAd', '1');
+                            if (controller.adFree.value == false) {
                               final countprovider =
                                   Provider.of<DownloadProvider>(context,
-                              listen: false);
-                          await countprovider.decrementCount(context);
-                        }
-                        final bookmarkProvider =
-                        Provider.of<HomeContentEditProvider>(context,
-                            listen: false);
-                        await bookmarkProvider.toggleNote(
-                          verseData: controller.selectedBookContent[
-                          int.parse(verNum.toString()) - 1],
+                                      listen: false);
+                              await countprovider.decrementCount(context);
+                            }
+                            final bookmarkProvider =
+                                Provider.of<HomeContentEditProvider>(context,
+                                    listen: false);
+                            await bookmarkProvider.toggleNote(
+                              verseData: controller.selectedBookContent[
+                                  int.parse(verNum.toString()) - 1],
                               noteContent:
                                   controller.notesController.value.text,
-                          verseId: int.parse(verseBookdata!.id.toString()),
-                          noteModel: SaveNotesModel(
-                                bookNum: int.parse(controller.selectedBookNum.value
+                              verseId: int.parse(verseBookdata!.id.toString()),
+                              noteModel: SaveNotesModel(
+                                bookNum: int.parse(controller
+                                    .selectedBookNum.value
                                     .toString()),
-                            chapterNum: int.parse(
-                                controller.selectedChapter.value.toString()),
-                                content:
-                                    controller.printText.value.toString(),
-                            plaincontent: verseBookdata!.id.toString(),
+                                chapterNum: int.parse(controller
+                                    .selectedChapter.value
+                                    .toString()),
+                                content: controller.printText.value.toString(),
+                                plaincontent: verseBookdata!.id.toString(),
                                 bookName:
                                     controller.selectedBook.value.toString(),
-                            notes: controller.notesController.value.text,
-                            timestamp: DateTime.now().toString(),
-                            verseNum: int.parse(verNum.toString()),
-                          ),
-                          updateVerseCallback: (updated) {
-                            controller.selectedBookContent[
-                                        int.parse(verNum.toString()) - 1] =
-                                    updated;
-                          },
-                          context: context,
-                          onSuccess: () {
-                            Constants.showToast(controller
-                                .selectedBookContent[
-                            int.parse(verNum.toString()) - 1]
-                                .isNoted ==
-                                "no"
-                                ? "Notes added Successfully"
-                                : "Update notes successfully");
-                            Navigator.of(context).pop(true);
-                            controller.notesController.value.clear();
-                          },
-                          onDelete: () {
-                            // This won't be called for save/update, only for delete
-                          },
-                        );
-                      } catch (e) {
-                        DebugConsole.log("note error - $e");
-                      }
-                    },
-                    style: ButtonStyle(
+                                notes: controller.notesController.value.text,
+                                timestamp: DateTime.now().toString(),
+                                verseNum: int.parse(verNum.toString()),
+                              ),
+                              updateVerseCallback: (updated) {
+                                controller.selectedBookContent[
+                                    int.parse(verNum.toString()) - 1] = updated;
+                              },
+                              context: context,
+                              onSuccess: () {
+                                Constants.showToast(controller
+                                            .selectedBookContent[
+                                                int.parse(verNum.toString()) -
+                                                    1]
+                                            .isNoted ==
+                                        "no"
+                                    ? "Notes added Successfully"
+                                    : "Update notes successfully");
+                                Navigator.of(context).pop(true);
+                                controller.notesController.value.clear();
+                              },
+                              onDelete: () {
+                                // This won't be called for save/update, only for delete
+                              },
+                            );
+                          } catch (e) {
+                            DebugConsole.log("note error - $e");
+                          }
+                        },
+                        style: ButtonStyle(
                           backgroundColor: WidgetStatePropertyAll(
                             isActive ? primaryColor : const Color(0xfffd5d5d5),
                           ),
-                    ),
-                    child: Text(
+                        ),
+                        child: Text(
                           hasExistingNote ? "Update" : "Save",
-                      style: TextStyle(
-                            color: isActive
-                                ? Colors.white
-                                : Colors.black,
-                        letterSpacing: BibleInfo.letterSpacing,
-                        fontSize: BibleInfo.fontSizeScale * 14,
+                          style: TextStyle(
+                            color: isActive ? Colors.white : Colors.black,
+                            letterSpacing: BibleInfo.letterSpacing,
+                            fontSize: BibleInfo.fontSizeScale * 14,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
                     );
                   },
                 ),
@@ -6049,27 +6057,27 @@ class ImageBottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             controller.isImageBannerAdLoaded.value &&
-                controller.imageBannerAd != null &&
-                controller.adFree.value == false
+                    controller.imageBannerAd != null &&
+                    controller.adFree.value == false
                 ? IgnorePointer(
-              child: SizedBox(
-                height: controller.imageBannerAd?.size.height.toDouble(),
-                width: controller.imageBannerAd?.size.width.toDouble(),
-                child: Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: MyAdBanner()
-                  //AdWidget(ad: controller.imageBannerAd!),
-                ),
-              ),
-            )
+                    child: SizedBox(
+                      height: controller.imageBannerAd?.size.height.toDouble(),
+                      width: controller.imageBannerAd?.size.width.toDouble(),
+                      child: Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: MyAdBanner()
+                          //AdWidget(ad: controller.imageBannerAd!),
+                          ),
+                    ),
+                  )
                 : SizedBox(height: screenWidth < 380 ? 2 : 95),
             Flexible(
               child: FractionallySizedBox(
                 heightFactor: screenWidth < 380
                     ? 0.85
                     : screenWidth > 450
-                    ? 0.82
-                    : 0.81,
+                        ? 0.82
+                        : 0.81,
                 child: Container(
                   decoration: const BoxDecoration(
                     borderRadius: BorderRadius.only(
@@ -6110,29 +6118,29 @@ class ImageBottomSheet extends StatelessWidget {
                                     : controller.selectedBgImage.value += 1;
                               },
                               child: Obx(
-                                    () => Stack(
+                                () => Stack(
                                   children: [
                                     SizedBox(
                                       height: screenWidth < 380
                                           ? MediaQuery.of(context).size.height *
-                                          0.735
+                                              0.735
                                           : screenWidth > 450
-                                          ? MediaQuery.of(context)
-                                          .size
-                                          .height *
-                                          0.69
-                                          : MediaQuery.of(context)
-                                          .size
-                                          .height *
-                                          0.62,
+                                              ? MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.69
+                                              : MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.62,
                                       width: MediaQuery.sizeOf(context).width,
                                       child:
-                                      // Obx(
-                                      //   () =>
-                                      Image(
+                                          // Obx(
+                                          //   () =>
+                                          Image(
                                         image: AssetImage(controller
-                                            .bgImagesList[
-                                        controller.selectedBgImage.value]),
+                                                .bgImagesList[
+                                            controller.selectedBgImage.value]),
                                         fit: BoxFit.fill,
                                       ),
                                       // ),
@@ -6143,11 +6151,11 @@ class ImageBottomSheet extends StatelessWidget {
                                       bottom: 0,
                                       top: 0,
                                       child:
-                                      // Obx(
-                                      //   () =>
-                                      Column(
+                                          // Obx(
+                                          //   () =>
+                                          Column(
                                         mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                            MainAxisAlignment.center,
                                         children: [
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
@@ -6155,21 +6163,21 @@ class ImageBottomSheet extends StatelessWidget {
                                             child: AutoSizeHtmlWidget(
                                               html: controller
                                                   .selectedBookContent[
-                                              controller
-                                                  .selectedVerseView
-                                                  .value]
+                                                      controller
+                                                          .selectedVerseView
+                                                          .value]
                                                   .content,
                                               maxLines: 16,
                                               maxFontSize: screenWidth < 380
                                                   ? BibleInfo.fontSizeScale *
-                                                  14.5
+                                                      14.5
                                                   : screenWidth > 450
-                                                  ? BibleInfo
-                                                  .fontSizeScale *
-                                                  31
-                                                  : controller
-                                                  .fontSize.value -
-                                                  0.9,
+                                                      ? BibleInfo
+                                                              .fontSizeScale *
+                                                          31
+                                                      : controller
+                                                              .fontSize.value -
+                                                          0.9,
                                               minFontSize: screenWidth < 380
                                                   ? 11.5
                                                   : 10.9,
@@ -6178,21 +6186,21 @@ class ImageBottomSheet extends StatelessWidget {
                                           const SizedBox(height: 10),
                                           Row(
                                             mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                                MainAxisAlignment.end,
                                             children: [
                                               Text(
                                                 "${controller.selectedBook.value} ${controller.selectedChapter.value}:${controller.selectedVerseView.value + 1}",
                                                 style: TextStyle(
                                                   color: Colors.black,
                                                   letterSpacing:
-                                                  BibleInfo.letterSpacing,
+                                                      BibleInfo.letterSpacing,
                                                   fontSize: screenWidth > 450
                                                       ? BibleInfo
-                                                      .fontSizeScale *
-                                                      28
+                                                              .fontSizeScale *
+                                                          28
                                                       : BibleInfo
-                                                      .fontSizeScale *
-                                                      15,
+                                                              .fontSizeScale *
+                                                          15,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.2,
                                                   fontStyle: FontStyle.italic,
@@ -6212,7 +6220,7 @@ class ImageBottomSheet extends StatelessWidget {
                                       bottom: 7,
                                       child: Row(
                                         mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                            MainAxisAlignment.center,
                                         children: [
                                           Image.asset(
                                             "assets/Icon-1024.png",
@@ -6222,19 +6230,21 @@ class ImageBottomSheet extends StatelessWidget {
                                           const SizedBox(width: 10),
                                           Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              SizedBox(height: 20,),
+                                              SizedBox(
+                                                height: 20,
+                                              ),
                                               Text(
                                                 bibleName,
                                                 style: const TextStyle(
                                                   color: Color.fromARGB(
                                                       255, 135, 130, 130),
                                                   letterSpacing:
-                                                  BibleInfo.letterSpacing,
+                                                      BibleInfo.letterSpacing,
                                                   fontSize:
-                                                  BibleInfo.fontSizeScale *
-                                                      16,
+                                                      BibleInfo.fontSizeScale *
+                                                          16,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.3,
                                                 ),
@@ -6280,7 +6290,7 @@ class ImageBottomSheet extends StatelessWidget {
                                 }
                                 if (controller.adFree.value == false) {
                                   final adProvider =
-                                  context.read<DownloadProvider>();
+                                      context.read<DownloadProvider>();
                                   await SharPreferences.setString(
                                       'OpenAd', '1');
                                   await adProvider
@@ -6328,7 +6338,7 @@ class ImageBottomSheet extends StatelessWidget {
                                       'OpenAd', '1');
                                   if (controller.adFree.value == false) {
                                     final adProvider =
-                                    context.read<DownloadProvider>();
+                                        context.read<DownloadProvider>();
                                     await adProvider
                                         .updateAdCount(adProvider.adCount + 1);
                                     await adProvider.checkAndShowAd(
@@ -6392,7 +6402,7 @@ class ImageBottomSheet extends StatelessWidget {
               await SharPreferences.setString('bottom', '1');
               if (controller.adFree.value == false) {
                 final countprovider =
-                Provider.of<DownloadProvider>(context, listen: false);
+                    Provider.of<DownloadProvider>(context, listen: false);
                 await countprovider.decrementCount(context);
               }
               final image = await controller.screenshotController.value.capture(
@@ -6412,10 +6422,10 @@ class ImageBottomSheet extends StatelessWidget {
 
                 if (Platform.isAndroid) {
                   message =
-                  " \n Read More at: https://play.google.com/store/apps/details?id=$appPackageName";
+                      " \n Read More at: https://play.google.com/store/apps/details?id=$appPackageName";
                 } else if (Platform.isIOS) {
                   message =
-                  " \n Read More at: https://itunes.apple.com/app/id$appid";
+                      " \n Read More at: https://itunes.apple.com/app/id$appid";
                 }
 
                 saveAndShare(image, "bible", message, context: context);
