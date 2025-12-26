@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
@@ -24,6 +26,23 @@ class MoreAppsScreen extends HookConsumerWidget {
         ref.read(moreAppBloc).getApps(reset: true);
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      Timer? timeoutTimer;
+      if (appState.isLoading && appState.apps.isEmpty) {
+        timeoutTimer = Timer(const Duration(seconds: 3), () {
+          // Check current state from ref when timer fires
+          final currentState = ref.read(moreAppBloc);
+          if (currentState.isLoading && currentState.apps.isEmpty) {
+            Constants.showToast('Check Your Internet Connection');
+          }
+        });
+      }
+      return () {
+        timeoutTimer?.cancel();
+      };
+    }, [appState.isLoading, appState.apps.isEmpty]);
 
     double screenWidth = MediaQuery.of(context).size.width;
     debugPrint("sz current width - $screenWidth ");

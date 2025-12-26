@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:biblebookapp/services/statsig/statsig_service.dart';
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
 import 'package:biblebookapp/view/screens/quote_screen/bloc/quotes_category_bloc.dart';
@@ -16,6 +18,7 @@ class QuoteScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final quotesState = ref.watch(quotesCategoryBloc).quotesCategoryState;
+    
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((callback) {
         ref.read(quotesCategoryBloc).getQuotesCategory();
@@ -23,6 +26,23 @@ class QuoteScreen extends HookConsumerWidget {
         StatsigService.trackQuotes();
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      Timer? timeoutTimer;
+      if (quotesState.isLoading) {
+        timeoutTimer = Timer(const Duration(seconds: 3), () {
+          // Check current state from ref when timer fires
+          final currentState = ref.read(quotesCategoryBloc).quotesCategoryState;
+          if (currentState.isLoading) {
+            Constants.showToast('Check Your Internet Connection');
+          }
+        });
+      }
+      return () {
+        timeoutTimer?.cancel();
+      };
+    }, [quotesState.isLoading]);
     return Scaffold(
         body: Container(
       height: MediaQuery.of(context).size.height,

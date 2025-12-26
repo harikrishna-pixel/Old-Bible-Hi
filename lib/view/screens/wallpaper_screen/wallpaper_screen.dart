@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:biblebookapp/services/statsig/statsig_service.dart';
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
 import 'package:biblebookapp/view/screens/wallpaper_screen/bloc/wallpaper_category_bloc.dart';
@@ -17,6 +19,7 @@ class WallpaperScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wallpaperCategoryState =
         ref.watch(wallpaperCategoryBloc).wallpaperCategoryState;
+    
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((callback) {
         ref.read(wallpaperCategoryBloc).getWallpaperCategory();
@@ -24,6 +27,23 @@ class WallpaperScreen extends HookConsumerWidget {
         StatsigService.trackWallpaper();
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      Timer? timeoutTimer;
+      if (wallpaperCategoryState.isLoading) {
+        timeoutTimer = Timer(const Duration(seconds: 3), () {
+          // Check current state from ref when timer fires
+          final currentState = ref.read(wallpaperCategoryBloc).wallpaperCategoryState;
+          if (currentState.isLoading) {
+            Constants.showToast('Check Your Internet Connection');
+          }
+        });
+      }
+      return () {
+        timeoutTimer?.cancel();
+      };
+    }, [wallpaperCategoryState.isLoading]);
     return Scaffold(
         body: Container(
       height: MediaQuery.of(context).size.height,

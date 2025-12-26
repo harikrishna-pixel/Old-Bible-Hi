@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:biblebookapp/services/statsig/statsig_service.dart';
 import 'package:biblebookapp/view/constants/colors.dart';
+import 'package:biblebookapp/view/constants/constant.dart';
 import 'package:biblebookapp/view/constants/images.dart';
 import 'package:biblebookapp/view/constants/share_preferences.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
@@ -19,6 +21,7 @@ class BooksScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookState = ref.watch(bookBloc);
+    
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(bookBloc).getBooks(bookAdId);
@@ -26,6 +29,23 @@ class BooksScreen extends HookConsumerWidget {
         StatsigService.trackBooks();
       });
     });
+    
+    // Monitor loading state and show toast if loading takes too long
+    useEffect(() {
+      Timer? timeoutTimer;
+      if (bookState.isLoading && bookState.books.isEmpty) {
+        timeoutTimer = Timer(const Duration(seconds: 3), () {
+          // Check current state from ref when timer fires
+          final currentState = ref.read(bookBloc);
+          if (currentState.isLoading && currentState.books.isEmpty) {
+            Constants.showToast('Check Your Internet Connection');
+          }
+        });
+      }
+      return () {
+        timeoutTimer?.cancel();
+      };
+    }, [bookState.isLoading, bookState.books.isEmpty]);
     double screenWidth = MediaQuery.of(context).size.width;
     debugPrint("sz current width - $screenWidth ");
 

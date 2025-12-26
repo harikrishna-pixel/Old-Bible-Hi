@@ -698,15 +698,31 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   restorePurchaseHandle(
-      String productId, String date, DashBoardController controller) async {
+      String productId, String date, DashBoardController controller, {BuildContext? context}) async {
     await SharPreferences.setString('OpenAd', '1');
     final dateTime = DateTime.tryParse(date) ?? DateTime.now();
     await Future.delayed(Duration(seconds: 2));
     final data = await SharPreferences.getBoolean('restorepurches');
     debugPrint("restore data 1 is $data");
     if (data == true) {
+      // Get DownloadProvider to set subscription plan
+      DownloadProvider? downloadProvider;
+      if (context != null) {
+        downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
+      } else {
+        // Try to get from Get.context as fallback
+        final getContext = Get.context;
+        if (getContext != null) {
+          downloadProvider = Provider.of<DownloadProvider>(getContext, listen: false);
+        }
+      }
+      
       if (productId == widget.lifeTimePlan) {
         await controller.disableAd(const Duration(days: 3650012345));
+        // Set subscription plan to platinum for lifetime plan
+        if (downloadProvider != null) {
+          await downloadProvider.setSubscriptionPlan('platinum');
+        }
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
@@ -722,6 +738,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         final dur = DateTime(dateTime.year + 1, dateTime.month, dateTime.day);
         final diff = dur.difference(DateTime.now());
         await controller.disableAd(diff);
+        // Set subscription plan to gold for one year plan
+        if (downloadProvider != null) {
+          await downloadProvider.setSubscriptionPlan('gold');
+        }
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
@@ -737,6 +757,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         final dur = addSixMonths(customDate: dateTime);
         final diff = dur.difference(DateTime.now());
         await controller.disableAd(diff);
+        // Set subscription plan to silver for six month plan
+        if (downloadProvider != null) {
+          await downloadProvider.setSubscriptionPlan('silver');
+        }
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
@@ -1297,6 +1321,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       purchaseDetails.productID,
       purchaseDetails.transactionDate ?? '',
       controller,
+      context: context,
     );
   }
 
@@ -1343,7 +1368,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           final data = rawData[1].split('-date:');
           final productId = data[0].toString();
           final date = data[1].toString();
-          await restorePurchaseHandle(productId, date, controller);
+          await restorePurchaseHandle(productId, date, controller, context: context);
           Constants.showToast('Restore Successful');
         }
       } else {
@@ -1596,42 +1621,49 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
+                            onPressed: () async {
+                              await SharPreferences.setString('OpenAd', '1');
+                              await SharPreferences.setBoolean('startpurches', true);
+                              _buyProduct(_products[selectedindex]);
+                            },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: CommanColor.isDarkTheme(context)
-                                  ? Colors.black
-                                  : const Color(0xFF7B5C3D),
-                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              padding: EdgeInsets.zero, // NON-OPTIONAL
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () async {
-                              await SharPreferences.setString('OpenAd', '1');
-                              await SharPreferences.setBoolean(
-                                  'startpurches', true);
-                              _buyProduct(_products[selectedindex]);
-                              // await controller.disableAd(const Duration(days: 3));
-                              // return Get.offAll(() => HomeScreen(
-                              //       From: "premium",
-                              //       selectedVerseNumForRead: "",
-                              //       selectedBookForRead: "",
-                              //       selectedChapterForRead: "",
-                              //       selectedBookNameForRead: "",
-                              //       selectedVerseForRead: "",
-                              //     ));
-                            },
-                            child: const Text(
-                              // "Start My Free Trial",
-                              'Get Full Access',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF763201),
+                                    Color(0xFFD5821F),
+                                    Color(0xFFAD4D08),
+                                    Color(0xFF763201),
+                                  ],
+                                  stops: [0.0, 0.3, 0.6, 1.0],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'Get Full Access',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
+
 
                       const SizedBox(height: 5),
                       TextButton(
@@ -2274,23 +2306,43 @@ class _ExitOfferBottomSheetContentState
                         widget.onUnlockPremium();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: CommanColor.darkPrimaryColor, // Purple
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.zero, // REQUIRED
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 2,
                       ),
-                      child: Text(
-                        'Unlock Bible Premium',
-                        style: TextStyle(
-                          fontSize: widget.screenWidth > 450 ? 18 : 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF763201),
+                              Color(0xFFD5821F),
+                              Color(0xFFAD4D08),
+                              Color(0xFF763201),
+                            ],
+                            stops: [0.0, 0.3, 0.6, 1.0],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Unlock Bible Premium',
+                            style: TextStyle(
+                              fontSize: widget.screenWidth > 450 ? 18 : 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 12),
                   // Maybe Later text
                   TextButton(

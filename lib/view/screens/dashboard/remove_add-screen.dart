@@ -167,15 +167,31 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
   }
 
   restorePurchaseHandle(
-      String productId, String date, DashBoardController controller) async {
+      String productId, String date, DashBoardController controller, {BuildContext? context}) async {
     await SharPreferences.setString('OpenAd', '1');
     final dateTime = DateTime.tryParse(date) ?? DateTime.now();
     await Future.delayed(Duration(seconds: 2));
     final data = await SharPreferences.getBoolean('restorepurches');
     debugPrint("restore data 1 is $data");
     if (data == true) {
+      // Get DownloadProvider to set subscription plan
+      DownloadProvider? downloadProvider;
+      if (context != null) {
+        downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
+      } else {
+        // Try to get from Get.context as fallback
+        final getContext = Get.context;
+        if (getContext != null) {
+          downloadProvider = Provider.of<DownloadProvider>(getContext, listen: false);
+        }
+      }
+      
       if (productId == widget.lifeTimePlan) {
         await controller.disableAd(const Duration(days: 3650012345));
+        // Set subscription plan to platinum for lifetime plan
+        if (downloadProvider != null) {
+          await downloadProvider.setSubscriptionPlan('platinum');
+        }
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
@@ -186,6 +202,10 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
         final dur = DateTime(dateTime.year + 1, dateTime.month, dateTime.day);
         final diff = dur.difference(DateTime.now());
         await controller.disableAd(diff);
+        // Set subscription plan to gold for one year plan
+        if (downloadProvider != null) {
+          await downloadProvider.setSubscriptionPlan('gold');
+        }
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         // Constants.showToast('Restore Successful');
@@ -198,6 +218,10 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
         final dur = addSixMonths(customDate: dateTime);
         final diff = dur.difference(DateTime.now());
         await controller.disableAd(diff);
+        // Set subscription plan to silver for six month plan
+        if (downloadProvider != null) {
+          await downloadProvider.setSubscriptionPlan('silver');
+        }
         await Future.delayed(Duration(seconds: 1));
         EasyLoading.dismiss();
         await SharPreferences.setBoolean('closead', true);
@@ -577,6 +601,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
       purchaseDetails.productID,
       purchaseDetails.transactionDate ?? '',
       controller,
+      context: context,
     );
   }
 
@@ -625,7 +650,7 @@ class _RemoveAddScreenState extends State<RemoveAddScreen> {
           final data = rawData[1].split('-date:');
           final productId = data[0].toString();
           final date = data[1].toString();
-          await restorePurchaseHandle(productId, date, controller);
+          await restorePurchaseHandle(productId, date, controller, context: context);
         }
       } else {
         Constants.showToast('No active subscription available');
