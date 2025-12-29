@@ -790,10 +790,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       debugPrint("Purchase State: ${purchaseDetails.status}");
       await SharPreferences.setString('OpenAd', '1');
       if (purchaseDetails.status == PurchaseStatus.pending) {
+        // Keep loading for pending purchases
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
           debugPrint('Error: ${purchaseDetails.error}');
           DebugConsole.log(" purchases error - $purchaseDetails");
+          EasyLoading.dismiss();
+          await SharPreferences.setBoolean('startpurches', false);
         } else if (purchaseDetails.status == PurchaseStatus.purchased ||
             purchaseDetails.status == PurchaseStatus.restored) {
           if (purchaseDetails.status == PurchaseStatus.purchased) {
@@ -801,100 +804,124 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             debugPrint("purchase data 5 is $data1");
             if (data1 == true) {
               if (Platform.isIOS) {
-                //  var response =
                 try {
-                  await http.post(
-                    Uri.parse(kDebugMode
-                        ? 'https://sandbox.itunes.apple.com/verifyReceipt'
-                        : 'https://buy.itunes.apple.com/verifyReceipt'),
-                    headers: {
-                      'Accept': 'application/json',
-                      'Content-Type': 'application/json',
-                    },
-                    body: jsonEncode({
-                      'receipt-data':
-                          purchaseDetails.verificationData.localVerificationData,
-                      'exclude-old-transactions': true,
-                      'password': controller.sharedSecret
-                    }),
-                  );
+                  //  var response =
+                  try {
+                    await http.post(
+                      Uri.parse(kDebugMode
+                          ? 'https://sandbox.itunes.apple.com/verifyReceipt'
+                          : 'https://buy.itunes.apple.com/verifyReceipt'),
+                      headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                      },
+                      body: jsonEncode({
+                        'receipt-data': purchaseDetails
+                            .verificationData.localVerificationData,
+                        'exclude-old-transactions': true,
+                        'password': controller.sharedSecret
+                      }),
+                    );
+                  } catch (e) {
+                    debugPrint('Receipt verification error (non-blocking): $e');
+                  }
+
+                  // DebugConsole.log(
+                  //     "  purchases sucess frist : ${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()} - ${response.body}");
+
+                  // final data = parseHtmlAndExtractJson(response.body);
+                  await Future.delayed(Duration(seconds: 1));
+                  // DebugConsole.log(" purchases sucess - $data");
+                  await purchaseSubmit(
+                      receiptData:
+                          '${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
+                  final todayDate = DateTime.now();
+                  await SharPreferences.setBoolean("downloadreward", true);
+                  await Future.delayed(Duration(seconds: 1));
+                  if (purchaseDetails.productID == widget.sixMonthPlan) {
+                    final expiryDate = addSixMonths();
+                    final diff = expiryDate.difference(todayDate);
+                    await controller.disableAd(diff);
+                    await Future.delayed(Duration(seconds: 2));
+                    // Complete the purchase for iOS - critical to prevent infinite loading
+                    if (Platform.isIOS) {
+                      await _inAppPurchase.completePurchase(purchaseDetails);
+                    }
+                    EasyLoading.dismiss();
+                    await SharPreferences.setBoolean('closead', true);
+                    await SharPreferences.setBoolean('startpurches', false);
+                    debugPrint("restore data 2");
+                    return Get.offAll(() => HomeScreen(
+                          From: "premium",
+                          selectedVerseNumForRead: "",
+                          selectedBookForRead: "",
+                          selectedChapterForRead: "",
+                          selectedBookNameForRead: "",
+                          selectedVerseForRead: "",
+                        ));
+                  } else if (purchaseDetails.productID == widget.oneYearPlan) {
+                    await controller.disableAd(const Duration(days: 366));
+                    await Future.delayed(Duration(seconds: 2));
+                    // Complete the purchase for iOS - critical to prevent infinite loading
+                    if (Platform.isIOS) {
+                      await _inAppPurchase.completePurchase(purchaseDetails);
+                    }
+                    EasyLoading.dismiss();
+                    await SharPreferences.setBoolean('closead', true);
+                    await SharPreferences.setBoolean('startpurches', false);
+                    debugPrint("restore data 3 ");
+                    return Get.offAll(() => HomeScreen(
+                          From: "premium",
+                          selectedVerseNumForRead: "",
+                          selectedBookForRead: "",
+                          selectedChapterForRead: "",
+                          selectedBookNameForRead: "",
+                          selectedVerseForRead: "",
+                        ));
+                  } else if (purchaseDetails.productID == widget.lifeTimePlan) {
+                    await controller
+                        .disableAd(const Duration(days: 3650012345));
+                    await Future.delayed(Duration(seconds: 2));
+                    // Complete the purchase for iOS - critical to prevent infinite loading
+                    if (Platform.isIOS) {
+                      await _inAppPurchase.completePurchase(purchaseDetails);
+                    }
+                    EasyLoading.dismiss();
+                    await SharPreferences.setBoolean('closead', true);
+                    await SharPreferences.setBoolean('startpurches', false);
+                    debugPrint("restore data 4 ");
+                    return Get.offAll(() => HomeScreen(
+                          From: "premium",
+                          selectedVerseNumForRead: "",
+                          selectedBookForRead: "",
+                          selectedChapterForRead: "",
+                          selectedBookNameForRead: "",
+                          selectedVerseForRead: "",
+                        ));
+                  } else {
+                    // Product ID doesn't match any known plan - dismiss loading and reset
+                    EasyLoading.dismiss();
+                    await SharPreferences.setBoolean('startpurches', false);
+                    debugPrint(
+                        "Unknown product ID: ${purchaseDetails.productID}");
+                  }
                 } catch (e) {
-                  debugPrint('Receipt verification error (non-blocking): $e');
+                  // Safety net: dismiss loading if anything goes wrong during purchase processing
+                  debugPrint('Error during purchase processing: $e');
+                  EasyLoading.dismiss();
+                  await SharPreferences.setBoolean('startpurches', false);
+                  await SharPreferences.setBoolean('closead', true);
                 }
-
-                // DebugConsole.log(
-                //     "  purchases sucess frist : ${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()} - ${response.body}");
-
-                // final data = parseHtmlAndExtractJson(response.body);
-                await Future.delayed(Duration(seconds: 1));
-                // DebugConsole.log(" purchases sucess - $data");
-                await purchaseSubmit(
-                    receiptData:
-                        '${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
-                final todayDate = DateTime.now();
-                await SharPreferences.setBoolean("downloadreward", true);
-                await Future.delayed(Duration(seconds: 1));
-                if (purchaseDetails.productID == widget.sixMonthPlan) {
-                  final expiryDate = addSixMonths();
-                  final diff = expiryDate.difference(todayDate);
-                  await controller.disableAd(diff);
-                  await Future.delayed(Duration(seconds: 2));
-                  // Complete the purchase for iOS - critical to prevent infinite loading
-                  if (Platform.isIOS) {
-                    await _inAppPurchase.completePurchase(purchaseDetails);
-                  }
-                  EasyLoading.dismiss();
-                  await SharPreferences.setBoolean('closead', true);
-                  await SharPreferences.setBoolean('startpurches', false);
-                  debugPrint("restore data 2");
-                  return Get.offAll(() => HomeScreen(
-                        From: "premium",
-                        selectedVerseNumForRead: "",
-                        selectedBookForRead: "",
-                        selectedChapterForRead: "",
-                        selectedBookNameForRead: "",
-                        selectedVerseForRead: "",
-                      ));
-                } else if (purchaseDetails.productID == widget.oneYearPlan) {
-                  await controller.disableAd(const Duration(days: 366));
-                  await Future.delayed(Duration(seconds: 2));
-                  // Complete the purchase for iOS - critical to prevent infinite loading
-                  if (Platform.isIOS) {
-                    await _inAppPurchase.completePurchase(purchaseDetails);
-                  }
-                  EasyLoading.dismiss();
-                  await SharPreferences.setBoolean('closead', true);
-                  await SharPreferences.setBoolean('startpurches', false);
-                  debugPrint("restore data 3 ");
-                  return Get.offAll(() => HomeScreen(
-                        From: "premium",
-                        selectedVerseNumForRead: "",
-                        selectedBookForRead: "",
-                        selectedChapterForRead: "",
-                        selectedBookNameForRead: "",
-                        selectedVerseForRead: "",
-                      ));
-                } else if (purchaseDetails.productID == widget.lifeTimePlan) {
-                  await controller.disableAd(const Duration(days: 3650012345));
-                  await Future.delayed(Duration(seconds: 2));
-                  // Complete the purchase for iOS - critical to prevent infinite loading
-                  if (Platform.isIOS) {
-                    await _inAppPurchase.completePurchase(purchaseDetails);
-                  }
-                  EasyLoading.dismiss();
-                  await SharPreferences.setBoolean('closead', true);
-                  await SharPreferences.setBoolean('startpurches', false);
-                  debugPrint("restore data 4 ");
-                  return Get.offAll(() => HomeScreen(
-                        From: "premium",
-                        selectedVerseNumForRead: "",
-                        selectedBookForRead: "",
-                        selectedChapterForRead: "",
-                        selectedBookNameForRead: "",
-                        selectedVerseForRead: "",
-                      ));
-                }
+              } else {
+                // Not iOS platform - dismiss loading and reset
+                EasyLoading.dismiss();
+                await SharPreferences.setBoolean('startpurches', false);
               }
+            } else {
+              // startpurches is false - dismiss loading
+              EasyLoading.dismiss();
+              await SharPreferences.setBoolean('startpurches', false);
+              debugPrint("Purchase received but startpurches is false");
             }
           } else if (purchaseDetails.status == PurchaseStatus.restored) {
             EasyLoading.dismiss();
