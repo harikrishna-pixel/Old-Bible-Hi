@@ -1641,10 +1641,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   colors: [
                                     Color(0xFF763201),
                                     Color(0xFFD5821F),
-                                    Color(0xFFAD4D08),
                                     Color(0xFF763201),
                                   ],
-                                  stops: [0.0, 0.3, 0.6, 1.0],
+
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -2240,13 +2239,13 @@ class _ExitOfferBottomSheetContentState
                     const SizedBox(height: 20),
                     // Purple offer box
                     Container(
-                      width: double.infinity,
+                      width: 300,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: CommanColor.backgrondcolor, // Light purple
+                        color: Color(0XFFF1F1F1), // Light purple
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF9B7EDE),
+                          color: const Color(0xFFCDCDCD),
                           width: 1.5,
                         ),
                       ),
@@ -2325,10 +2324,8 @@ class _ExitOfferBottomSheetContentState
                               colors: [
                                 Color(0xFF763201),
                                 Color(0xFFD5821F),
-                                Color(0xFFAD4D08),
                                 Color(0xFF763201),
                               ],
-                              stops: [0.0, 0.3, 0.6, 1.0],
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),

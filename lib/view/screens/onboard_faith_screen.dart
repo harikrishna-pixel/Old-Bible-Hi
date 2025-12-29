@@ -400,7 +400,6 @@ class _FaithOnboardingScreenState extends State<FaithOnboardingScreen> {
                                             colors: [
                                               Color(0xFF763201),
                                               Color(0xFFD5821F),
-                                              Color(0xFFAD4D08),
                                               Color(0xFF763201),
                                             ],
                                           )
@@ -871,7 +870,6 @@ class _OnboardingThemeSelectionScreenState
                                       colors: [
                                         Color(0xFF763201),
                                         Color(0xFFD5821F),
-                                        Color(0xFFAD4D08),
                                         Color(0xFF763201),
                                       ],
                                     ),
@@ -1222,7 +1220,7 @@ class _StepperDots extends StatelessWidget {
         height: 28,
         decoration: BoxDecoration(
           gradient: isActive
-              ? const LinearGradient(
+              ? const RadialGradient(
                   colors: [
                     Color(0xFF763201),
                     Color(0xFFD5821F),

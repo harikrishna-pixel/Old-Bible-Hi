@@ -118,7 +118,7 @@ class WelcomeScreen extends StatelessWidget {
                               colors: [
                                 Color(0xFF763201),
                                 Color(0xFFD5821F),
-                                Color(0xFFAD4D08),
+
                                 Color(0xFF763201),
 
                               ],

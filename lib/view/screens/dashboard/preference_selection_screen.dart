@@ -548,7 +548,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                               // Border stroke color: 9E9E9E in light mode, lighter grey in dark mode for visibility
                               color: isDark
                                   ? Colors.grey.shade400
-                                  : const Color(0xFF9E9E9E),
+                                  : const Color(0xFF805531),
                               width: selected
                                   ? 2.0
                                   : 1.0, // Increase thickness when selected
@@ -767,7 +767,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                         : null,
                 child: Center(
                   child: Container(
-                    width: screenWidth > 600 ? 130 : 100,
+                    width: screenWidth > 600 ? 160 : 130,
                     height: screenWidth > 600 ? 65 : 40,
                     decoration: BoxDecoration(
                         gradient: _selectedCategories.isNotEmpty
@@ -780,7 +780,6 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                     colors: [
                                       Color(0xFF763201),
                                       Color(0xFFD5821F),
-                                      Color(0xFFAD4D08),
                                       Color(0xFF763201),
                                     ],
                                   ))
@@ -792,7 +791,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                     ThemeMode.dark
                                 ? CommanColor.backgrondcolor
                                 : null)
-                            : Colors.grey,
+                            : Color(0XFFC9B7A5),
                         borderRadius: BorderRadius.circular(9) // Brown color
                         ),
                     // onPressed: _selectedCategories.length == 4
@@ -1237,10 +1236,9 @@ class FaithJourneyDialog {
                         colors: [
                           Color(0xFF763201),
                           Color(0xFFD5821F),
-                          Color(0xFFAD4D08),
                           Color(0xFF763201),
                         ],
-                        stops: [0.0, 0.3, 0.6, 1.0],
+
                       ),
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -1342,7 +1340,7 @@ class _SpinnerPainter extends CustomPainter {
 
     for (int i = 0; i < segmentCount; i++) {
       final double opacity =
-          ((i / segmentCount + progress) % 1.0).clamp(0.2, 1.0);
+          ((i / segmentCount + (1.0 - progress)) % 1.0).clamp(0.2, 1.0);
       paint.color = color.withValues(alpha: opacity);
 
       final x1 = radius + radius * 0.6 * math.cos(angle * i);

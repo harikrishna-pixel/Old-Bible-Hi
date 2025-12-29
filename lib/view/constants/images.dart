@@ -92,8 +92,8 @@ class Images {
 
   static String bookmarkPlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/bookmark.png'
-        : 'assets/lightMode/images/bookmark.png';
+        ? 'assets/Bookmark icons/cloud-fog2-fill.png'
+        : 'assets/Bookmark icons/cloud-fog2-fill.png';
   }
 
   static String highlightsPlaceHolder(BuildContext context) {

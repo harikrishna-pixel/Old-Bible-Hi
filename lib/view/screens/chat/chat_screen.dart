@@ -376,46 +376,58 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           const SizedBox(height: 24),
                           
                           // Action Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark
-                                    ? CommanColor.lightDarkPrimary200(context)
-                                    : CommanColor.lightDarkPrimary(context),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: isDark
-                                      ? const BorderSide(
-                                          color: Colors.white,
-                                          width: 1.5,
-                                        )
-                                      : BorderSide.none,
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: screenWidth > 450 ? 16 : 14,
-                                ),
-                                elevation: 0,
-                                shadowColor: Colors.transparent,
-                              ),
-                              onPressed: () async {
-                                final prefs = await SharedPreferences.getInstance();
-                                await prefs.setBool('chat_intro_seen', true);
-                                if (mounted) {
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: Text(
-                                'Got it, Let\'s Chat!',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: screenWidth > 450 ? 17 : 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: isDark
+                                ? const BorderSide(color: Colors.white, width: 1.5)
+                                : BorderSide.none,
+                          ),
+                          padding: EdgeInsets.zero, // IMPORTANT
+                        ),
+                        onPressed: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool('chat_intro_seen', true);
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF763201),
+                                Color(0xFFD5821F),
+                                Color(0xFF763201),
+                              ],
+                            ),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.symmetric(
+                              vertical: screenWidth > 450 ? 16 : 14,
+                            ),
+                            child: Text(
+                              'Got it, Let\'s Chat!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth > 450 ? 17 : 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                          SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 10),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 10),
                         ],
                       ),
                     ),

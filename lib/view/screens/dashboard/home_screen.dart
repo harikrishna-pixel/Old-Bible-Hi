@@ -1601,85 +1601,99 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildAmenButton(double screenWidth) {
-    return ElevatedButton.icon(
-      onPressed: () async {
-        // Check if user is subscribed
-        final downloadProvider =
-            Provider.of<DownloadProvider>(context, listen: false);
-        final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
-        final isSubscribed = subscriptionPlan != null &&
-            subscriptionPlan.isNotEmpty &&
-            ['platinum', 'gold', 'silver']
-                .contains(subscriptionPlan.toLowerCase());
-
-        // Show interstitial ad only for non-subscribed users and when online with good internet
-        if (!isSubscribed) {
-          // Check internet connectivity - if offline or low internet (2G), skip ad and proceed
-          try {
-            final hasInternet = await InternetConnection().hasInternetAccess;
-            if (hasInternet) {
-              // Check connection type - if mobile only (likely 2G/slow), skip ad
-              final connectivityResult =
-                  await Connectivity().checkConnectivity();
-              final isMobileOnly =
-                  connectivityResult.contains(ConnectivityResult.mobile) &&
-                      !connectivityResult.contains(ConnectivityResult.wifi) &&
-                      !connectivityResult.contains(ConnectivityResult.ethernet);
-
-              // Only show ad if online with wifi/ethernet (not mobile only/2G)
-              if (!isMobileOnly) {
-                // Show ad FIRST, wait for dismissal, THEN show content
-                try {
-                  await _showInterstitialAdAndWait();
-                } catch (e) {
-                  debugPrint('Error showing ad in Amen: $e');
-                  // If ad fails, proceed anyway
-                }
-              }
-              // If mobile only (2G), skip ad and proceed
-            }
-            // If offline, skip ad and proceed
-          } catch (e) {
-            // If connectivity check fails, skip ad and proceed
-            debugPrint('Connectivity check error in Amen: $e');
-          }
-        }
-
-        // Proceed with action after ad (if shown) or immediately (if skipped)
-        Constants.showToast("Amen!");
-        Navigator.of(context).pop();
-      },
-      icon: Image.asset(
-        "assets/icons/cross1.png",
-        height: screenWidth < 380
-            ? 19
-            : screenWidth > 450
-                ? 40
-                : 25,
-        width: screenWidth < 380
-            ? 19
-            : screenWidth > 450
-                ? 40
-                : 25,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF763201),
+            Color(0xFFD5821F),
+            Color(0xFF763201),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
       ),
-      label: Text("AMEN",
-          style: TextStyle(
-              color: Colors.white,
-              fontSize: screenWidth < 380
-                  ? 14
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          // Check if user is subscribed
+          final downloadProvider =
+              Provider.of<DownloadProvider>(context, listen: false);
+          final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
+          final isSubscribed = subscriptionPlan != null &&
+              subscriptionPlan.isNotEmpty &&
+              ['platinum', 'gold', 'silver']
+                  .contains(subscriptionPlan.toLowerCase());
+
+          // Show interstitial ad only for non-subscribed users and when online with good internet
+          if (!isSubscribed) {
+            // Check internet connectivity - if offline or low internet (2G), skip ad and proceed
+            try {
+              final hasInternet = await InternetConnection().hasInternetAccess;
+              if (hasInternet) {
+                // Check connection type - if mobile only (likely 2G/slow), skip ad
+                final connectivityResult =
+                    await Connectivity().checkConnectivity();
+                final isMobileOnly = connectivityResult
+                        .contains(ConnectivityResult.mobile) &&
+                    !connectivityResult.contains(ConnectivityResult.wifi) &&
+                    !connectivityResult.contains(ConnectivityResult.ethernet);
+
+                // Only show ad if online with wifi/ethernet (not mobile only/2G)
+                if (!isMobileOnly) {
+                  // Show ad FIRST, wait for dismissal, THEN show content
+                  try {
+                    await _showInterstitialAdAndWait();
+                  } catch (e) {
+                    debugPrint('Error showing ad in Amen: $e');
+                    // If ad fails, proceed anyway
+                  }
+                }
+                // If mobile only (2G), skip ad and proceed
+              }
+              // If offline, skip ad and proceed
+            } catch (e) {
+              // If connectivity check fails, skip ad and proceed
+              debugPrint('Connectivity check error in Amen: $e');
+            }
+          }
+
+          // Proceed with action after ad (if shown) or immediately (if skipped)
+          Constants.showToast("Amen!");
+          Navigator.of(context).pop();
+        },
+        icon: Image.asset(
+          "assets/icons/cross1.png",
+          height: screenWidth < 380
+              ? 19
+              : screenWidth > 450
+                  ? 40
+                  : 25,
+          width: screenWidth < 380
+              ? 19
+              : screenWidth > 450
+                  ? 40
+                  : 25,
+        ),
+        label: Text("AMEN",
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: screenWidth < 380
+                    ? 14
+                    : screenWidth > 450
+                        ? 19
+                        : null)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: screenWidth < 380
+                  ? 6
                   : screenWidth > 450
-                      ? 19
-                      : null)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: CommanColor.darkPrimaryColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: screenWidth < 380
-                ? 6
-                : screenWidth > 450
-                    ? 16
-                    : 12),
+                      ? 16
+                      : 12),
+        ),
       ),
     );
   }
@@ -4246,10 +4260,13 @@ class _HomeScreenState extends State<HomeScreen>
                                       context),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(CupertinoIcons.chat_bubble_2,
-                                    size: screenWidth > 450 ? 44 : 24,
-                                    color: CommanColor.darkModePrimaryWhite(
-                                        context))),
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: 6,),
+                                    Image.asset("assets/Chat white.png",width: 22,height: 22,)
+                                  ],
+                                )
+                            ),
                           )),
                       floatingButton(
                         chapterNum: controller.selectedChapter.value,
@@ -4353,6 +4370,23 @@ class _HomeScreenState extends State<HomeScreen>
                         ListTile(
                           dense: true,
                           onTap: () async {
+                            Get.to(ChatScreen());
+                          },
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: 0),
+                          leading: Image.asset(
+                            "assets/Chat icon.png",
+                            height: 24,
+                            width: 24,
+                          ),
+                          title: Text(
+                            'Chat',
+                            style: CommanStyle.bothPrimary16600(context),
+                          ),
+                        ),
+                        ListTile(
+                          dense: true,
+                          onTap: () async {
                             Get.back();
                             await SharPreferences.setString('OpenAd', '1');
                             if (controller.adFree.value == false) {
@@ -4415,17 +4449,23 @@ class _HomeScreenState extends State<HomeScreen>
                               controller.bannerAd?.load();
                             }
                             // Check internet connection before navigating
-                            final hasInternet = await InternetConnection().hasInternetAccess;
+                            final hasInternet =
+                                await InternetConnection().hasInternetAccess;
                             if (!hasInternet) {
-                              Constants.showToast('Check Your Internet Connection');
+                              Constants.showToast(
+                                  'Check Your Internet Connection');
                               return;
                             }
                             // Check if connection is slow (mobile only, likely 2G)
                             final connectivity = Connectivity();
-                            final connectivityResult = await connectivity.checkConnectivity();
-                            final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
-                                !connectivityResult.contains(ConnectivityResult.wifi) &&
-                                !connectivityResult.contains(ConnectivityResult.ethernet);
+                            final connectivityResult =
+                                await connectivity.checkConnectivity();
+                            final isMobileOnly = connectivityResult
+                                    .contains(ConnectivityResult.mobile) &&
+                                !connectivityResult
+                                    .contains(ConnectivityResult.wifi) &&
+                                !connectivityResult
+                                    .contains(ConnectivityResult.ethernet);
                             if (isMobileOnly) {
                               // Show toast after a delay if still loading (slow connection)
                               Future.delayed(const Duration(seconds: 2), () {
@@ -4457,17 +4497,23 @@ class _HomeScreenState extends State<HomeScreen>
                               controller.bannerAd?.load();
                             }
                             // Check internet connection before navigating
-                            final hasInternet = await InternetConnection().hasInternetAccess;
+                            final hasInternet =
+                                await InternetConnection().hasInternetAccess;
                             if (!hasInternet) {
-                              Constants.showToast('Check Your Internet Connection');
+                              Constants.showToast(
+                                  'Check Your Internet Connection');
                               return;
                             }
                             // Check if connection is slow (mobile only, likely 2G)
                             final connectivity = Connectivity();
-                            final connectivityResult = await connectivity.checkConnectivity();
-                            final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
-                                !connectivityResult.contains(ConnectivityResult.wifi) &&
-                                !connectivityResult.contains(ConnectivityResult.ethernet);
+                            final connectivityResult =
+                                await connectivity.checkConnectivity();
+                            final isMobileOnly = connectivityResult
+                                    .contains(ConnectivityResult.mobile) &&
+                                !connectivityResult
+                                    .contains(ConnectivityResult.wifi) &&
+                                !connectivityResult
+                                    .contains(ConnectivityResult.ethernet);
                             if (isMobileOnly) {
                               // Show toast after a delay if still loading (slow connection)
                               Future.delayed(const Duration(seconds: 2), () {
@@ -4651,17 +4697,23 @@ class _HomeScreenState extends State<HomeScreen>
                                 controller.bannerAd?.load();
                               }
                               // Check internet connection before navigating
-                              final hasInternet = await InternetConnection().hasInternetAccess;
+                              final hasInternet =
+                                  await InternetConnection().hasInternetAccess;
                               if (!hasInternet) {
-                                Constants.showToast('Check Your Internet Connection');
+                                Constants.showToast(
+                                    'Check Your Internet Connection');
                                 return;
                               }
                               // Check if connection is slow (mobile only, likely 2G)
                               final connectivity = Connectivity();
-                              final connectivityResult = await connectivity.checkConnectivity();
-                              final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
-                                  !connectivityResult.contains(ConnectivityResult.wifi) &&
-                                  !connectivityResult.contains(ConnectivityResult.ethernet);
+                              final connectivityResult =
+                                  await connectivity.checkConnectivity();
+                              final isMobileOnly = connectivityResult
+                                      .contains(ConnectivityResult.mobile) &&
+                                  !connectivityResult
+                                      .contains(ConnectivityResult.wifi) &&
+                                  !connectivityResult
+                                      .contains(ConnectivityResult.ethernet);
                               if (isMobileOnly) {
                                 // Show toast after a delay if still loading (slow connection)
                                 Future.delayed(const Duration(seconds: 2), () {
@@ -4692,23 +4744,7 @@ class _HomeScreenState extends State<HomeScreen>
                               style: CommanStyle.bothPrimary16600(context),
                             ),
                           ),
-                        ListTile(
-                          dense: true,
-                          onTap: () async {
-                            Get.to(ChatScreen());
-                          },
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: 0),
-                          leading: const Icon(
-                            CupertinoIcons.chat_bubble_2,
-                            color: Color(0XFF805531),
-                            size: 26,
-                          ),
-                          title: Text(
-                            'Chat',
-                            style: CommanStyle.bothPrimary16600(context),
-                          ),
-                        ),
+
                         // Exit Offer / Limited Time Offer
                         // ListTile(
                         //   dense: true,
@@ -4746,17 +4782,23 @@ class _HomeScreenState extends State<HomeScreen>
                             Get.back();
                             await SharPreferences.setString('OpenAd', '1');
                             // Check internet connection before showing More Apps
-                            final hasInternet = await InternetConnection().hasInternetAccess;
+                            final hasInternet =
+                                await InternetConnection().hasInternetAccess;
                             if (!hasInternet) {
-                              Constants.showToast('Check Your Internet Connection');
+                              Constants.showToast(
+                                  'Check Your Internet Connection');
                               return;
                             }
                             final connectivity = Connectivity();
-                            final connectivityResult = await connectivity.checkConnectivity();
+                            final connectivityResult =
+                                await connectivity.checkConnectivity();
                             // Check if connection is slow (mobile only, likely 2G)
-                            final isMobileOnly = connectivityResult.contains(ConnectivityResult.mobile) &&
-                                !connectivityResult.contains(ConnectivityResult.wifi) &&
-                                !connectivityResult.contains(ConnectivityResult.ethernet);
+                            final isMobileOnly = connectivityResult
+                                    .contains(ConnectivityResult.mobile) &&
+                                !connectivityResult
+                                    .contains(ConnectivityResult.wifi) &&
+                                !connectivityResult
+                                    .contains(ConnectivityResult.ethernet);
                             if (isMobileOnly) {
                               // Show toast after a delay if still loading (slow connection)
                               Future.delayed(const Duration(seconds: 2), () {
