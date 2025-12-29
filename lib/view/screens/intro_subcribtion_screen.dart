@@ -26,6 +26,7 @@ import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:http/http.dart' as http;
 
 import '../../Model/get_audio_model.dart';
 import '../../core/notifiers/download.notifier.dart';
@@ -801,21 +802,25 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             if (data1 == true) {
               if (Platform.isIOS) {
                 //  var response =
-                http.post(
-                  Uri.parse(kDebugMode
-                      ? 'https://sandbox.itunes.apple.com/verifyReceipt'
-                      : 'https://buy.itunes.apple.com/verifyReceipt'),
-                  headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                  },
-                  body: {
-                    'receipt-data':
-                        purchaseDetails.verificationData.localVerificationData,
-                    'exclude-old-transactions': true,
-                    'password': controller.sharedSecret
-                  },
-                );
+                try {
+                  await http.post(
+                    Uri.parse(kDebugMode
+                        ? 'https://sandbox.itunes.apple.com/verifyReceipt'
+                        : 'https://buy.itunes.apple.com/verifyReceipt'),
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                    body: jsonEncode({
+                      'receipt-data':
+                          purchaseDetails.verificationData.localVerificationData,
+                      'exclude-old-transactions': true,
+                      'password': controller.sharedSecret
+                    }),
+                  );
+                } catch (e) {
+                  debugPrint('Receipt verification error (non-blocking): $e');
+                }
 
                 // DebugConsole.log(
                 //     "  purchases sucess frist : ${purchaseDetails.purchaseID}-productId:${purchaseDetails.productID}-date:${DateTime.now()} - ${response.body}");
