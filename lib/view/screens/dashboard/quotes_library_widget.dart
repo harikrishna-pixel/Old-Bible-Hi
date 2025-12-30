@@ -41,22 +41,8 @@ class QuotesLibraryWidget extends HookConsumerWidget {
                   },
                   child: Column(
                     children: [
-                      Container(
-                          padding: const EdgeInsets.all(8),
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                                  color:
-                                      CommanColor.lightDarkPrimary300(context),
-                                  width: 1.2),
-                              borderRadius: BorderRadius.circular(3)),
-                          child: Image.asset(
-                            Images.quote,
-                            height: 25,
-                            width: 15,
-                            color: CommanColor.lightDarkPrimary300(context),
-                          )),
+                      Image.asset(Images.quotesPlaceHolder(context),
+                          height: 200, width: 200),
                       const SizedBox(
                         height: 15,
                       ),

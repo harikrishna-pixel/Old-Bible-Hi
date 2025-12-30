@@ -140,6 +140,8 @@ flutter:
     - assets/zipped/Geneva Bible/
     - assets/icons/
     - assets/onboarding/
+    - assets/dark_modes/
+    - assets/light_modes/
     - .env
 
   fonts:

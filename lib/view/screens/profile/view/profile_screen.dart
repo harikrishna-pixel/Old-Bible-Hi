@@ -27,6 +27,7 @@ void confirmLogoutAccount(BuildContext context) {
   double screenWidth = MediaQuery.of(context).size.width;
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (context) {
       return Dialog(
           backgroundColor: CommanColor.white,
