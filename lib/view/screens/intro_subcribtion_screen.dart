@@ -784,10 +784,97 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList,
-      DashBoardController controller) async {
-    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
+      DashBoardController controller) {
+    // ignore: avoid_function_literals_in_foreach_calls
+    purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
       debugPrint("Purchase State: ${purchaseDetails.status}");
       await SharPreferences.setString('OpenAd', '1');
+
+      // Check pendingCompletePurchase FIRST - this indicates purchase succeeded
+      if (purchaseDetails.pendingCompletePurchase) {
+        // Purchase succeeded but needs completion - complete it and process
+        debugPrint(
+            "✅ Purchase pending completion - Product ID: ${purchaseDetails.productID}");
+        await InAppPurchase.instance.completePurchase(purchaseDetails);
+
+        // Check if this is a valid purchase and process it
+        final data1 = await SharPreferences.getBoolean('startpurches');
+        if (data1 == true && purchaseDetails.productID != null) {
+          try {
+            await purchaseSubmit(
+                receiptData:
+                    '${purchaseDetails.purchaseID ?? ''}-productId:${purchaseDetails.productID}-date:${DateTime.now()}');
+            final todayDate = DateTime.now();
+            await SharPreferences.setBoolean("downloadreward", true);
+
+            if (purchaseDetails.productID == widget.sixMonthPlan) {
+              final expiryDate = addSixMonths();
+              final diff = expiryDate.difference(todayDate);
+              await controller.disableAd(diff);
+              EasyLoading.dismiss();
+              await SharPreferences.setBoolean('closead', true);
+              await SharPreferences.setBoolean('startpurches', false);
+              debugPrint(
+                  "✅ Six month purchase completed - Navigating to HomeScreen");
+              // Schedule navigation on next frame to ensure it executes
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Get.offAll(() => HomeScreen(
+                      From: "premium",
+                      selectedVerseNumForRead: "",
+                      selectedBookForRead: "",
+                      selectedChapterForRead: "",
+                      selectedBookNameForRead: "",
+                      selectedVerseForRead: "",
+                    ));
+              });
+              return;
+            } else if (purchaseDetails.productID == widget.oneYearPlan) {
+              await controller.disableAd(const Duration(days: 366));
+              EasyLoading.dismiss();
+              await SharPreferences.setBoolean('closead', true);
+              await SharPreferences.setBoolean('startpurches', false);
+              debugPrint(
+                  "✅ One year purchase completed - Navigating to HomeScreen");
+              // Schedule navigation on next frame to ensure it executes
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Get.offAll(() => HomeScreen(
+                      From: "premium",
+                      selectedVerseNumForRead: "",
+                      selectedBookForRead: "",
+                      selectedChapterForRead: "",
+                      selectedBookNameForRead: "",
+                      selectedVerseForRead: "",
+                    ));
+              });
+              return;
+            } else if (purchaseDetails.productID == widget.lifeTimePlan) {
+              await controller.disableAd(const Duration(days: 3650012345));
+              EasyLoading.dismiss();
+              await SharPreferences.setBoolean('closead', true);
+              await SharPreferences.setBoolean('startpurches', false);
+              debugPrint(
+                  "✅ Lifetime purchase completed - Navigating to HomeScreen");
+              // Schedule navigation on next frame to ensure it executes
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Get.offAll(() => HomeScreen(
+                      From: "premium",
+                      selectedVerseNumForRead: "",
+                      selectedBookForRead: "",
+                      selectedChapterForRead: "",
+                      selectedBookNameForRead: "",
+                      selectedVerseForRead: "",
+                    ));
+              });
+              return;
+            }
+          } catch (e) {
+            debugPrint('Error processing pending purchase: $e');
+          }
+        }
+        EasyLoading.dismiss();
+        return;
+      }
+
       if (purchaseDetails.status == PurchaseStatus.pending) {
         // Keep loading for pending purchases
       } else {
@@ -837,11 +924,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   final todayDate = DateTime.now();
                   await SharPreferences.setBoolean("downloadreward", true);
                   await Future.delayed(Duration(seconds: 1));
-                  debugPrint(
-                      "🔍 Purchase Product ID: ${purchaseDetails.productID}");
-                  debugPrint("🔍 Six Month Plan ID: ${widget.sixMonthPlan}");
-                  debugPrint("🔍 One Year Plan ID: ${widget.oneYearPlan}");
-                  debugPrint("🔍 Lifetime Plan ID: ${widget.lifeTimePlan}");
                   if (purchaseDetails.productID == widget.sixMonthPlan) {
                     final expiryDate = addSixMonths();
                     final diff = expiryDate.difference(todayDate);
@@ -854,16 +936,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     EasyLoading.dismiss();
                     await SharPreferences.setBoolean('closead', true);
                     await SharPreferences.setBoolean('startpurches', false);
-                    debugPrint(
-                        "✅ Six month purchase successful - Navigating to HomeScreen");
-                    Get.offAll(() => HomeScreen(
-                          From: "premium",
-                          selectedVerseNumForRead: "",
-                          selectedBookForRead: "",
-                          selectedChapterForRead: "",
-                          selectedBookNameForRead: "",
-                          selectedVerseForRead: "",
-                        ));
+                    debugPrint("restore data 2 - Navigating to HomeScreen");
+                    // Schedule navigation on next frame to ensure it executes
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Get.offAll(() => HomeScreen(
+                            From: "premium",
+                            selectedVerseNumForRead: "",
+                            selectedBookForRead: "",
+                            selectedChapterForRead: "",
+                            selectedBookNameForRead: "",
+                            selectedVerseForRead: "",
+                          ));
+                    });
                     return;
                   } else if (purchaseDetails.productID == widget.oneYearPlan) {
                     await controller.disableAd(const Duration(days: 366));
@@ -875,16 +959,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     EasyLoading.dismiss();
                     await SharPreferences.setBoolean('closead', true);
                     await SharPreferences.setBoolean('startpurches', false);
-                    debugPrint(
-                        "✅ One year purchase successful - Navigating to HomeScreen");
-                    Get.offAll(() => HomeScreen(
-                          From: "premium",
-                          selectedVerseNumForRead: "",
-                          selectedBookForRead: "",
-                          selectedChapterForRead: "",
-                          selectedBookNameForRead: "",
-                          selectedVerseForRead: "",
-                        ));
+                    debugPrint("restore data 3 - Navigating to HomeScreen");
+                    // Schedule navigation on next frame to ensure it executes
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Get.offAll(() => HomeScreen(
+                            From: "premium",
+                            selectedVerseNumForRead: "",
+                            selectedBookForRead: "",
+                            selectedChapterForRead: "",
+                            selectedBookNameForRead: "",
+                            selectedVerseForRead: "",
+                          ));
+                    });
                     return;
                   } else if (purchaseDetails.productID == widget.lifeTimePlan) {
                     await controller
@@ -897,16 +983,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     EasyLoading.dismiss();
                     await SharPreferences.setBoolean('closead', true);
                     await SharPreferences.setBoolean('startpurches', false);
-                    debugPrint(
-                        "✅ Lifetime purchase successful - Navigating to HomeScreen");
-                    Get.offAll(() => HomeScreen(
-                          From: "premium",
-                          selectedVerseNumForRead: "",
-                          selectedBookForRead: "",
-                          selectedChapterForRead: "",
-                          selectedBookNameForRead: "",
-                          selectedVerseForRead: "",
-                        ));
+                    debugPrint("restore data 4 - Navigating to HomeScreen");
+                    // Schedule navigation on next frame to ensure it executes
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Get.offAll(() => HomeScreen(
+                            From: "premium",
+                            selectedVerseNumForRead: "",
+                            selectedBookForRead: "",
+                            selectedChapterForRead: "",
+                            selectedBookNameForRead: "",
+                            selectedVerseForRead: "",
+                          ));
+                    });
                     return;
                   } else {
                     // Product ID doesn't match any known plan - dismiss loading and reset
@@ -944,9 +1032,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _handleRestore(purchaseDetails, controller);
             }
           }
-        } else if (purchaseDetails.pendingCompletePurchase) {
-          await InAppPurchase.instance.completePurchase(purchaseDetails);
-          EasyLoading.dismiss();
         } else if (purchaseDetails.status == PurchaseStatus.canceled) {
           EasyLoading.dismiss();
           Constants.showToast('Something went wrong');
@@ -956,7 +1041,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           await _checkAndShowExitOffer(controller);
         }
       }
-    }
+    });
   }
 
   _initialize() async {
