@@ -784,9 +784,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList,
-      DashBoardController controller) {
-    // ignore: avoid_function_literals_in_foreach_calls
-    purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
+      DashBoardController controller) async {
+    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
       debugPrint("Purchase State: ${purchaseDetails.status}");
       await SharPreferences.setString('OpenAd', '1');
       if (purchaseDetails.status == PurchaseStatus.pending) {
@@ -838,6 +837,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   final todayDate = DateTime.now();
                   await SharPreferences.setBoolean("downloadreward", true);
                   await Future.delayed(Duration(seconds: 1));
+                  debugPrint(
+                      "🔍 Purchase Product ID: ${purchaseDetails.productID}");
+                  debugPrint("🔍 Six Month Plan ID: ${widget.sixMonthPlan}");
+                  debugPrint("🔍 One Year Plan ID: ${widget.oneYearPlan}");
+                  debugPrint("🔍 Lifetime Plan ID: ${widget.lifeTimePlan}");
                   if (purchaseDetails.productID == widget.sixMonthPlan) {
                     final expiryDate = addSixMonths();
                     final diff = expiryDate.difference(todayDate);
@@ -850,8 +854,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     EasyLoading.dismiss();
                     await SharPreferences.setBoolean('closead', true);
                     await SharPreferences.setBoolean('startpurches', false);
-                    debugPrint("restore data 2");
-                    return Get.offAll(() => HomeScreen(
+                    debugPrint(
+                        "✅ Six month purchase successful - Navigating to HomeScreen");
+                    Get.offAll(() => HomeScreen(
                           From: "premium",
                           selectedVerseNumForRead: "",
                           selectedBookForRead: "",
@@ -859,6 +864,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           selectedBookNameForRead: "",
                           selectedVerseForRead: "",
                         ));
+                    return;
                   } else if (purchaseDetails.productID == widget.oneYearPlan) {
                     await controller.disableAd(const Duration(days: 366));
                     await Future.delayed(Duration(seconds: 2));
@@ -869,8 +875,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     EasyLoading.dismiss();
                     await SharPreferences.setBoolean('closead', true);
                     await SharPreferences.setBoolean('startpurches', false);
-                    debugPrint("restore data 3 ");
-                    return Get.offAll(() => HomeScreen(
+                    debugPrint(
+                        "✅ One year purchase successful - Navigating to HomeScreen");
+                    Get.offAll(() => HomeScreen(
                           From: "premium",
                           selectedVerseNumForRead: "",
                           selectedBookForRead: "",
@@ -878,6 +885,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           selectedBookNameForRead: "",
                           selectedVerseForRead: "",
                         ));
+                    return;
                   } else if (purchaseDetails.productID == widget.lifeTimePlan) {
                     await controller
                         .disableAd(const Duration(days: 3650012345));
@@ -889,8 +897,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     EasyLoading.dismiss();
                     await SharPreferences.setBoolean('closead', true);
                     await SharPreferences.setBoolean('startpurches', false);
-                    debugPrint("restore data 4 ");
-                    return Get.offAll(() => HomeScreen(
+                    debugPrint(
+                        "✅ Lifetime purchase successful - Navigating to HomeScreen");
+                    Get.offAll(() => HomeScreen(
                           From: "premium",
                           selectedVerseNumForRead: "",
                           selectedBookForRead: "",
@@ -898,6 +907,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           selectedBookNameForRead: "",
                           selectedVerseForRead: "",
                         ));
+                    return;
                   } else {
                     // Product ID doesn't match any known plan - dismiss loading and reset
                     EasyLoading.dismiss();
@@ -946,7 +956,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           await _checkAndShowExitOffer(controller);
         }
       }
-    });
+    }
   }
 
   _initialize() async {
