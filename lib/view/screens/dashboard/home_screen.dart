@@ -4245,26 +4245,30 @@ class _HomeScreenState extends State<HomeScreen>
                 ? const SizedBox()
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       GestureDetector(
                           onTap: () {
                             Get.to(ChatScreen());
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth > 600 ? 48 : screenWidth > 450 ? 40 : 32,
+                            ),
                             child: Container(
-                                height: screenWidth > 450 ? 50 : 35,
-                                width: screenWidth > 450 ? 50 : 35,
+                                height: screenWidth > 600 ? 56 : screenWidth > 450 ? 50 : 35,
+                                width: screenWidth > 600 ? 56 : screenWidth > 450 ? 50 : 35,
                                 decoration: BoxDecoration(
                                   color: CommanColor.whiteLightModePrimary(
                                       context),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Column(
-                                  children: [
-                                    SizedBox(height: 6,),
-                                    Image.asset("assets/Chat white.png",width: 22,height: 22,)
-                                  ],
+                                child: Center(
+                                  child: Image.asset(
+                                    "assets/Chat white.png",
+                                    width: screenWidth > 600 ? 26 : screenWidth > 450 ? 24 : 22,
+                                    height: screenWidth > 600 ? 26 : screenWidth > 450 ? 24 : 22,
+                                  ),
                                 )
                             ),
                           )),
