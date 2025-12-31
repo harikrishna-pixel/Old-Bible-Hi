@@ -545,10 +545,12 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                 : Colors.transparent,
                             // Border with increased thickness when selected
                             border: Border.all(
-                              // Border stroke color: 9E9E9E in light mode, lighter grey in dark mode for visibility
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : const Color(0xFF9E9E9E),
+                              // Border stroke color: 805531 when selected, 9E9E9E in light mode or lighter grey in dark mode when not selected
+                              color: selected
+                                  ? const Color(0xFF805531)
+                                  : (isDark
+                                      ? Colors.grey.shade400
+                                      : const Color(0xFF9E9E9E)),
                               width: selected
                                   ? 2.0
                                   : 1.0, // Increase thickness when selected
