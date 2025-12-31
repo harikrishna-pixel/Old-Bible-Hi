@@ -2269,9 +2269,12 @@ class _ThemeDialogState extends State<ThemeDialog> {
                   // Check subscription before setting theme
                   final downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
                   final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
-                  final isSubscribed = subscriptionPlan != null && 
-                                      subscriptionPlan.isNotEmpty && 
-                                      ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
+                  final hasSubscriptionPlan = subscriptionPlan != null && 
+                                              subscriptionPlan.isNotEmpty && 
+                                              ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
+                  // Also check if ads are disabled, which indicates premium access
+                  final adsDisabled = !downloadProvider.adEnabled;
+                  final isSubscribed = hasSubscriptionPlan || adsDisabled;
                   
                   if (!isSubscribed) {
                     // Close theme dialog and show premium dialog
