@@ -2885,9 +2885,9 @@ class _HomeScreenState extends State<HomeScreen>
                                 duration: const Duration(milliseconds: 300));
                           },
                           child: Image.asset(
-                            "assets/search.png",
-                            height: screenWidth > 450 ? 30 : 18,
-                            width: screenWidth > 450 ? 30 : 18,
+                            "assets/home icons/search.png",
+                            height: screenWidth > 450 ? 30 : 22,
+                            width: screenWidth > 450 ? 30 : 22,
                             color: CommanColor.whiteBlack(context),
                           )),
                       Padding(
@@ -4264,8 +4264,11 @@ class _HomeScreenState extends State<HomeScreen>
                                   shape: BoxShape.circle,
                                 ),
                                 child: Center(
-                                  child: Image.asset(
-                                    "assets/Chat white.png",
+                                  child:
+                                  Image.asset(
+                                    CommanColor.isDarkTheme(context)
+                                        ? "assets/dark_modes/new-dark_chat.png"
+                                        : "assets/Chat white.png",
                                     width: screenWidth > 600 ? 26 : screenWidth > 450 ? 24 : 22,
                                     height: screenWidth > 600 ? 26 : screenWidth > 450 ? 24 : 22,
                                   ),

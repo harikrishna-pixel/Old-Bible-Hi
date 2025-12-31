@@ -818,7 +818,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                                                   context)),
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                            MainAxisAlignment.spaceAround,
                                         children: [
                                           Image.asset(
                                             Images.wallpaper,
@@ -831,7 +831,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                                             colorBlendMode: BlendMode.srcATop,
                                           ),
                                           Text(
-                                            "Wallpapers",
+                                            " Wallpapers",
                                             style: selectedTap == 5
                                                 ? CommanStyle.white12400.copyWith(
                                                     fontSize: screenWidth > 450

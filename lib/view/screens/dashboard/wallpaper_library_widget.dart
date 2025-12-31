@@ -26,10 +26,7 @@ class WallpaperLibraryWidget extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'No Wallpapers Saved',
-                  style: CommanStyle.appBarStyle(context),
-                ),
+
                 SizedBox(
                   height: 20,
                 ),
@@ -43,10 +40,15 @@ class WallpaperLibraryWidget extends HookConsumerWidget {
                   child: Column(
                     children: [
                       Image.asset(Images.wallpaperPlaceHolder(context),
-                          height: 200, width: 200),
+                        height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),),
                       const SizedBox(
-                        height: 15,
+                        height: 20,
                       ),
+                      Text(
+                        'No Wallpapers Saved',
+                        style: CommanStyle.placeholderText(context),
+                      ),
+                      SizedBox(height: 20,),
                       Text(" View ",
                           style: CommanStyle.placeholderText(context)),
                     ],

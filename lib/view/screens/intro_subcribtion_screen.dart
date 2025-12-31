@@ -1681,7 +1681,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             color: CommanColor.whiteBlack(context),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
+                            // decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
@@ -1700,7 +1700,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               style: TextStyle(
                                   fontSize: 12,
                                   color: CommanColor.whiteBlack(context),
-                                  decoration: TextDecoration.underline),
+                              ),
                             ),
                           ),
                           TextButton(
@@ -1728,7 +1728,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               style: TextStyle(
                                   fontSize: 12,
                                   color: CommanColor.whiteBlack(context),
-                                  decoration: TextDecoration.underline),
+                                 ),
                             ),
                           ),
                         ],
