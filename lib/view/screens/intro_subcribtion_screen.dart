@@ -811,6 +811,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               final expiryDate = addSixMonths();
               final diff = expiryDate.difference(todayDate);
               await controller.disableAd(diff);
+              // Set subscription plan to silver for six months
+              final downloadProvider =
+                  Provider.of<DownloadProvider>(context, listen: false);
+              await downloadProvider.setSubscriptionPlan('silver');
               EasyLoading.dismiss();
               await SharPreferences.setBoolean('closead', true);
               await SharPreferences.setBoolean('startpurches', false);
@@ -830,6 +834,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               return;
             } else if (purchaseDetails.productID == widget.oneYearPlan) {
               await controller.disableAd(const Duration(days: 366));
+              // Set subscription plan to gold for one year
+              final downloadProvider =
+                  Provider.of<DownloadProvider>(context, listen: false);
+              await downloadProvider.setSubscriptionPlan('gold');
               EasyLoading.dismiss();
               await SharPreferences.setBoolean('closead', true);
               await SharPreferences.setBoolean('startpurches', false);
@@ -849,6 +857,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               return;
             } else if (purchaseDetails.productID == widget.lifeTimePlan) {
               await controller.disableAd(const Duration(days: 3650012345));
+              // Set subscription plan to platinum for lifetime
+              final downloadProvider =
+                  Provider.of<DownloadProvider>(context, listen: false);
+              await downloadProvider.setSubscriptionPlan('platinum');
               EasyLoading.dismiss();
               await SharPreferences.setBoolean('closead', true);
               await SharPreferences.setBoolean('startpurches', false);
@@ -928,6 +940,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     final expiryDate = addSixMonths();
                     final diff = expiryDate.difference(todayDate);
                     await controller.disableAd(diff);
+                    // Set subscription plan to silver for six months
+                    final downloadProvider =
+                        Provider.of<DownloadProvider>(context, listen: false);
+                    await downloadProvider.setSubscriptionPlan('silver');
                     await Future.delayed(Duration(seconds: 2));
                     // Complete the purchase for iOS - critical to prevent infinite loading
                     if (Platform.isIOS) {
@@ -951,6 +967,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     return;
                   } else if (purchaseDetails.productID == widget.oneYearPlan) {
                     await controller.disableAd(const Duration(days: 366));
+                    // Set subscription plan to gold for one year
+                    final downloadProvider =
+                        Provider.of<DownloadProvider>(context, listen: false);
+                    await downloadProvider.setSubscriptionPlan('gold');
                     await Future.delayed(Duration(seconds: 2));
                     // Complete the purchase for iOS - critical to prevent infinite loading
                     if (Platform.isIOS) {
@@ -975,6 +995,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   } else if (purchaseDetails.productID == widget.lifeTimePlan) {
                     await controller
                         .disableAd(const Duration(days: 3650012345));
+                    // Set subscription plan to platinum for lifetime
+                    final downloadProvider =
+                        Provider.of<DownloadProvider>(context, listen: false);
+                    await downloadProvider.setSubscriptionPlan('platinum');
                     await Future.delayed(Duration(seconds: 2));
                     // Complete the purchase for iOS - critical to prevent infinite loading
                     if (Platform.isIOS) {
