@@ -151,7 +151,7 @@ class _LibraryScreenState extends State<LibraryScreen>
         vsync: this, length: 7, initialIndex: widget.initialIndex);
   }
 
-  checkuserloggedin() async{
+  checkuserloggedin() async {
     final cacheprovider = Provider.of<CacheNotifier>(context, listen: false);
 
     final data = await cacheprovider.readCache(key: 'user');
@@ -492,7 +492,13 @@ class _LibraryScreenState extends State<LibraryScreen>
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          Image.asset("assets/Library icons/Bookmark.png",color: CommanColor.whiteAndDark(context),width: 20,height: 15,),
+                                          Image.asset(
+                                            "assets/Library icons/Bookmark.png",
+                                            color: CommanColor.whiteAndDark(
+                                                context),
+                                            width: 20,
+                                            height: 15,
+                                          ),
                                           // Icon(
                                           //   Icons.bookmark,
                                           //   color: selectedTap == 0
@@ -558,7 +564,13 @@ class _LibraryScreenState extends State<LibraryScreen>
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          Image.asset("assets/Library icons/Highlights.png",color: CommanColor.whiteAndDark(context),width: 20,height: 15,),
+                                          Image.asset(
+                                            "assets/Library icons/Highlights.png",
+                                            color: CommanColor.whiteAndDark(
+                                                context),
+                                            width: 20,
+                                            height: 15,
+                                          ),
                                           // Icon(
                                           //   Icons.brush_sharp,
                                           //   color: selectedTap == 1
@@ -623,7 +635,13 @@ class _LibraryScreenState extends State<LibraryScreen>
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          Image.asset("assets/Library icons/underline.png",color: CommanColor.whiteAndDark(context),width: 20,height: 15,),
+                                          Image.asset(
+                                            "assets/Library icons/underline.png",
+                                            color: CommanColor.whiteAndDark(
+                                                context),
+                                            width: 20,
+                                            height: 15,
+                                          ),
                                           // Icon(
                                           //   Icons.format_underline_sharp,
                                           //   color: selectedTap == 2
@@ -688,7 +706,12 @@ class _LibraryScreenState extends State<LibraryScreen>
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          Image.asset("assets/Library icons/notes.png",color: CommanColor.whiteAndDark(context), width: screenWidth > 450 ? 22 : 18),
+                                          Image.asset(
+                                              "assets/Library icons/notes.png",
+                                              color: CommanColor.whiteAndDark(
+                                                  context),
+                                              width:
+                                                  screenWidth > 450 ? 22 : 18),
                                           // Icon(
                                           //   Icons.sticky_note_2_sharp,
                                           //   color: selectedTap == 3
@@ -958,92 +981,102 @@ class _LibraryScreenState extends State<LibraryScreen>
     required String message,
   }) async {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
-        return Dialog(
-            backgroundColor: CommanColor.white,
-            insetPadding: screenWidth > 450
-                ? const EdgeInsets.symmetric(horizontal: 150)
-                : null,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 16,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: CommanColor.black,
-                        fontSize: screenWidth > 450 ? 19 : null),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.to(() => LoginScreen(hasSkip: false),
-                          transition: Transition.cupertinoDialog,
-                          duration: const Duration(milliseconds: 300));
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 32),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: CommanColor.darkPrimaryColor,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(5)),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 2)
-                          ],
-                        ),
-                        child: Text(
-                          'Sign in',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              letterSpacing: BibleInfo.letterSpacing,
-                              fontSize: screenWidth > 450
-                                  ? BibleInfo.fontSizeScale * 19
-                                  : BibleInfo.fontSizeScale * 14,
-                              fontWeight: FontWeight.w500,
-                              color: CommanColor.white),
-                        )),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 32),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: CommanColor.lightGrey1,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(5)),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 2)
-                          ],
-                        ),
-                        child: Text(
-                          'Cancel',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              letterSpacing: BibleInfo.letterSpacing,
-                              fontSize: screenWidth > 450
-                                  ? BibleInfo.fontSizeScale * 19
-                                  : BibleInfo.fontSizeScale * 14,
-                              fontWeight: FontWeight.w400,
-                              color: CommanColor.black),
-                        )),
-                  )
-                ],
-              ),
-            ));
+        return PopScope(
+          canPop: !isTablet,
+          onPopInvokedWithResult: (didPop, result) {
+            // Prevent automatic dismissal on iPad - only allow manual close via buttons
+            if (didPop && isTablet) return;
+          },
+          child: Dialog(
+              backgroundColor: CommanColor.white,
+              insetPadding: screenWidth > 450
+                  ? const EdgeInsets.symmetric(horizontal: 150)
+                  : null,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 16,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: CommanColor.black,
+                          fontSize: screenWidth > 450 ? 19 : null),
+                    ),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Get.to(() => LoginScreen(hasSkip: false),
+                            transition: Transition.cupertinoDialog,
+                            duration: const Duration(milliseconds: 300));
+                      },
+                      child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: CommanColor.darkPrimaryColor,
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(5)),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black26, blurRadius: 2)
+                            ],
+                          ),
+                          child: Text(
+                            'Sign in',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                letterSpacing: BibleInfo.letterSpacing,
+                                fontSize: screenWidth > 450
+                                    ? BibleInfo.fontSizeScale * 19
+                                    : BibleInfo.fontSizeScale * 14,
+                                fontWeight: FontWeight.w500,
+                                color: CommanColor.white),
+                          )),
+                    ),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () async {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: CommanColor.lightGrey1,
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(5)),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black26, blurRadius: 2)
+                            ],
+                          ),
+                          child: Text(
+                            'Cancel',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                letterSpacing: BibleInfo.letterSpacing,
+                                fontSize: screenWidth > 450
+                                    ? BibleInfo.fontSizeScale * 19
+                                    : BibleInfo.fontSizeScale * 14,
+                                fontWeight: FontWeight.w400,
+                                color: CommanColor.black),
+                          )),
+                    )
+                  ],
+                ),
+              )),
+        );
       },
     );
   }
@@ -1083,143 +1116,141 @@ class _MainBackupDialogState extends State<MainBackupDialog> {
         if (didPop) return;
       },
       child: Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         insetPadding: EdgeInsets.symmetric(
           horizontal: isTablet ? 150 : 24,
           vertical: isTablet ? 26 : 24,
         ),
         child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: CommanColor.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    "Backup",
-                    style: TextStyle(
-                        fontSize: isTablet ? 22 : 17.9,
-                        fontWeight: FontWeight.w500,
-                        color: CommanColor.black),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: isTablet ? 20 : 14,
-                      child: Icon(Icons.close,
-                          size: isTablet ? 22 : 17, color: Colors.black),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: CommanColor.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Backup",
+                      style: TextStyle(
+                          fontSize: isTablet ? 22 : 17.9,
+                          fontWeight: FontWeight.w500,
+                          color: CommanColor.black),
                     ),
                   ),
-                ),
-              ],
-            ),
-                const SizedBox(height: 24),
-                _buildActionButton(
-                  context,
-                  label: "EXPORT",
-                  icon: 'assets/sd.png',
-                  onTap: () async {
-                    Get.back();
-                    // Implement export logic
-                    await SharPreferences.setString('OpenAd', '1');
-                    // Constants.showToast(
-                    //     "Save your Verse markings in My Library");
-                    if (context.mounted) {
-                      showDialog(
-                        context: context,
-                        builder: (c) => BackupDialog(
-                          type: "export",
-                          onPrimaryPressed: () async {
-                            await SharPreferences.setString('OpenAd', '1');
-                            // final permission =
-                            //     await ExportDb.requestStoragePermission();
-                            // if (permission) {
-                            debugPrint("clicked");
-
-                            // updateLoading(true, mess: 'Please wait...');
-
-                            if (c.mounted) {
-                              ExportDb.getAllDataToExport(c);
-                            }
-                            await SharPreferences.setString('OpenAd', '1');
-
-                            //  updateLoading(false);
-                            //Get.back();
-                            // Navigator.of(context).pop();
-                            // Navigator.of(context).pop();
-                            // } else {
-                            //   await SharPreferences.setString('OpenAd', '1');
-                            //   Constants.showToast(
-                            //       "Permission is required to export the data.");
-                            // }
-                          },
-                          onSecondaryPressed: () {
-                            Get.back();
-                            // Navigator.of(context).pop();
-                          },
-                        ),
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildActionButton(
-                  context,
-                  label: "IMPORT",
-                  icon: 'assets/rd.png',
-                  onTap: () {
-                    Get.back();
-                    //    Navigator.of(context).pop();
-                    // Implement import logic
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white,
+                        radius: isTablet ? 20 : 14,
+                        child: Icon(Icons.close,
+                            size: isTablet ? 22 : 17, color: Colors.black),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildActionButton(
+                context,
+                label: "EXPORT",
+                icon: 'assets/sd.png',
+                onTap: () async {
+                  Get.back();
+                  // Implement export logic
+                  await SharPreferences.setString('OpenAd', '1');
+                  // Constants.showToast(
+                  //     "Save your Verse markings in My Library");
+                  if (context.mounted) {
                     showDialog(
                       context: context,
-                      builder: (_) => BackupDialog(
-                        type: "import",
+                      builder: (c) => BackupDialog(
+                        type: "export",
                         onPrimaryPressed: () async {
                           await SharPreferences.setString('OpenAd', '1');
-                          updateLoading(true, mess: 'Please wait...');
+                          // final permission =
+                          //     await ExportDb.requestStoragePermission();
+                          // if (permission) {
+                          debugPrint("clicked");
 
-                          await ExportDb.importData().then((v) {
-                            updateLoading(false);
-                            if (v == "File is not selected") {
-                              Constants.showToast("File is not selected");
-                            }
-                          });
+                          // updateLoading(true, mess: 'Please wait...');
+
+                          if (c.mounted) {
+                            ExportDb.getAllDataToExport(c);
+                          }
                           await SharPreferences.setString('OpenAd', '1');
 
-                          Get.offAll(() => HomeScreen(
-                              From: "splash",
-                              selectedVerseNumForRead: "",
-                              selectedBookForRead: "",
-                              selectedChapterForRead: "",
-                              selectedBookNameForRead: "",
-                              selectedVerseForRead: ""));
+                          //  updateLoading(false);
+                          //Get.back();
+                          // Navigator.of(context).pop();
+                          // Navigator.of(context).pop();
+                          // } else {
+                          //   await SharPreferences.setString('OpenAd', '1');
+                          //   Constants.showToast(
+                          //       "Permission is required to export the data.");
+                          // }
                         },
                         onSecondaryPressed: () {
-                          // Navigator.of(context).pop();
                           Get.back();
+                          // Navigator.of(context).pop();
                         },
                       ),
                     );
-                  },
-                ),
-              ],
-            ),
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildActionButton(
+                context,
+                label: "IMPORT",
+                icon: 'assets/rd.png',
+                onTap: () {
+                  Get.back();
+                  //    Navigator.of(context).pop();
+                  // Implement import logic
+                  showDialog(
+                    context: context,
+                    builder: (_) => BackupDialog(
+                      type: "import",
+                      onPrimaryPressed: () async {
+                        await SharPreferences.setString('OpenAd', '1');
+                        updateLoading(true, mess: 'Please wait...');
+
+                        await ExportDb.importData().then((v) {
+                          updateLoading(false);
+                          if (v == "File is not selected") {
+                            Constants.showToast("File is not selected");
+                          }
+                        });
+                        await SharPreferences.setString('OpenAd', '1');
+
+                        Get.offAll(() => HomeScreen(
+                            From: "splash",
+                            selectedVerseNumForRead: "",
+                            selectedBookForRead: "",
+                            selectedChapterForRead: "",
+                            selectedBookNameForRead: "",
+                            selectedVerseForRead: ""));
+                      },
+                      onSecondaryPressed: () {
+                        // Navigator.of(context).pop();
+                        Get.back();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
-      );
-
+      ),
+    );
   }
 
   Widget _buildActionButton(BuildContext context,

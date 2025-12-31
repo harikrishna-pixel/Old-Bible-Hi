@@ -206,7 +206,9 @@ class _VerseItemWidgetState extends State<VerseItemWidget> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 5.0),
                       child: Image.asset(
-                        "assets/Bookmark icons/stickynote-1.png",
+                        CommanColor.isDarkTheme(context)
+                            ? "assets/light_modes/stickynote.png"
+                            : "assets/Bookmark icons/stickynote-1.png",
                         width: screenWidth > 450
                             ? widget.controller.fontSize.value * 1.6
                             : widget.controller.fontSize.value * 1.2,

@@ -235,8 +235,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           title: "Underline"),
       LibraryStatusModel(
           count: notesCount,
-          leading: Icon(Icons.sticky_note_2_sharp,
-              size: 32, color: CommanColor.whiteBlack(context)),
+          leading: Image.asset("assets/dark_modes/stickynote.png",height: 32, color: CommanColor.whiteBlack(context)),
           title: "Notes"),
       LibraryStatusModel(
           count: imageCount,
@@ -505,7 +504,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 ),
                                 SizedBox(height: mheight * 0.03),
                                 Text(
-                                  'My Library Status'.toUpperCase(),
+                                  '₹My Library Status'.toUpperCase(),
                                   style: const TextStyle(
                                       letterSpacing: BibleInfo.letterSpacing,
                                       fontSize: BibleInfo.fontSizeScale * 18,

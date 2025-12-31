@@ -2113,9 +2113,9 @@ class NotifyMeDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              "Notify Me At...",
+              "Choose Your Daily Verse Time",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
@@ -2123,7 +2123,7 @@ class NotifyMeDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              "Set your favorite time to receive\nGod's Word and grow in faith!",
+              "Select the time you’d like to receive the Verse of the Day and stay connected with God’s Word",
               style: TextStyle(fontSize: 16, color: Colors.black),
               textAlign: TextAlign.center,
             ),
@@ -2137,8 +2137,8 @@ class NotifyMeDialog extends StatelessWidget {
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text("Okay",
-                    style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: Text("Set Reminder Time",
+                    style: TextStyle(fontSize: 15, color: Colors.white)),
               ),
             )
           ],

@@ -1500,24 +1500,33 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                       // Features list
                       _buildFeatureItem(
-                          "assets/offer/fe1.png", "Read without distractions",
-                          highlightWords: ["without distractions"]),
+                          "assets/offer/fe1.png", "Focus on God’s Word",
+                          highlightWords: ["God’s Word"]),
+                      _buildFeatureItem("assets/offer/fe2.png",
+                          "Daily Guidance From Scripture",
+                          highlightWords: ["Daily Guidance"]),
+                      _buildFeatureItem("assets/offer/fe3.png",
+                          "Understand God’s Word Clearly",
+                          highlightWords: ["God’s Word"]),
                       _buildFeatureItem(
-                          "assets/offer/fe2.png", "Daily Verses & Inspirations",
-                          highlightWords: ["Daily Verses"]),
-                      _buildFeatureItem(
-                          "assets/offer/fe3.png", "Access all available themes",
-                          highlightWords: ["themes"]),
-                      _buildFeatureItem("assets/offer/fe4.png",
-                          "Backup & Sync across all devices",
-                          highlightWords: ["Backup & Sync"]),
-                      _buildFeatureItem("assets/guidance.png",
-                          "Scripture Explanations & Answers",
-                          highlightWords: ["Explanations & Answers"]),
-                      _buildFeatureItem("assets/coins.png", _currentBonusLabel,
-                          highlightWords: [_currentBonusHighlight]),
+                          "assets/offer/fe4.png", "Your Bible, Always With You",
+                          highlightWords: ["Your Bible"]),
+                      // _buildFeatureItem("assets/guidance.png",
+                      //     "Scripture Explanations & Answers",
+                      //     highlightWords: ["Explanations & Answers"]),
+                      // _buildFeatureItem("assets/coins.png", _currentBonusLabel,
+                      //     highlightWords: [_currentBonusHighlight]),
 
-                      const SizedBox(height: 17),
+                      const SizedBox(height: 15),
+                      Text(
+                          "Build a deeper, stronger relationship with God every day",
+                          style: TextStyle(
+                              color: CommanColor.whiteBlack(context),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500)),
+                      SizedBox(
+                        height: 15,
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -1698,8 +1707,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             child: Text(
                               "Terms of Use",
                               style: TextStyle(
-                                  fontSize: 12,
-                                  color: CommanColor.whiteBlack(context),
+                                fontSize: 12,
+                                color: CommanColor.whiteBlack(context),
                               ),
                             ),
                           ),
@@ -1726,9 +1735,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             child: Text(
                               "Privacy Policy",
                               style: TextStyle(
-                                  fontSize: 12,
-                                  color: CommanColor.whiteBlack(context),
-                                 ),
+                                fontSize: 12,
+                                color: CommanColor.whiteBlack(context),
+                              ),
                             ),
                           ),
                         ],
@@ -2075,27 +2084,30 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget _buildFeatureItem(String image, String text,
       {List<String>? highlightWords}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 50),
       child: Row(
+        // mainAxisAlignment: MainAxisAlignment.center,
+        // crossAxisAlignment: CrossAxisAlignment.center,
+        // mainAxisSize: MainAxisSize.min,
         children: [
           Image.asset(image, width: 28, height: 28), // ✅ use image, not Icon
           const SizedBox(width: 12),
-          Expanded(
-            child: highlightWords != null && highlightWords.isNotEmpty
-                ? RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                          fontSize: 14, color: CommanColor.whiteBlack(context)),
-                      children:
-                          _buildHighlightedText(text, highlightWords, context),
-                    ),
-                  )
-                : Text(
-                    text,
+          highlightWords != null && highlightWords.isNotEmpty
+              ? RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
                     style: TextStyle(
                         fontSize: 14, color: CommanColor.whiteBlack(context)),
+                    children:
+                        _buildHighlightedText(text, highlightWords, context),
                   ),
-          ),
+                )
+              : Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 14, color: CommanColor.whiteBlack(context)),
+                ),
         ],
       ),
     );
@@ -2200,7 +2212,7 @@ class _ExitOfferBottomSheetContentState
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
-                        "LIMITED TIME OFFER !",
+                        "Special Faith Offer",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
@@ -2270,9 +2282,9 @@ class _ExitOfferBottomSheetContentState
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            "Enjoy 30% Savings today!",
+                            "One-Time Blessing. Lifetime Access.",
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 14,
                               color: Colors.blue,
                               fontWeight: FontWeight.w600,
                             ),

@@ -154,9 +154,12 @@ class _AboutUsState extends State<AboutUs> {
                 height: 30,
               ),
               Image.asset(
-                Images.aboutPlaceHolder(context),
-                height: 200,
-                width: 200,
+                "assets/new_ico.png",
+                height: 100,
+                width: 100,
+              ),
+              SizedBox(
+                height: 30,
               ),
               //Image.asset(Images.appLogo(context),width: 200,height: 200,color: Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark ? Colors.white:Colors.black ,),
               Text(

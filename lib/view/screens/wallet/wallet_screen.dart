@@ -39,8 +39,9 @@ class _WalletScreenState extends State<WalletScreen> {
   String _currentAnswerLength = 'small'; // Track current answer length
   int _claimCooldownMinutes = 0;
   int _claimCooldownSeconds = 0;
-  Map<String, Timer> _purchaseTimeouts = {}; // Track timeout timers for each product
-  
+  Map<String, Timer> _purchaseTimeouts =
+      {}; // Track timeout timers for each product
+
   // Rewarded Ad
   RewardedAd? _rewardedAd;
   bool _isRewardedAdLoaded = false;
@@ -96,14 +97,15 @@ class _WalletScreenState extends State<WalletScreen> {
     _purchaseTimeouts.clear();
     super.dispose();
   }
-  
+
   Future<void> _loadRewardedAd() async {
-    String? adUnitId = await SharPreferences.getString(SharPreferences.rewardedAd);
+    String? adUnitId =
+        await SharPreferences.getString(SharPreferences.rewardedAd);
     if (adUnitId == null || adUnitId.isEmpty) {
       debugPrint('WalletScreen: No rewarded ad unit ID found');
       return;
     }
-    
+
     // Get ad request with fallback
     AdRequest adRequest;
     try {
@@ -112,7 +114,7 @@ class _WalletScreenState extends State<WalletScreen> {
       debugPrint('WalletScreen: Error getting ad request, using default: $e');
       adRequest = const AdRequest();
     }
-    
+
     RewardedAd.load(
       adUnitId: adUnitId,
       request: adRequest,
@@ -156,11 +158,11 @@ class _WalletScreenState extends State<WalletScreen> {
     try {
       // Cache SharedPreferences instance for faster subsequent access
       _cachedPrefs = await SharedPreferences.getInstance();
-      
+
       // Store credits in constant/state variable immediately from local storage
       // This works offline - no API dependency
       final storedCredits = _cachedPrefs?.getInt('user_wallet_credits') ?? 0;
-      
+
       // Store in state variable immediately (works offline)
       if (mounted) {
         setState(() {
@@ -171,11 +173,11 @@ class _WalletScreenState extends State<WalletScreen> {
       debugPrint('Error initializing credits: $e');
       // Fallback: try to load from WalletService
       try {
-    final credits = await WalletService.getCredits();
+        final credits = await WalletService.getCredits();
         if (mounted) {
-      setState(() {
+          setState(() {
             _currentCredits = credits; // Store credits in constant/state
-      });
+          });
         }
       } catch (e2) {
         debugPrint('Error loading credits from WalletService: $e2');
@@ -189,7 +191,7 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<void> _loadCredits() async {
     try {
       int storedCredits;
-      
+
       // Use cached SharedPreferences instance if available for instant read (works offline)
       if (_cachedPrefs != null) {
         // Instant synchronous read from cached instance - no async delay, works offline
@@ -199,7 +201,7 @@ class _WalletScreenState extends State<WalletScreen> {
         storedCredits = await WalletService.getCredits();
         _cachedPrefs = await SharedPreferences.getInstance();
       }
-      
+
       // Update stored credits in constant/state variable (works offline)
       if (mounted && storedCredits != _currentCredits) {
         setState(() {
@@ -228,38 +230,40 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<void> _loadCoinPacks() async {
     // Check connectivity first - if offline, use constants directly
     final hasInternet = await InternetConnection().hasInternetAccess;
-    
+
     if (!hasInternet) {
       // Offline - use constants directly (don't check SharedPreferences)
       _loadCoinPacksFromConstants();
       return;
     }
-    
+
     // Online - Load coin packs data from API response (saved in SharedPreferences by BackgroundApiService)
     // Credits amount comes from API's sub_fields -> item_1 field
     final prefs = await SharedPreferences.getInstance();
     final coinPacksJson = prefs.getString('coin_packs');
-    
+
     if (coinPacksJson != null && coinPacksJson.isNotEmpty) {
       try {
         final coinPacksMap = jsonDecode(coinPacksJson) as Map<String, dynamic>;
         final packs = <Map<String, dynamic>>[];
-        
+
         coinPacksMap.forEach((identifier, data) {
           packs.add({
             'identifier': identifier,
-            'credits': data['credits'] ?? '0', // Credits from API response (sub_fields.item_1)
-            'discount': data['discount'] ?? '0', // Discount from API response (sub_fields.value)
+            'credits': data['credits'] ??
+                '0', // Credits from API response (sub_fields.item_1)
+            'discount': data['discount'] ??
+                '0', // Discount from API response (sub_fields.value)
           });
         });
-        
+
         // Sort by credits amount
         packs.sort((a, b) {
           final aCredits = int.tryParse(a['credits']?.toString() ?? '0') ?? 0;
           final bCredits = int.tryParse(b['credits']?.toString() ?? '0') ?? 0;
           return aCredits.compareTo(bCredits);
         });
-        
+
         if (mounted) {
           setState(() {
             _coinPacks = packs;
@@ -283,7 +287,7 @@ class _WalletScreenState extends State<WalletScreen> {
       final coinPack1Id = BibleInfo.coinPack1Id;
       final coinPack2Id = BibleInfo.coinPack2Id;
       final coinPack3Id = BibleInfo.coinPack3Id;
-      
+
       // Default coin pack data based on constants (matches API structure)
       final packs = <Map<String, dynamic>>[
         {
@@ -302,12 +306,13 @@ class _WalletScreenState extends State<WalletScreen> {
           'discount': '20', // Default discount for pack 3
         },
       ];
-      
+
       if (mounted) {
         setState(() {
           _coinPacks = packs;
         });
-        debugPrint('WalletScreen: Loaded coin packs from constants (offline mode)');
+        debugPrint(
+            'WalletScreen: Loaded coin packs from constants (offline mode)');
       }
     } catch (e) {
       debugPrint('Error loading coin packs from constants: $e');
@@ -318,16 +323,16 @@ class _WalletScreenState extends State<WalletScreen> {
     if (_coinPacks.isEmpty) {
       await _loadCoinPacks();
     }
-    
+
     if (_coinPacks.isEmpty) return;
-    
+
     final Set<String> productIds = _coinPacks
         .map((pack) => pack['identifier'] as String)
         .where((id) => id.isNotEmpty)
         .toSet();
-    
+
     if (productIds.isEmpty) return;
-    
+
     final bool isAvailable = await _inAppPurchase.isAvailable();
     if (!isAvailable) {
       if (mounted) {
@@ -337,28 +342,29 @@ class _WalletScreenState extends State<WalletScreen> {
       }
       return;
     }
-    
+
     // Set iOS delegate if needed
     if (Platform.isIOS) {
       try {
         final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-            _inAppPurchase.getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+            _inAppPurchase
+                .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
         await iosPlatformAddition.setDelegate(_WalletPaymentQueueDelegate());
       } catch (e) {
         debugPrint('Error setting iOS delegate: $e');
       }
     }
-    
+
     final ProductDetailsResponse response =
         await _inAppPurchase.queryProductDetails(productIds);
-    
+
     if (mounted) {
       setState(() {
         _isAvailable = isAvailable;
         _products = response.productDetails;
       });
     }
-    
+
     // Listen to purchase updates
     _subscription = _inAppPurchase.purchaseStream.listen(
       (List<PurchaseDetails> purchaseDetailsList) {
@@ -367,18 +373,19 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) async {
+  void _listenToPurchaseUpdated(
+      List<PurchaseDetails> purchaseDetailsList) async {
     for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
       // Clear loading state for the product being processed (regardless of status)
       final productId = purchaseDetails.productID;
-      
+
       if (purchaseDetails.status == PurchaseStatus.purchased) {
         // Find which coin pack was purchased
         try {
           final pack = _coinPacks.firstWhere(
             (p) => p['identifier'] == purchaseDetails.productID,
           );
-          
+
           final credits = int.tryParse(pack['credits']?.toString() ?? '0') ?? 0;
           await WalletService.addCredits(credits);
           // Update cached instance immediately for instant display
@@ -391,10 +398,10 @@ class _WalletScreenState extends State<WalletScreen> {
         } catch (e) {
           debugPrint('Error processing purchase: $e');
         }
-        
+
         // Complete the purchase (important for consumables)
         await _inAppPurchase.completePurchase(purchaseDetails);
-        
+
         if (mounted && _loadingProductId == productId) {
           setState(() {
             _loadingProductId = null; // Clear loading state for this product
@@ -442,7 +449,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _buyCoinPack(ProductDetails product) async {
     if (_loadingProductId != null || !_isAvailable) return;
-    
+
     // Check connectivity first (using InternetConnectionChecker for more accurate check)
     // This checks actual internet access, not just network interface availability
     final hasInternet = await InternetConnection().hasInternetAccess;
@@ -450,12 +457,12 @@ class _WalletScreenState extends State<WalletScreen> {
       Constants.showToast("Check your Internet connection");
       return;
     }
-    
+
     final productId = product.id;
     setState(() {
       _loadingProductId = productId; // Track which product is loading
     });
-    
+
     // Set a timeout to clear loading state if purchase dialog is canceled
     // This handles the case where user cancels and no purchase update is sent
     _purchaseTimeouts[productId] = Timer(const Duration(seconds: 10), () {
@@ -467,12 +474,12 @@ class _WalletScreenState extends State<WalletScreen> {
         _purchaseTimeouts.remove(productId);
       }
     });
-    
+
     try {
       final PurchaseParam purchaseParam = PurchaseParam(
         productDetails: product,
       );
-      
+
       // Use buyNonConsumable (matching existing codebase pattern)
       // For coins, we'll add credits and complete purchase immediately
       await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
@@ -518,25 +525,27 @@ class _WalletScreenState extends State<WalletScreen> {
         Constants.showToast("Check your Internet connection", 6000);
         return;
       }
-      
+
       // Check if user can watch ad (max 2 per day)
       final canWatch = await WalletService.canWatchAd();
       if (!canWatch) {
         final remaining = await WalletService.getRemainingAdsToday();
-        Constants.showToast('You have already watched 2 ads today. Come back tomorrow!', 6000);
+        Constants.showToast(
+            'You have already watched 2 ads today. Come back tomorrow!', 6000);
         return;
       }
 
       // Capture remaining before showing ad to avoid off-by-one toast
       final remainingBefore = await WalletService.getRemainingAdsToday();
-      
+
       // Check if ad is loaded
       if (!_isRewardedAdLoaded || _rewardedAd == null) {
-        Constants.showToast('Ad is loading. Please try again in a moment.', 6000);
+        Constants.showToast(
+            'Ad is loading. Please try again in a moment.', 6000);
         _loadRewardedAd(); // Try to load ad
         return;
       }
-      
+
       // Store the callback before showing ad
       final adToShow = _rewardedAd;
       if (adToShow == null) {
@@ -544,7 +553,7 @@ class _WalletScreenState extends State<WalletScreen> {
         _loadRewardedAd();
         return;
       }
-      
+
       adToShow.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (ad) {
           debugPrint('WalletScreen: Rewarded ad dismissed');
@@ -562,7 +571,7 @@ class _WalletScreenState extends State<WalletScreen> {
           _loadRewardedAd();
         },
       );
-      
+
       // Prevent app open ad from showing immediately after rewarded watch flow
       await SharPreferences.setString('OpenAd', '1');
 
@@ -580,13 +589,15 @@ class _WalletScreenState extends State<WalletScreen> {
               final remainingAfter = await WalletService.getRemainingAdsToday();
               final safeRemaining = remainingAfter < 0 ? 0 : remainingAfter;
               Constants.showToast(
-                  'Watched ad! Received 50 credits. $safeRemaining ads remaining today.', 6000);
+                  'Watched ad! Received 50 credits. $safeRemaining ads remaining today.',
+                  6000);
             } else {
               Constants.showToast('You have already watched 2 ads today', 6000);
             }
           } catch (e) {
             debugPrint('WalletScreen: Error giving credits after ad: $e');
-            Constants.showToast('Error processing credits. Please try again.', 6000);
+            Constants.showToast(
+                'Error processing credits. Please try again.', 6000);
           }
         },
       );
@@ -602,20 +613,27 @@ class _WalletScreenState extends State<WalletScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.themeMode == ThemeMode.dark;
-    final isVintage = themeProvider.currentCustomTheme == AppCustomTheme.vintage;
+    final isVintage =
+        themeProvider.currentCustomTheme == AppCustomTheme.vintage;
 
     return Scaffold(
       backgroundColor: isVintage
           ? (isDark ? CommanColor.black : themeProvider.backgroundColor)
-          : (isDark ? CommanColor.darkPrimaryColor : themeProvider.backgroundColor),
+          : (isDark
+              ? CommanColor.darkPrimaryColor
+              : themeProvider.backgroundColor),
       appBar: AppBar(
         backgroundColor: isVintage
             ? (isDark ? CommanColor.black : themeProvider.backgroundColor)
-            : (isDark ? CommanColor.darkPrimaryColor : themeProvider.backgroundColor),
+            : (isDark
+                ? CommanColor.darkPrimaryColor
+                : themeProvider.backgroundColor),
         flexibleSpace: isVintage
             ? Container(
                 decoration: BoxDecoration(
-                  color: isDark ? CommanColor.black : themeProvider.backgroundColor,
+                  color: isDark
+                      ? CommanColor.black
+                      : themeProvider.backgroundColor,
                   image: DecorationImage(
                     image: AssetImage(Images.bgImage(context)),
                     fit: BoxFit.cover,
@@ -643,19 +661,31 @@ class _WalletScreenState extends State<WalletScreen> {
       body: Container(
         decoration: isVintage
             ? BoxDecoration(
-                color: isDark ? CommanColor.black : themeProvider.backgroundColor,
+                color:
+                    isDark ? CommanColor.black : themeProvider.backgroundColor,
                 image: DecorationImage(
                   image: AssetImage(Images.bgImage(context)),
                   fit: BoxFit.cover,
                 ),
               )
-            : null,
+            : BoxDecoration(
+                color: isDark
+                    ? CommanColor.darkPrimaryColor
+                    : themeProvider.backgroundColor,
+              ),
         // Avoid extra top/bottom inset (especially on iPad with visible app bar)
         child: SafeArea(
           top: false,
           bottom: false,
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(screenWidth > 450 ? 20 : 16),
+            padding: EdgeInsets.only(
+              left: screenWidth > 450 ? 20 : 16,
+              right: screenWidth > 450 ? 20 : 16,
+              top: screenWidth > 450 ? 20 : 16,
+              bottom: screenWidth > 450
+                  ? 20 + MediaQuery.of(context).padding.bottom
+                  : 16 + MediaQuery.of(context).padding.bottom,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -681,7 +711,8 @@ class _WalletScreenState extends State<WalletScreen> {
                       Text(
                         'Your Credits',
                         style: TextStyle(
-                          color: CommanColor.whiteBlack(context).withOpacity(0.7),
+                          color:
+                              CommanColor.whiteBlack(context).withOpacity(0.7),
                           fontSize: screenWidth > 450 ? 16 : 14,
                         ),
                       ),
@@ -700,7 +731,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Answer Length Selection Section
                 Text(
                   'Answer Length',
@@ -713,7 +744,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 const SizedBox(height: 12),
                 _buildAnswerLengthCard(context, screenWidth, isDark),
                 const SizedBox(height: 24),
-                
+
                 // Free Credits Section
                 Text(
                   'Free Credits',
@@ -749,7 +780,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   onTap: _watchAdForCredits,
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Buy Credits Section
                 Text(
                   'Buy Credits',
@@ -809,9 +840,8 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
             child: Icon(
               icon,
-              color: isDark
-                  ? Colors.white
-                  : CommanColor.lightDarkPrimary(context),
+              color:
+                  isDark ? Colors.white : CommanColor.lightDarkPrimary(context),
               size: screenWidth > 450 ? 28 : 24,
             ),
           ),
@@ -888,13 +918,13 @@ class _WalletScreenState extends State<WalletScreen> {
   ) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final widgets = <Widget>[];
-    
+
     // Match products with coin packs
     for (var pack in _coinPacks) {
       final identifier = pack['identifier'] as String;
       final credits = pack['credits']?.toString() ?? '0';
       final discount = pack['discount']?.toString() ?? '0';
-      
+
       ProductDetails? product;
       try {
         product = _products.firstWhere(
@@ -904,9 +934,10 @@ class _WalletScreenState extends State<WalletScreen> {
         // Product not loaded yet, will show loading state
         product = null;
       }
-      
-      final isBestValue = false; // Remove default selection - only show when actually selected
-      
+
+      final isBestValue =
+          false; // Remove default selection - only show when actually selected
+
       widgets.add(
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -933,7 +964,8 @@ class _WalletScreenState extends State<WalletScreen> {
                   decoration: BoxDecoration(
                     color: isDark
                         ? CommanColor.lightDarkPrimary(context).withOpacity(0.2)
-                        : CommanColor.lightDarkPrimary(context).withOpacity(0.1),
+                        : CommanColor.lightDarkPrimary(context)
+                            .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -964,7 +996,9 @@ class _WalletScreenState extends State<WalletScreen> {
                   clipBehavior: Clip.none,
                   children: [
                     ElevatedButton(
-                      onPressed: (_loadingProductId != null || !_isAvailable || product == null)
+                      onPressed: (_loadingProductId != null ||
+                              !_isAvailable ||
+                              product == null)
                           ? null
                           : () => _buyCoinPack(product!),
                       style: ElevatedButton.styleFrom(
@@ -1009,7 +1043,8 @@ class _WalletScreenState extends State<WalletScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   (product != null && product!.price.isNotEmpty)
-                                      ? product!.price // IAP automatically provides price in user's local currency
+                                      ? product!
+                                          .price // IAP automatically provides price in user's local currency
                                       : 'Loading...',
                                   style: TextStyle(
                                     color: Colors.white,
@@ -1051,7 +1086,7 @@ class _WalletScreenState extends State<WalletScreen> {
         ),
       );
     }
-    
+
     return widgets;
   }
 
@@ -1061,8 +1096,9 @@ class _WalletScreenState extends State<WalletScreen> {
     bool isDark,
   ) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final isVintage = themeProvider.currentCustomTheme == AppCustomTheme.vintage;
-    
+    final isVintage =
+        themeProvider.currentCustomTheme == AppCustomTheme.vintage;
+
     String lengthDisplay = '';
     int cost = 0;
     switch (_currentAnswerLength) {
@@ -1079,7 +1115,7 @@ class _WalletScreenState extends State<WalletScreen> {
         cost = 100;
         break;
     }
-    
+
     return Container(
       padding: EdgeInsets.all(screenWidth > 450 ? 16 : 14),
       decoration: BoxDecoration(
@@ -1157,8 +1193,9 @@ class _WalletScreenState extends State<WalletScreen> {
     bool isDark,
   ) async {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final isVintage = themeProvider.currentCustomTheme == AppCustomTheme.vintage;
-    
+    final isVintage =
+        themeProvider.currentCustomTheme == AppCustomTheme.vintage;
+
     await showDialog(
       context: context,
       barrierDismissible: true,
@@ -1167,9 +1204,7 @@ class _WalletScreenState extends State<WalletScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          backgroundColor: isDark
-              ? CommanColor.darkPrimaryColor
-              : Colors.white,
+          backgroundColor: isDark ? CommanColor.darkPrimaryColor : Colors.white,
           child: Container(
             padding: EdgeInsets.all(screenWidth > 450 ? 24 : 20),
             child: Column(
@@ -1248,7 +1283,7 @@ class _WalletScreenState extends State<WalletScreen> {
     int cost,
   ) {
     final isSelected = _currentAnswerLength == length;
-    
+
     return InkWell(
       onTap: () async {
         await WalletService.setAnswerLength(length);
@@ -1343,4 +1378,3 @@ class _WalletPaymentQueueDelegate implements SKPaymentQueueDelegateWrapper {
     return false;
   }
 }
-
