@@ -92,38 +92,51 @@ class Images {
 
   static String bookmarkPlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/bookmark.png'
-        : 'assets/lightMode/images/bookmark.png';
+        ? 'assets/light_modes/Path 45.png'
+        : 'assets/dark_modes/Path 45.png';
   }
+
+  static String wallpaperPlaceHolder(BuildContext context) {
+    return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
+        ? 'assets/light_modes/Wallpaper.png'
+        : 'assets/dark_modes/Wallpaper.png';
+  }
+
+  static String quotesPlaceHolder(BuildContext context) {
+    return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
+        ? 'assets/light_modes/Quotes.png'
+        : 'assets/dark_modes/Quotes.png';
+  }
+
 
   static String highlightsPlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/Highlights.png'
-        : 'assets/lightMode/images/Highlights.png';
+        ? 'assets/light_modes/Highlights.png'
+        : 'assets/dark_modes/Highlights.png';
   }
 
   static String notesPlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/notes.png'
-        : 'assets/lightMode/images/notes.png';
+        ? 'assets/light_modes/stickynote.png'
+        : 'assets/dark_modes/stickynote.png';
   }
 
   static String underlinePlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/Underline.png'
-        : 'assets/lightMode/images/Underline.png';
+        ? 'assets/light_modes/underline.png'
+        : 'assets/dark_modes/underline.png';
   }
 
   static String imagesPlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/image.png'
-        : 'assets/lightMode/images/image.png';
+        ? 'assets/light_modes/image (2).png'
+        : 'assets/dark_modes/image (2).png';
   }
 
   static String searchPlaceHolder(BuildContext context) {
     return Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark
-        ? 'assets/nightMode/images/search.png'
-        : 'assets/lightMode/images/search.png';
+        ? 'assets/light_modes/Union.png'
+        : 'assets/dark_modes/new_search.png';
   }
 
   static String aboutPlaceHolder(BuildContext context) {

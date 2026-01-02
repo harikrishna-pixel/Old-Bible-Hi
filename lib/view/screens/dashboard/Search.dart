@@ -883,8 +883,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: Center(
                             child: Image.asset(
                               Images.searchPlaceHolder(context),
-                              height: 150,
-                              width: 150,
+                              height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),
                             ),
                           ),
                         )

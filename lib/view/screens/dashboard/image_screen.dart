@@ -529,8 +529,7 @@ class _ImageScreenState extends State<ImageScreen> {
                   children: [
                     Image.asset(
                       Images.imagesPlaceHolder(context),
-                      height: 180,
-                      width: 180,
+                      height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),
                     ),
                     SizedBox(
                       height: 20,
@@ -540,7 +539,7 @@ class _ImageScreenState extends State<ImageScreen> {
                       style: CommanStyle.placeholderText(context),
                     ),
                     SizedBox(
-                      height: 40,
+                      height: 20,
                     ),
                     InkWell(
                       onTap: () {

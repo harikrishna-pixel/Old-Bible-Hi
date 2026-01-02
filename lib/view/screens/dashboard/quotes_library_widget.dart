@@ -25,13 +25,7 @@ class QuotesLibraryWidget extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'No Quotes saved',
-                  style: CommanStyle.appBarStyle(context),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
+
                 InkWell(
                   onTap: () {
                     // Navigator.push(context, MaterialPageRoute(builder: (context) => );
@@ -41,22 +35,10 @@ class QuotesLibraryWidget extends HookConsumerWidget {
                   },
                   child: Column(
                     children: [
-                      Container(
-                          padding: const EdgeInsets.all(8),
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                                  color:
-                                      CommanColor.lightDarkPrimary300(context),
-                                  width: 1.2),
-                              borderRadius: BorderRadius.circular(3)),
-                          child: Image.asset(
-                            Images.quote,
-                            height: 25,
-                            width: 15,
-                            color: CommanColor.lightDarkPrimary300(context),
-                          )),
+                      Image.asset(
+                        Images.quotesPlaceHolder(context),
+                        height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),
+                      ),
                       const SizedBox(
                         height: 15,
                       ),
@@ -65,6 +47,14 @@ class QuotesLibraryWidget extends HookConsumerWidget {
                     ],
                   ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  'No Quotes saved',
+                  style: CommanStyle.appBarStyle(context),
+                ),
+
                 SizedBox(
                   height: 20,
                 ),
