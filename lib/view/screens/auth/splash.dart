@@ -1071,10 +1071,17 @@ class _SplashScreenState extends State<SplashScreen> {
             alignment: Alignment.center,
             children: [
               Center(
-                child: Image.asset(
-                  "assets/Icon-1024.png",
+                child: Container(
                   height: 220,
                   width: 220,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/Icon-1024.png"),
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.white,
+                  ),
+
                 ),
               ),
               Positioned(
