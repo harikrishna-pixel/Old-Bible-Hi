@@ -93,7 +93,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
   Future<void> loadIconNames() async {
     final dbClient = await DBHelper().db;
     final dailyVersesMainData =
-        await dbClient?.rawQuery("SELECT * FROM dailyVersesMainList");
+    await dbClient?.rawQuery("SELECT * FROM dailyVersesMainList");
 
     // Build the map from Category_Name
     final Map<String, String> categoryIcons = {};
@@ -401,7 +401,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
       // Define file paths
       final file1 = File('${directory.path}/$foldername-extracted/book.json');
       final file2 =
-          File('${directory.path}/$foldername-extracted/verse_json.json');
+      File('${directory.path}/$foldername-extracted/verse_json.json');
 
       // Check and delete file1
       if (await file1.exists()) {
@@ -442,70 +442,70 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.themeMode == ThemeMode.dark;
     final backgroundColor =
-        isDark ? CommanColor.darkPrimaryColor : themeProvider.backgroundColor;
+    isDark ? CommanColor.darkPrimaryColor : themeProvider.backgroundColor;
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         color: Provider.of<ThemeProvider>(context).currentCustomTheme ==
-                AppCustomTheme.vintage
+            AppCustomTheme.vintage
             ? null
             : backgroundColor,
         decoration: Provider.of<ThemeProvider>(context).currentCustomTheme ==
-                AppCustomTheme.vintage
+            AppCustomTheme.vintage
             ? BoxDecoration(
-                color: backgroundColor,
-                image: DecorationImage(
-                    image: AssetImage(Images.bgImage(context)),
-                    fit: BoxFit.fill))
+            color: backgroundColor,
+            image: DecorationImage(
+                image: AssetImage(Images.bgImage(context)),
+                fit: BoxFit.fill))
             : null,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const SizedBox(
                 height: 10,
               ),
               widget.isSetting == true
                   ? Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            // checknotification();
-                            Navigator.of(context).pop();
-                          },
-                          child: Icon(
-                            Icons.arrow_back_ios,
-                            size: screenWidth > 600 ? 29 : 20,
-                            color: CommanColor.whiteBlack(context),
-                          ),
-                        ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(right: 15.0),
-                        //   child: Text("Change Preferences",
-                        //       style: CommanStyle.appBarStyle(context).copyWith(
-                        //           fontSize: screenWidth > 600
-                        //               ? BibleInfo.fontSizeScale * 21
-                        //               : BibleInfo.fontSizeScale * 18)),
-                        // ),
-                        const SizedBox(),
-                        const SizedBox()
-                      ],
-                    )
-                  : InkWell(
-                      onTap: () {
-                        // checknotification();
-                        Navigator.of(context).pop();
-                      },
-                      child: Icon(
-                        Icons.arrow_back_ios,
-                        size: screenWidth > 600 ? 29 : 20,
-                        color: CommanColor.whiteBlack(context),
-                      ),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      // checknotification();
+                      Navigator.of(context).pop();
+                    },
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      size: screenWidth > 600 ? 29 : 20,
+                      color: CommanColor.whiteBlack(context),
                     ),
+                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(right: 15.0),
+                  //   child: Text("Change Preferences",
+                  //       style: CommanStyle.appBarStyle(context).copyWith(
+                  //           fontSize: screenWidth > 600
+                  //               ? BibleInfo.fontSizeScale * 21
+                  //               : BibleInfo.fontSizeScale * 18)),
+                  // ),
+                  const SizedBox(),
+                  const SizedBox()
+                ],
+              )
+                  : InkWell(
+                onTap: () {
+                  // checknotification();
+                  Navigator.of(context).pop();
+                },
+                child: Icon(
+                  Icons.arrow_back_ios,
+                  size: screenWidth > 600 ? 29 : 20,
+                  color: CommanColor.whiteBlack(context),
+                ),
+              ),
               const SizedBox(
                 height: 20,
               ),
@@ -548,7 +548,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                               // Border stroke color: 9E9E9E in light mode, lighter grey in dark mode for visibility
                               color: isDark
                                   ? Colors.grey.shade400
-                                  : const Color(0xFF9E9E9E),
+                                  : const Color(0xFF805531),
                               width: selected
                                   ? 2.0
                                   : 1.0, // Increase thickness when selected
@@ -564,20 +564,20 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                   // Theme color (805531) when selected in light mode, white when selected in dark mode
                                   selected
                                       ? (isDark
-                                          ? Colors.white
-                                          : const Color(0xFF805531))
+                                      ? Colors.white
+                                      : const Color(0xFF805531))
                                       : (isDark
-                                          ? CommanColor.whiteBlack(context)
-                                          : const Color(0xFF805531)),
+                                      ? CommanColor.whiteBlack(context)
+                                      : const Color(0xFF805531)),
                                   BlendMode.srcIn,
                                 ),
                                 child: Image.asset(
                                   _getIconPath(
                                       category.key,
                                       Provider.of<ThemeProvider>(context,
-                                                      listen: false)
-                                                  .themeMode ==
-                                              ThemeMode.dark
+                                          listen: false)
+                                          .themeMode ==
+                                          ThemeMode.dark
                                           ? !selected
                                           : selected),
                                   width: screenWidth > 600 ? 40 : 20,
@@ -593,11 +593,11 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                                   // Theme color (805531) when selected in light mode, white when selected in dark mode
                                   color: selected
                                       ? (isDark
-                                          ? Colors.white
-                                          : const Color(0xFF805531))
+                                      ? Colors.white
+                                      : const Color(0xFF805531))
                                       : (isDark
-                                          ? CommanColor.whiteBlack(context)
-                                          : const Color(0xFF805531)),
+                                      ? CommanColor.whiteBlack(context)
+                                      : const Color(0xFF805531)),
                                 ),
                               ),
                             ],
@@ -613,210 +613,219 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                 onTap: isLoading
                     ? null
                     : _selectedCategories.isNotEmpty
-                        ? () async {
-                            debugPrint("dailyVersesnew 1");
-                            if (widget.isSetting == true) {
-                              debugPrint("dailyVersesnew 2");
-                              setState(() {
-                                isLoading = true;
-                              });
-                              _savePreferences();
-                              await Future.delayed(Duration(seconds: 1));
-                              Constants.showToast("Saved successfully");
-                              setState(() {
-                                isLoading = false;
-                              });
-                              if (widget.from == true) {
-                                Get.offAll(() => HomeScreen(
-                                      From: "home",
-                                      selectedVerseNumForRead: "",
-                                      selectedBookForRead: "",
-                                      selectedChapterForRead: "",
-                                      selectedBookNameForRead: "",
-                                      selectedVerseForRead: "",
-                                    ));
-                              } else {
-                                Get.back();
-                              }
+                    ? () async {
+                  debugPrint("dailyVersesnew 1");
+                  if (widget.isSetting == true) {
+                    debugPrint("dailyVersesnew 2");
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _savePreferences();
+                    await Future.delayed(Duration(seconds: 1));
+                    Constants.showToast("Saved successfully");
+                    setState(() {
+                      isLoading = false;
+                    });
+                    if (widget.from == true) {
+                      Get.offAll(() => HomeScreen(
+                        From: "home",
+                        selectedVerseNumForRead: "",
+                        selectedBookForRead: "",
+                        selectedChapterForRead: "",
+                        selectedBookNameForRead: "",
+                        selectedVerseForRead: "",
+                      ));
+                    } else {
+                      Get.back();
+                    }
+                  } else {
+                    if (widget.selectedbible != null &&
+                        widget.selectedbible!.isNotEmpty) {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      FaithJourneyDialog.showLoadingDialog(context);
+                      debugPrint(
+                          "folders leng - ${BibleInfo.folders.length}");
+                      if (BibleInfo.folders.length == 1) {
+                        await extractFromFolder(
+                          folderName: BibleInfo.folders.first,
+                          password: dotenv
+                              .env[AssetsConstants.holybibleKey]
+                              .toString(),
+                        );
+
+                        await loadBookContent(
+                            BibleInfo.folders.first);
+                        await loadBookList(BibleInfo.folders.first);
+                        // await loadDailyVerseData();
+                        await _savePreferences();
+                        await DBHelper().db.then((db) async {
+                          if (db != null) {
+                            final result = await db.rawQuery(
+                              "SELECT * FROM book WHERE book_num = ?",
+                              [int.parse("0")],
+                            );
+
+                            if (result.isNotEmpty &&
+                                result[0]["title"] != null) {
+                              final title =
+                              result[0]["title"].toString();
+                              // final data =
+                              //     await SharPreferences.getString(
+                              //           SharPreferences.selectedBook,
+                              //         ) ??
+                              //         "";
+                              // if (data.isEmpty) {
+                              await SharPreferences.setString(
+                                SharPreferences.selectedBook,
+                                title,
+                              );
+                              // }
                             } else {
-                              if (widget.selectedbible != null &&
-                                  widget.selectedbible!.isNotEmpty) {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                FaithJourneyDialog.showLoadingDialog(context);
-                                debugPrint(
-                                    "folders leng - ${BibleInfo.folders.length}");
-                                if (BibleInfo.folders.length == 1) {
-                                  await extractFromFolder(
-                                    folderName: BibleInfo.folders.first,
-                                    password: dotenv
-                                        .env[AssetsConstants.holybibleKey]
-                                        .toString(),
-                                  );
-
-                                  await loadBookContent(
-                                      BibleInfo.folders.first);
-                                  await loadBookList(BibleInfo.folders.first);
-                                  // await loadDailyVerseData();
-                                  await _savePreferences();
-                                  await DBHelper().db.then((db) async {
-                                    if (db != null) {
-                                      final result = await db.rawQuery(
-                                        "SELECT * FROM book WHERE book_num = ?",
-                                        [int.parse("0")],
-                                      );
-
-                                      if (result.isNotEmpty &&
-                                          result[0]["title"] != null) {
-                                        final title =
-                                            result[0]["title"].toString();
-                                        // final data =
-                                        //     await SharPreferences.getString(
-                                        //           SharPreferences.selectedBook,
-                                        //         ) ??
-                                        //         "";
-                                        // if (data.isEmpty) {
-                                        await SharPreferences.setString(
-                                          SharPreferences.selectedBook,
-                                          title,
-                                        );
-                                        // }
-                                      } else {
-                                        debugPrint(
-                                            "testapp No book found with book_num = 0");
-                                      }
-                                    } else {
-                                      debugPrint(
-                                          "testapp Database instance is null");
-                                    }
-                                  });
-                                  await deleteFiles(BibleInfo.folders.first);
-                                  await Future.delayed(Duration(seconds: 2));
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  Navigator.pop(context); // Close loading
-                                  FaithJourneyDialog.showSuccessDialog(context,
-                                      isFromOnboarding: !widget.isSetting);
-                                } else {
-                                  await loadBookContent(widget.selectedbible);
-                                  await loadBookList(widget.selectedbible);
-                                  // await loadDailyVerseData();
-                                  await _savePreferences();
-                                  await DBHelper().db.then((db) async {
-                                    if (db != null) {
-                                      final result = await db.rawQuery(
-                                        "SELECT * FROM book WHERE book_num = ?",
-                                        [int.parse("0")],
-                                      );
-
-                                      if (result.isNotEmpty &&
-                                          result[0]["title"] != null) {
-                                        final title =
-                                            result[0]["title"].toString();
-                                        // final data =
-                                        //     await SharPreferences.getString(
-                                        //           SharPreferences.selectedBook,
-                                        //         ) ??
-                                        //         "";
-                                        // if (data.isEmpty) {
-                                        await SharPreferences.setString(
-                                          SharPreferences.selectedBook,
-                                          title,
-                                        );
-                                        // }
-                                      } else {
-                                        debugPrint(
-                                            "testapp No book found with book_num = 0");
-                                      }
-                                    } else {
-                                      debugPrint(
-                                          "testapp Database instance is null");
-                                    }
-                                  });
-                                  await deleteFiles(widget.selectedbible);
-                                  await Future.delayed(Duration(seconds: 2));
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  Navigator.pop(context); // Close loading
-                                  FaithJourneyDialog.showSuccessDialog(context,
-                                      isFromOnboarding: !widget.isSetting);
-                                }
-                                // Get.offAll(() => HomeScreen(
-                                //       From: "splash",
-                                //       selectedVerseNumForRead: "",
-                                //       selectedBookForRead: "",
-                                //       selectedChapterForRead: "",
-                                //       selectedBookNameForRead: "",
-                                //       selectedVerseForRead: "",
-                                //     ));
-                              }
+                              debugPrint(
+                                  "testapp No book found with book_num = 0");
                             }
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   const SnackBar(
-                            //     backgroundColor: CommanColor.darkPrimaryColor,
-                            //     content: Text(
-                            //       'Preferences saved!',
-                            //       style: TextStyle(color: CommanColor.white),
-                            //     ),
-                            //   ),
-                            // );
+                          } else {
+                            debugPrint(
+                                "testapp Database instance is null");
                           }
-                        : null,
+                        });
+                        await deleteFiles(BibleInfo.folders.first);
+                        await Future.delayed(Duration(seconds: 2));
+                        setState(() {
+                          isLoading = false;
+                        });
+                        Navigator.pop(context); // Close loading
+                        FaithJourneyDialog.showSuccessDialog(context,
+                            isFromOnboarding: !widget.isSetting);
+                      } else {
+                        await loadBookContent(widget.selectedbible);
+                        await loadBookList(widget.selectedbible);
+                        // await loadDailyVerseData();
+                        await _savePreferences();
+                        await DBHelper().db.then((db) async {
+                          if (db != null) {
+                            final result = await db.rawQuery(
+                              "SELECT * FROM book WHERE book_num = ?",
+                              [int.parse("0")],
+                            );
+
+                            if (result.isNotEmpty &&
+                                result[0]["title"] != null) {
+                              final title =
+                              result[0]["title"].toString();
+                              // final data =
+                              //     await SharPreferences.getString(
+                              //           SharPreferences.selectedBook,
+                              //         ) ??
+                              //         "";
+                              // if (data.isEmpty) {
+                              await SharPreferences.setString(
+                                SharPreferences.selectedBook,
+                                title,
+                              );
+                              // }
+                            } else {
+                              debugPrint(
+                                  "testapp No book found with book_num = 0");
+                            }
+                          } else {
+                            debugPrint(
+                                "testapp Database instance is null");
+                          }
+                        });
+                        await deleteFiles(widget.selectedbible);
+                        await Future.delayed(Duration(seconds: 2));
+                        setState(() {
+                          isLoading = false;
+                        });
+                        Navigator.pop(context); // Close loading
+                        FaithJourneyDialog.showSuccessDialog(context,
+                            isFromOnboarding: !widget.isSetting);
+                      }
+                      // Get.offAll(() => HomeScreen(
+                      //       From: "splash",
+                      //       selectedVerseNumForRead: "",
+                      //       selectedBookForRead: "",
+                      //       selectedChapterForRead: "",
+                      //       selectedBookNameForRead: "",
+                      //       selectedVerseForRead: "",
+                      //     ));
+                    }
+                  }
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(
+                  //     backgroundColor: CommanColor.darkPrimaryColor,
+                  //     content: Text(
+                  //       'Preferences saved!',
+                  //       style: TextStyle(color: CommanColor.white),
+                  //     ),
+                  //   ),
+                  // );
+                }
+                    : null,
                 child: Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(9),
-                    child: Container(
-                      width: screenWidth > 600 ? 130 : 100,
-                      height: screenWidth > 600 ? 65 : 40,
-                      decoration: BoxDecoration(
+                  child: Container(
+                    width: screenWidth > 600 ? 160 : 130,
+                    height: screenWidth > 600 ? 65 : 40,
+                    decoration: BoxDecoration(
                         gradient: _selectedCategories.isNotEmpty
                             ? (Provider.of<ThemeProvider>(context,
-                                            listen: false)
-                                        .themeMode ==
-                                    ThemeMode.dark
-                                ? null
-                                : const LinearGradient(
-                                    colors: [
-                                      Color(0xFF763201),
-                                      Color(0xFFD5821F),
-                                      Color(0xFFAD4D08),
-                                      Color(0xFF763201),
-                                    ],
-                                  ))
+                            listen: false)
+                            .themeMode ==
+                            ThemeMode.dark
+                            ? null
+                            : const LinearGradient(
+                          colors: [
+                            Color(0xFF763201),
+                            Color(0xFFD5821F),
+                            Color(0xFF763201),
+                          ],
+                        ))
                             : null,
                         color: _selectedCategories.isNotEmpty
                             ? (Provider.of<ThemeProvider>(context,
-                                            listen: false)
-                                        .themeMode ==
-                                    ThemeMode.dark
-                                ? CommanColor.backgrondcolor
-                                : null)
-                            : Colors.grey,
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                      child: Center(
-                        child: Text(
+                            listen: false)
+                            .themeMode ==
+                            ThemeMode.dark
+                            ? CommanColor.backgrondcolor
+                            : null)
+                            : Color(0XFFC9B7A5),
+                        borderRadius: BorderRadius.circular(9) // Brown color
+                    ),
+                    // onPressed: _selectedCategories.length == 4
+                    //     ? () {
+                    //         _savePreferences();
+                    //         ScaffoldMessenger.of(context).showSnackBar(
+                    //           const SnackBar(
+                    //             content: Text('Preferences saved!'),
+                    //           ),
+                    //         );
+                    //       }
+                    //     : null,
+                    // style: ElevatedButton.styleFrom(
+                    //   backgroundColor: const Color(0xFF8B5E3C),
+                    //   padding: const EdgeInsets.symmetric(
+                    //       horizontal: 40, vertical: 12),
+                    // ),
+                    child: Center(
+                      child: Text(
                           isLoading
                               ? "Loading..."
                               : widget.isSetting == true
-                                  ? "Save"
-                                  : "Continue",
+                              ? "Save"
+                              : "Continue",
                           style: TextStyle(
-                            fontSize: screenWidth > 600 ? 20 : 17,
-                            color: _selectedCategories.isNotEmpty
-                                ? Provider.of<ThemeProvider>(context,
-                                                listen: false)
-                                            .themeMode ==
-                                        ThemeMode.dark
-                                    ? CommanColor.darkPrimaryColor
-                                    : CommanColor.white
-                                : null,
-                          ),
-                        ),
-                      ),
+                              fontSize: screenWidth > 600 ? 20 : 17,
+                              color: _selectedCategories.isNotEmpty
+                                  ? Provider.of<ThemeProvider>(context,
+                                  listen: false)
+                                  .themeMode ==
+                                  ThemeMode.dark
+                                  ? CommanColor.darkPrimaryColor
+                                  : CommanColor.white
+                                  : null)),
                     ),
                   ),
                 ),
@@ -826,18 +835,18 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
               ),
               widget.isSetting != true
                   ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "You can change these anytime in Settings.",
-                          style: TextStyle(
-                              color: CommanColor.whiteBlack(context),
-                              fontSize: screenWidth > 600 ? 21 : 16,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w400),
-                        ),
-                      ],
-                    )
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "You can change these anytime in Settings.",
+                    style: TextStyle(
+                        color: CommanColor.whiteBlack(context),
+                        fontSize: screenWidth > 600 ? 21 : 16,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ],
+              )
                   : SizedBox(),
               const SizedBox(height: 16),
             ]),
@@ -849,8 +858,8 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
 
   Future<void> extractFromFolder(
       {String? from,
-      required String folderName,
-      required String password}) async {
+        required String folderName,
+        required String password}) async {
     // if (from.toString() != "home") {
     //   setState(() {
     //     buttonStates[folderName] = DownloadButtonState.downloading;
@@ -929,9 +938,9 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
 
     // Load json and parse
     final String dailyVerseResponse =
-        await rootBundle.loadString('assets/jsonFile/dailyVerse.json');
+    await rootBundle.loadString('assets/jsonFile/dailyVerse.json');
     final List<DailyVersesMainListModel> dataList =
-        await compute(parseDailyVerseJsond, dailyVerseResponse);
+    await compute(parseDailyVerseJsond, dailyVerseResponse);
 
     setState(() {
       dailyVerseDataList = dataList;
@@ -966,8 +975,8 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
 
       final selectedVerse = await db.rawQuery(
         "SELECT * FROM verse WHERE book_num ='${int.parse(m["Book_Id"].toString()) - 1}' "
-        "AND chapter_num ='${int.parse(m["Chapter"].toString()) - 1}' "
-        "AND verse_num ='$verseNum'",
+            "AND chapter_num ='${int.parse(m["Chapter"].toString()) - 1}' "
+            "AND verse_num ='$verseNum'",
       );
 
       if (selectedVerse.isNotEmpty) {
@@ -981,7 +990,7 @@ class PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
             "Book_Id": m["Book_Id"],
             "Chapter": m["Chapter"],
             "Verse": selectedVerse[0]
-                ["content"], // ✅ Only Verse content inserted
+            ["content"], // ✅ Only Verse content inserted
             "Date": "$date",
             "Verse_Num": m["Verse"].toString().length == 2
                 ? int.parse(m["Verse"].toString())
@@ -1068,7 +1077,7 @@ Future<List<VerseBookContentModel>> _parseVerseContent(
   return List.from(data)
       .map<VerseBookContentModel>(
         (item) => VerseBookContentModel.fromJson(item),
-      )
+  )
       .toList();
 }
 
@@ -1120,8 +1129,8 @@ class FaithJourneyDialog {
                     fontSize: screenWidth < 380
                         ? 12
                         : isTablet
-                            ? 16
-                            : 14,
+                        ? 16
+                        : 14,
                     color: CommanColor.black,
                   ),
                 ),
@@ -1177,107 +1186,79 @@ class FaithJourneyDialog {
                     fontSize: screenWidth < 380
                         ? 12.5
                         : isTablet
-                            ? 16
-                            : 14.7,
+                        ? 16
+                        : 14.7,
                     color: CommanColor.black,
                   ),
                 ),
                 SizedBox(height: 20),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop(); // Close dialog
+                    if (isFromOnboarding) {
+                      final sixMonthPlan =
+                          await SharPreferences.getString('sixMonthPlan') ??
+                              BibleInfo.sixMonthPlanid;
+                      final oneYearPlan =
+                          await SharPreferences.getString('oneYearPlan') ??
+                              BibleInfo.oneYearPlanid;
+                      final lifeTimePlan =
+                          await SharPreferences.getString('lifeTimePlan') ??
+                              BibleInfo.lifeTimePlanid;
+                      Get.offAll(() => SubscriptionScreen(
+                        sixMonthPlan: sixMonthPlan,
+                        oneYearPlan: oneYearPlan,
+                        lifeTimePlan: lifeTimePlan,
+                        checkad: 'onboard',
+                      ));
+                    } else {
+                      Get.offAll(() => HomeScreen(
+                        From: "splash",
+                        selectedVerseNumForRead: "",
+                        selectedBookForRead: "",
+                        selectedChapterForRead: "",
+                        selectedBookNameForRead: "",
+                        selectedVerseForRead: "",
+                      ));
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero, // REQUIRED
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
                         colors: [
                           Color(0xFF763201),
                           Color(0xFFD5821F),
-                          Color(0xFFAD4D08),
                           Color(0xFF763201),
                         ],
-                      ),
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () async {
-                          Navigator.of(ctx).pop(); // Close dialog
-                          if (isFromOnboarding) {
-                            // Navigate to paywall screen after onboarding preference selection
-                            // Use constants as fallback when SharedPreferences are empty (first time loading)
-                            final sixMonthPlan =
-                                await SharPreferences.getString(
-                                        'sixMonthPlan') ??
-                                    BibleInfo.sixMonthPlanid;
-                            final oneYearPlan = await SharPreferences.getString(
-                                    'oneYearPlan') ??
-                                BibleInfo.oneYearPlanid;
-                            final lifeTimePlan =
-                                await SharPreferences.getString(
-                                        'lifeTimePlan') ??
-                                    BibleInfo.lifeTimePlanid;
-                            Get.offAll(() => SubscriptionScreen(
-                                  sixMonthPlan: sixMonthPlan,
-                                  oneYearPlan: oneYearPlan,
-                                  lifeTimePlan: lifeTimePlan,
-                                  checkad: 'onboard',
-                                ));
-                          } else {
-                            Get.offAll(() => HomeScreen(
-                                  From: "splash",
-                                  selectedVerseNumForRead: "",
-                                  selectedBookForRead: "",
-                                  selectedChapterForRead: "",
-                                  selectedBookNameForRead: "",
-                                  selectedVerseForRead: "",
-                                ));
-                          }
 
-                          // final sixMonthPlan =
-                          //     await SharPreferences.getString('sixMonthPlan') ?? '';
-                          // final oneYearPlan =
-                          //     await SharPreferences.getString('oneYearPlan') ?? '';
-                          // final lifeTimePlan =
-                          //     await SharPreferences.getString('lifeTimePlan') ?? "";
-                          //
-                          // final iapdatacheck =
-                          //     await SharPreferences.getString('Iapdatacheck') ?? "";
-                          //
-                          // if (iapdatacheck.isNotEmpty) {
-                          //   return Get.to(() => SubscriptionScreen(
-                          //         sixMonthPlan: sixMonthPlan,
-                          //         oneYearPlan: oneYearPlan,
-                          //         lifeTimePlan: lifeTimePlan,
-                          //         checkad: 'home',
-                          //       ));
-                          // } else {
-                          //   Get.offAll(() => HomeScreen(
-                          //         From: "home",
-                          //         selectedVerseNumForRead: "",
-                          //         selectedBookForRead: "",
-                          //         selectedChapterForRead: "",
-                          //         selectedBookNameForRead: "",
-                          //         selectedVerseForRead: "",
-                          //       ));
-                          // }
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isTablet ? 40 : 24,
-                            vertical: isTablet ? 16 : 12,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Start now",
-                            style: TextStyle(
-                              fontSize: isTablet ? 18 : 14,
-                              color: Colors.white,
-                            ),
-                          ),
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 40 : 24,
+                        vertical: isTablet ? 16 : 12,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Start now",
+                        style: TextStyle(
+                          fontSize: isTablet ? 18 : 14,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
                 ),
+
               ],
             ),
           ),
@@ -1359,7 +1340,7 @@ class _SpinnerPainter extends CustomPainter {
 
     for (int i = 0; i < segmentCount; i++) {
       final double opacity =
-          ((i / segmentCount + progress) % 1.0).clamp(0.2, 1.0);
+      ((i / segmentCount + (1.0 - progress)) % 1.0).clamp(0.2, 1.0);
       paint.color = color.withValues(alpha: opacity);
 
       final x1 = radius + radius * 0.6 * math.cos(angle * i);

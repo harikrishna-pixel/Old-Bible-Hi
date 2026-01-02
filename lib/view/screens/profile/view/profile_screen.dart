@@ -234,8 +234,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           title: "Underline"),
       LibraryStatusModel(
           count: notesCount,
-          leading: Icon(Icons.sticky_note_2_sharp,
-              size: 32, color: CommanColor.whiteBlack(context)),
+          leading: Image.asset("assets/dark_modes/stickynote.png",height: 32, color: CommanColor.whiteBlack(context)),
           title: "Notes"),
       LibraryStatusModel(
           count: imageCount,

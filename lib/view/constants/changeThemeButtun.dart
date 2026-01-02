@@ -19,7 +19,7 @@ class ChangeThemeButtonWidget extends StatelessWidget {
             pre.setTheme("light");
           },
           child: Image.asset(
-            "assets/nightMode/icons/NightModeMoon.png",
+            "assets/dark_modes/Dark mode.png",
             height: screenWidth > 450 ? 30 : 20,
             width: screenWidth > 450 ? 34 : 24,
           ));
@@ -30,7 +30,7 @@ class ChangeThemeButtonWidget extends StatelessWidget {
             provider.toggleTheme(true);
             pre.setTheme("dark");
           },
-          child: Image.asset("assets/lightMode/icons/dayModeMoon.png",
+          child: Image.asset("assets/light_modes/Light mode.png",
               height: screenWidth > 450 ? 30 : 20,
               width: screenWidth > 450 ? 34 : 24));
     }

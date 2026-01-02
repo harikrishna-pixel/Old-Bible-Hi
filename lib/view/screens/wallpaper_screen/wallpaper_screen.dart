@@ -76,7 +76,7 @@ class WallpaperScreen extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                Text("Wallpapers", style: CommanStyle.appBarStyle(context)),
+                Text(" Wallpapers", style: CommanStyle.appBarStyle(context)),
                 const SizedBox(width: 20)
               ],
             ),

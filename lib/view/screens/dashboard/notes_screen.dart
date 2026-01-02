@@ -1232,16 +1232,16 @@ class _NotesScreenState extends State<NotesScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(Images.notesPlaceHolder(context),
-                          height: 220, width: 220),
+                        height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),),
                       SizedBox(
-                        height: 30,
+                        height: 20,
                       ),
                       Text(
                         "No relevant content",
                         style: CommanStyle.placeholderText(context),
                       ),
                       SizedBox(
-                        height: 50,
+                        height: 20,
                       ),
                       InkWell(
                         onTap: () {

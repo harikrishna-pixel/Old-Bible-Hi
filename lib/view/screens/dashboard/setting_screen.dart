@@ -1414,7 +1414,7 @@ class _SettingScreenState extends State<SettingScreen>
                       // Check actual internet access (not just network interface)
                       // This is more reliable than Connectivity() which can give false negatives
                       final hasInternet = await InternetConnection().hasInternetAccess;
-                      
+
                       // Only show toast if actually offline - don't show when online
                       if (!hasInternet) {
                         Constants.showToast('Check Your Internet Connection');
@@ -1833,7 +1833,7 @@ class _SettingScreenState extends State<SettingScreen>
     final screenWidth = MediaQuery.of(context).size.width;
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final oldPaperColor = themeProvider.backgroundColor; // Get old paper theme color (Color(0xFFF3E5C2))
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1912,7 +1912,7 @@ class _SettingScreenState extends State<SettingScreen>
                           final oneYearPlan = await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
                           final lifeTimePlan = await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
                           Get.to(
-                            () => SubscriptionScreen(
+                                () => SubscriptionScreen(
                               sixMonthPlan: sixMonthPlan,
                               oneYearPlan: oneYearPlan,
                               lifeTimePlan: lifeTimePlan,
@@ -2113,9 +2113,9 @@ class NotifyMeDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              "Notify Me At...",
+              "Choose Your Daily Verse Time",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
@@ -2123,7 +2123,7 @@ class NotifyMeDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              "Set your favorite time to receive\nGod's Word and grow in faith!",
+              "Select the time you’d like to receive the Verse of the Day and stay connected with God’s Word",
               style: TextStyle(fontSize: 16, color: Colors.black),
               textAlign: TextAlign.center,
             ),
@@ -2137,8 +2137,8 @@ class NotifyMeDialog extends StatelessWidget {
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text("Okay",
-                    style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: Text("Set Reminder Time",
+                    style: TextStyle(fontSize: 15, color: Colors.white)),
               ),
             )
           ],
@@ -2269,10 +2269,13 @@ class _ThemeDialogState extends State<ThemeDialog> {
                   // Check subscription before setting theme
                   final downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
                   final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
-                  final isSubscribed = subscriptionPlan != null && 
-                                      subscriptionPlan.isNotEmpty && 
-                                      ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
-                  
+                  final hasSubscriptionPlan = subscriptionPlan != null &&
+                      subscriptionPlan.isNotEmpty &&
+                      ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
+                  // Also check if ads are disabled, which indicates premium access
+                  final adsDisabled = !downloadProvider.adEnabled;
+                  final isSubscribed = hasSubscriptionPlan || adsDisabled;
+
                   if (!isSubscribed) {
                     // Close theme dialog and show premium dialog
                     Navigator.pop(context);

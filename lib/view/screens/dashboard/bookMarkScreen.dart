@@ -1370,7 +1370,8 @@ class _BookMarkScreenState extends State<BookMarkScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(Images.bookmarkPlaceHolder(context),
-                          height: 200, width: 200),
+                        height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),),
+                      SizedBox(height: 20,),
                       Text(
                         "No relevant content",
                         style: CommanStyle.placeholderText(context),

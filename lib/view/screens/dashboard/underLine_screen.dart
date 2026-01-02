@@ -1217,13 +1217,14 @@ class _UnderLineScreenState extends State<UnderLineScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(Images.underlinePlaceHolder(context),
-                          height: 200, width: 200),
+                        height: 80, width: 80,color: Colors.transparent.withOpacity(0.3),),
+                      SizedBox(height: 20,),
                       Text(
                         "No relevant content",
                         style: CommanStyle.placeholderText(context),
                       ),
                       SizedBox(
-                        height: 40,
+                        height: 20,
                       ),
                       InkWell(
                         onTap: () {
