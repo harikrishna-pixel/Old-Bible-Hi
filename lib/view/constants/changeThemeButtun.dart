@@ -1,4 +1,6 @@
+import 'package:biblebookapp/core/notifiers/download.notifier.dart';
 import 'package:biblebookapp/view/constants/theme_provider.dart';
+import 'package:biblebookapp/view/widget/home_content_edit_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,7 +15,31 @@ class ChangeThemeButtonWidget extends StatelessWidget {
     SavePreference pre = SavePreference();
     if (themeProvider.isDarkMode) {
       return InkWell(
-          onTap: () {
+          onTap: () async {
+            // Check subscription before allowing theme change
+            final downloadProvider =
+                Provider.of<DownloadProvider>(context, listen: false);
+            final subscriptionPlan =
+                await downloadProvider.getSubscriptionPlan();
+            final hasSubscriptionPlan = subscriptionPlan != null &&
+                subscriptionPlan.isNotEmpty &&
+                ['platinum', 'gold', 'silver']
+                    .contains(subscriptionPlan.toLowerCase());
+            // Also check if ads are disabled, which indicates premium access
+            final adsDisabled = !downloadProvider.adEnabled;
+            final isSubscribed = hasSubscriptionPlan || adsDisabled;
+
+            if (!isSubscribed) {
+              // Show premium popup for unsubscribed users
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const PremiumAccessDialog(),
+              );
+              return;
+            }
+
+            // User is subscribed, proceed with theme change
             final provider = Provider.of<ThemeProvider>(context, listen: false);
             provider.toggleTheme(false);
             pre.setTheme("light");
@@ -25,7 +51,31 @@ class ChangeThemeButtonWidget extends StatelessWidget {
           ));
     } else {
       return InkWell(
-          onTap: () {
+          onTap: () async {
+            // Check subscription before allowing theme change
+            final downloadProvider =
+                Provider.of<DownloadProvider>(context, listen: false);
+            final subscriptionPlan =
+                await downloadProvider.getSubscriptionPlan();
+            final hasSubscriptionPlan = subscriptionPlan != null &&
+                subscriptionPlan.isNotEmpty &&
+                ['platinum', 'gold', 'silver']
+                    .contains(subscriptionPlan.toLowerCase());
+            // Also check if ads are disabled, which indicates premium access
+            final adsDisabled = !downloadProvider.adEnabled;
+            final isSubscribed = hasSubscriptionPlan || adsDisabled;
+
+            if (!isSubscribed) {
+              // Show premium popup for unsubscribed users
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const PremiumAccessDialog(),
+              );
+              return;
+            }
+
+            // User is subscribed, proceed with theme change
             final provider = Provider.of<ThemeProvider>(context, listen: false);
             provider.toggleTheme(true);
             pre.setTheme("dark");
