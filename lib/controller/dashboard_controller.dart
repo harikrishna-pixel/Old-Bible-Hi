@@ -425,6 +425,36 @@ class DashBoardController extends GetxController with WidgetsBindingObserver {
   void _processAudioData(GetAudioModel value) {
     audioLoad.value = false;
     audioData.value = GetAudioModel(); // Reset
+    
+    // If API data is missing or bibleAudioInfo is null/empty, use constants as fallback
+    if (value.data == null || value.data?.bibleAudioInfo == null ||
+        (value.data?.bibleAudioInfo?.audioBasepath == null || 
+         value.data?.bibleAudioInfo?.audioBasepath?.isEmpty == true)) {
+      // Create fallback audio data using constants
+      final fallbackAudioInfo = GetAudioModelDataBibleAudioInfo(
+        isShowMp3Audio: BibleInfo.isShowMp3Audio,
+        audioBasepath: BibleInfo.audioBasePath,
+        audioBasepathType: BibleInfo.audioBasepathType,
+        isTextToSpeechAvailableIos: BibleInfo.isTextToSpeechAvailableIos,
+        textToSpeechLanguageCodeIos: BibleInfo.textToSpeechLanguageCodeIos,
+        textToSpeechIdentifierIos: BibleInfo.textToSpeechIdentifierIos,
+        isTextToSpeechAvailableAndroid: BibleInfo.isTextToSpeechAvailableAndroid,
+        textToSpeechLanguageCodeAndroid: BibleInfo.textToSpeechLanguageCodeAndroid,
+      );
+      
+      // Create new GetAudioModelData with fallback audio info if data is null
+      if (value.data == null) {
+        final fallbackData = GetAudioModelData();
+        fallbackData.bibleAudioInfo = fallbackAudioInfo;
+        value.data = fallbackData;
+      } else {
+        // Use fallback audio info if existing audio info is missing/invalid
+        value.data?.bibleAudioInfo = fallbackAudioInfo;
+      }
+      
+      debugPrint('Using constants fallback for Audio & Text to Speech data');
+    }
+    
     audioData.value = value;
     adsDuration.value = value.data?.adsDuration ?? '';
     audioLoad.value = true;

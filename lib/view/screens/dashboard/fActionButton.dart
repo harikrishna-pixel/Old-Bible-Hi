@@ -176,10 +176,21 @@ class floatingButtonState extends State<floatingButton>
     /// Listen to audio position
   }
 
+  // Helper method to get audio base path with constants fallback
+  String _getAudioBasePath() {
+    String? audioBasePath = widget.audioData?.data?.bibleAudioInfo?.audioBasepath;
+    // Use constants as fallback when API data is not working
+    if (audioBasePath == null || audioBasePath.isEmpty) {
+      audioBasePath = BibleInfo.audioBasePath;
+      debugPrint('Using constants fallback for audioBasePath: $audioBasePath');
+    }
+    return audioBasePath;
+  }
+
   Future setAudio() async {
     // Set release mode based on repeat flag - default to release (no loop)
-    String? audioBasePath =
-        widget.audioData?.data?.bibleAudioInfo?.audioBasepath;
+    String audioBasePath = _getAudioBasePath();
+    
     try {
       await audioPlayer.setReleaseMode(
           repeat ? ReleaseMode.loop : ReleaseMode.release);
@@ -271,6 +282,7 @@ class floatingButtonState extends State<floatingButton>
       if (mounted) {
         setState(() {
           ttsState = TtsState.stopped;
+          isSpeech = false;
         });
       }
     });
@@ -367,6 +379,7 @@ class floatingButtonState extends State<floatingButton>
       if (mounted) {
         setState(() {
           ttsState = TtsState.stopped;
+          isSpeech = false;
         });
       }
     });
@@ -496,18 +509,33 @@ class floatingButtonState extends State<floatingButton>
     if (!mounted) return;
     if (mounted && _isTtsInitialized) {
       try {
-        var result = await flutterTts.stop();
-        // Always set state to stopped after calling stop, regardless of result
+        // Stop TTS and wait for it to complete
+        await flutterTts.stop();
+        // Small delay to ensure stop completes
+        await Future.delayed(const Duration(milliseconds: 100));
+        // Always set state to stopped and clear isSpeech flag after calling stop
         if (mounted) {
-          setState(() => ttsState = TtsState.stopped);
+          setState(() {
+            ttsState = TtsState.stopped;
+            isSpeech = false;
+          });
         }
       } catch (e) {
-        // Even if there's an error, ensure state is set to stopped
+        // Even if there's an error, ensure state is set to stopped and isSpeech is cleared
         if (mounted) {
-          setState(() => ttsState = TtsState.stopped);
+          setState(() {
+            ttsState = TtsState.stopped;
+            isSpeech = false;
+          });
         }
         debugPrint("TTS stop error: $e");
       }
+    } else if (mounted) {
+      // If TTS not initialized but mounted, still clear the flags
+      setState(() {
+        ttsState = TtsState.stopped;
+        isSpeech = false;
+      });
     }
   }
 
@@ -769,24 +797,30 @@ class floatingButtonState extends State<floatingButton>
     double screenWidth = MediaQuery.of(context).size.width;
     debugPrint("sz current width - $screenWidth ");
 
-    bool isTTSEnabled = Platform.isAndroid
-        ? widget.audioData?.data?.bibleAudioInfo
-                ?.isTextToSpeechAvailableAndroid ==
-            "1"
-        : widget.audioData?.data?.bibleAudioInfo?.isTextToSpeechAvailableIos ==
-            "1";
+    // Use constants as fallback when API data is not working
+    String? ttsAvailable = Platform.isAndroid
+        ? widget.audioData?.data?.bibleAudioInfo?.isTextToSpeechAvailableAndroid
+        : widget.audioData?.data?.bibleAudioInfo?.isTextToSpeechAvailableIos;
+    
+    bool isTTSEnabled = (ttsAvailable == "1") || 
+        (ttsAvailable == null || ttsAvailable.isEmpty
+            ? (Platform.isAndroid
+                ? BibleInfo.isTextToSpeechAvailableAndroid == "1"
+                : BibleInfo.isTextToSpeechAvailableIos == "1")
+            : false);
 
-    if (widget.audioData?.data != null) {
-      SharPreferences.setBoolean(SharPreferences.isTtsActive, isTTSEnabled);
-      if (context.mounted) {
-        setState(() {
-          isPrevTTSEnabled = isTTSEnabled;
-        });
-      }
+    SharPreferences.setBoolean(SharPreferences.isTtsActive, isTTSEnabled);
+    if (context.mounted) {
+      setState(() {
+        isPrevTTSEnabled = isTTSEnabled;
+      });
     }
 
-    bool isMp3Enabled =
-        widget.audioData?.data?.bibleAudioInfo?.isShowMp3Audio == "1";
+    String? mp3Available = widget.audioData?.data?.bibleAudioInfo?.isShowMp3Audio;
+    bool isMp3Enabled = (mp3Available == "1") ||
+        (mp3Available == null || mp3Available.isEmpty
+            ? BibleInfo.isShowMp3Audio == "1"
+            : false);
     // TTS works offline, so allow it even without internet connection
     // MP3 audio requires internet, so check hasConnection for that
     if (hasConnection || isTTSEnabled) {
@@ -1176,7 +1210,7 @@ class floatingButtonState extends State<floatingButton>
                     isNext = true; // prevent duplicate triggers
                     audioChapterNum++;
                     audioBaseUrl =
-                        "${widget.audioData?.data?.bibleAudioInfo?.audioBasepath}/$audioBookNum/$audioChapterNum.mp3";
+                        "${_getAudioBasePath()}/$audioBookNum/$audioChapterNum.mp3";
                   });
                   // Update reading screen to match audio chapter - do this before loading audio
                   await updateReadingScreenChapter(audioChapterNum);
@@ -1253,7 +1287,7 @@ class floatingButtonState extends State<floatingButton>
                       audioChapterNum = 1;
                       currentBookChapterCount = nextBookChapterCount; // Update chapter count for new book
                       audioBaseUrl =
-                          "${widget.audioData?.data?.bibleAudioInfo?.audioBasepath}/$audioBookNum/$audioChapterNum.mp3";
+                          "${_getAudioBasePath()}/$audioBookNum/$audioChapterNum.mp3";
                     });
                     
                     // Update reading screen to match next book and first chapter
@@ -1522,7 +1556,7 @@ class floatingButtonState extends State<floatingButton>
                           setState(() {
                             audioChapterNum--;
                             audioBaseUrl =
-                                "${widget.audioData?.data?.bibleAudioInfo?.audioBasepath}/$audioBookNum/$audioChapterNum.mp3";
+                                "${_getAudioBasePath()}/$audioBookNum/$audioChapterNum.mp3";
                             isAudioPlaying = false;
                           });
                           // Update reading screen to match audio chapter
@@ -1636,7 +1670,7 @@ class floatingButtonState extends State<floatingButton>
                               isAudioPlaying = false;
                               audioChapterNum++;
                               audioBaseUrl =
-                                  "${widget.audioData?.data?.bibleAudioInfo?.audioBasepath}/$audioBookNum/$audioChapterNum.mp3";
+                                  "${_getAudioBasePath()}/$audioBookNum/$audioChapterNum.mp3";
                             });
                             // Update reading screen to match audio chapter
                             await updateReadingScreenChapter(audioChapterNum);

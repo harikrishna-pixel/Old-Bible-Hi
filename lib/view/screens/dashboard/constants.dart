@@ -85,4 +85,16 @@ class BibleInfo {
 
   static const double fontSizeScale = 1.0;
   static const double letterSpacing = 0.4;
+
+  // Audio & Text to Speech Constants (Fallback when API is not working)
+  static String audioBasePath =
+      "https://bibleoffice.com/BibleReplications/dev/v1/uploads/bible_audio/English/";
+  static String audioBasepathType = "3";
+  static String isShowMp3Audio = "1";
+  static String isTextToSpeechAvailableIos = "1";
+  static String isTextToSpeechAvailableAndroid = "1";
+  static String textToSpeechLanguageCodeIos = "en-US";
+  static String textToSpeechLanguageCodeAndroid = "en-US";
+  static String textToSpeechIdentifierIos = "";
+  static String textToSpeechIdentifierAndroid = "";
 }
