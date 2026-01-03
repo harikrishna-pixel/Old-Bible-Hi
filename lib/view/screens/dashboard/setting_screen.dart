@@ -1889,7 +1889,7 @@ class _SettingScreenState extends State<SettingScreen>
                     ),
                   ),
                   child: Text(
-                    'Open Settings',
+                    'Settings',
                     style: TextStyle(
                       fontSize: screenWidth < 380
                           ? 14.0

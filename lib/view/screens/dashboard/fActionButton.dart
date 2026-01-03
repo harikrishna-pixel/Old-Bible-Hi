@@ -497,11 +497,15 @@ class floatingButtonState extends State<floatingButton>
     if (mounted && _isTtsInitialized) {
       try {
         var result = await flutterTts.stop();
-        if (result == 1 && mounted) {
+        // Always set state to stopped after calling stop, regardless of result
+        if (mounted) {
           setState(() => ttsState = TtsState.stopped);
         }
       } catch (e) {
-        // Ignore errors if TTS is not available
+        // Even if there's an error, ensure state is set to stopped
+        if (mounted) {
+          setState(() => ttsState = TtsState.stopped);
+        }
         debugPrint("TTS stop error: $e");
       }
     }
@@ -796,7 +800,7 @@ class floatingButtonState extends State<floatingButton>
           ),
           child: GestureDetector(
             child: Center(
-                child: (isSpeech || ttsState == TtsState.playing) || isAudioPlaying
+                child: (isSpeech || ttsState == TtsState.playing || ttsState == TtsState.paused) || isAudioPlaying
                     ? Icon(Icons.pause,
                         size: screenWidth > 450 ? 44 : 24,
                         color: CommanColor.darkModePrimaryWhite(context))
@@ -831,10 +835,12 @@ class floatingButtonState extends State<floatingButton>
               }
               
               // Check both isSpeech flag and actual TTS state to handle cases where state is out of sync
-              if (isSpeech || ttsState == TtsState.playing) {
+              // Also check for paused state since TTS might be paused but still active
+              if (isSpeech || ttsState == TtsState.playing || ttsState == TtsState.paused) {
                 await _stop();
                 setState(() {
                   isSpeech = false;
+                  ttsState = TtsState.stopped;
                 });
               } else if (isAudioPlaying) {
                 await audioPlayer.stop();
@@ -989,7 +995,7 @@ class floatingButtonState extends State<floatingButton>
             ),
             child: GestureDetector(
               child: Center(
-                  child: (isSpeech || ttsState == TtsState.playing) || isAudioPlaying
+                  child: (isSpeech || ttsState == TtsState.playing || ttsState == TtsState.paused) || isAudioPlaying
                       ? Icon(Icons.pause,
                           size: 24,
                           color: CommanColor.darkModePrimaryWhite(context))
@@ -1022,10 +1028,12 @@ class floatingButtonState extends State<floatingButton>
                 }
                 
                 // Check both isSpeech flag and actual TTS state to handle cases where state is out of sync
-                if (isSpeech || ttsState == TtsState.playing) {
+                // Also check for paused state since TTS might be paused but still active
+                if (isSpeech || ttsState == TtsState.playing || ttsState == TtsState.paused) {
                   await _stop();
                   setState(() {
                     isSpeech = false;
+                    ttsState = TtsState.stopped;
                   });
                 } else if (isAudioPlaying) {
                   await audioPlayer.stop();
@@ -1050,7 +1058,7 @@ class floatingButtonState extends State<floatingButton>
         ),
         child: GestureDetector(
           child: Center(
-              child: (isSpeech || ttsState == TtsState.playing) || isAudioPlaying
+              child: (isSpeech || ttsState == TtsState.playing || ttsState == TtsState.paused) || isAudioPlaying
                   ? Icon(Icons.pause,
                       size: screenWidth > 450 ? 44 : 24,
                       color: CommanColor.darkModePrimaryWhite(context))

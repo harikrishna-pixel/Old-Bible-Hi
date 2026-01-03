@@ -41,6 +41,7 @@ import '../../Model/verseBookContentModel.dart';
 import '../constants/colors.dart';
 import 'package:screenshot/screenshot.dart';
 import '../constants/theme_provider.dart';
+import '../screens/intro_subcribtion_screen.dart';
 
 // Future<dynamic> homeContentEditBottomSheet(BuildContext context,
 //     {String? verNum,
@@ -3224,16 +3225,18 @@ String normalizeHtml(String htmlContent) {
   // return unescape.convert(plainText).trim().toLowerCase();
 }
 
-Future saveAndShare(Uint8List bytes, String imgname, String mesage, {BuildContext? context}) async {
+Future saveAndShare(Uint8List bytes, String imgname, String mesage,
+    {BuildContext? context}) async {
   // Check and show rating dialog on first share if context is provided
   bool ratingShown = false;
   if (context != null) {
-    ratingShown = await RatingDialogHelper.showRatingDialogOnFirstShare(context);
+    ratingShown =
+    await RatingDialogHelper.showRatingDialogOnFirstShare(context);
   }
   if (ratingShown) {
     await Future.delayed(const Duration(milliseconds: 300));
   }
-  
+
   final directory = await getApplicationDocumentsDirectory();
   final image = File("${directory.path}/$imgname.png");
   image.writeAsBytesSync(bytes);
@@ -3915,8 +3918,9 @@ Future<void> showGiftDialog(BuildContext context, GetBookOfferData data) async {
 
                         if (message.isNotEmpty) {
                           // Check and show rating dialog on first share
-                          await RatingDialogHelper.showRatingDialogOnFirstShare(context);
-                          
+                          await RatingDialogHelper.showRatingDialogOnFirstShare(
+                              context);
+
                           Share.share(message,
                               sharePositionOrigin: Rect.fromPoints(
                                   const Offset(2, 2), const Offset(3, 3)))
@@ -4049,21 +4053,23 @@ class PremiumAccessDialog extends StatelessWidget {
                 await countprovider.resetCount();
                 // Use constants as fallback when SharedPreferences are empty (first time loading)
                 final sixMonthPlan =
-                    await SharPreferences.getString('sixMonthPlan') ?? BibleInfo.sixMonthPlanid;
+                    await SharPreferences.getString('sixMonthPlan') ??
+                        BibleInfo.sixMonthPlanid;
                 final oneYearPlan =
-                    await SharPreferences.getString('oneYearPlan') ?? BibleInfo.oneYearPlanid;
+                    await SharPreferences.getString('oneYearPlan') ??
+                        BibleInfo.oneYearPlanid;
                 final lifeTimePlan =
-                    await SharPreferences.getString('lifeTimePlan') ?? BibleInfo.lifeTimePlanid;
+                    await SharPreferences.getString('lifeTimePlan') ??
+                        BibleInfo.lifeTimePlanid;
                 if (context.mounted) {
                   Navigator.pop(context);
                 }
 
-                Get.to(() => RemoveAddScreen(
+                Get.to(() => SubscriptionScreen(
                   sixMonthPlan: sixMonthPlan,
                   oneYearPlan: oneYearPlan,
                   lifeTimePlan: lifeTimePlan,
-                  onclick: () {},
-                  checkad: 'home',
+                  checkad: 'onboard',
                 ));
               },
               style: ElevatedButton.styleFrom(
@@ -4960,16 +4966,12 @@ class HomeContentEditBottomSheetState
                   .isNoted ==
                   "no"
                   ? Image.asset(
-                Provider.of<ThemeProvider>(context, listen: false).isDarkMode
-                    ? "assets/light_modes/stickynote.png"
-                    : "assets/Bookmark icons/stickynote.png",
+                "assets/Bookmark icons/stickynote.png",
                 height: screenWidth > 450 ? 60 : 50,
                 width: screenWidth > 450 ? 45 : 35,
               )
                   : Image.asset(
-                Provider.of<ThemeProvider>(context, listen: false).isDarkMode
-                    ? "assets/light_modes/stickynote.png"
-                    : "assets/Bookmark icons/stickynote-1.png",
+                "assets/Bookmark icons/stickynote-1.png",
                 height: screenWidth > 450 ? 60 : 50,
                 width: screenWidth > 450 ? 45 : 35,
               ),
@@ -5554,7 +5556,8 @@ class HomeContentEditBottomSheetState
                 await _showSuccessDialog("Reset Successfully!");
               },
               child: Image(
-                image: const AssetImage("assets/Bookmark icons/arrow-refresh-03.png"),
+                image: const AssetImage(
+                    "assets/Bookmark icons/arrow-refresh-03.png"),
                 color: CommanColor.lightDarkPrimary(context),
                 height: screenWidth > 450 ? 60 : 50,
                 width: screenWidth > 450 ? 45 : 35,
@@ -5603,7 +5606,7 @@ class HomeContentEditBottomSheetState
             if (message.isNotEmpty) {
               // Check and show rating dialog on first share
               await RatingDialogHelper.showRatingDialogOnFirstShare(context);
-              
+
               Share.share(
                 message,
                 sharePositionOrigin: Rect.fromPoints(
@@ -5642,11 +5645,12 @@ class HomeContentEditBottomSheetState
     if (!mounted) return;
 
     // Check if user is subscribed (premium user)
-    final downloadProvider = Provider.of<DownloadProvider>(context, listen: false);
+    final downloadProvider =
+    Provider.of<DownloadProvider>(context, listen: false);
     final subscriptionPlan = await downloadProvider.getSubscriptionPlan();
-    final isSubscribed = subscriptionPlan != null && 
-                         subscriptionPlan.isNotEmpty && 
-                         ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
+    final isSubscribed = subscriptionPlan != null &&
+        subscriptionPlan.isNotEmpty &&
+        ['platinum', 'gold', 'silver'].contains(subscriptionPlan.toLowerCase());
 
     // For subscribed users, show toast instead of alert dialog
     if (isSubscribed) {
@@ -5688,7 +5692,7 @@ class HomeContentEditBottomSheetState
                     return SizedBox(
                       height: 150,
                       child: Image.asset(
-                        Images.aboutPlaceHolder(context),
+                        "assets/star.png",
                         height: 150,
                         width: 150,
                         color: Colors.brown,
@@ -5699,7 +5703,7 @@ class HomeContentEditBottomSheetState
                     : SizedBox(
                   height: 150,
                   child: Image.asset(
-                    Images.aboutPlaceHolder(context),
+                    "assets/star.png",
                     height: 150,
                     width: 150,
                     color: Colors.brown,
@@ -5936,95 +5940,95 @@ class NotesBottomSheet extends StatelessWidget {
                   valueListenable: controller.notesController.value,
                   builder: (context, noteValue, _) {
                     final hasExistingNote = controller
-                            .selectedBookContent[int.parse(verNum.toString()) - 1]
-                            .isNoted !=
+                        .selectedBookContent[
+                    int.parse(verNum.toString()) - 1]
+                        .isNoted !=
                         "no";
                     final hasTypedText = noteValue.text.trim().isNotEmpty;
                     final isActive = hasExistingNote || hasTypedText;
                     final primaryColor =
-                        Provider.of<ThemeProvider>(context, listen: false)
-                                    .themeMode ==
-                                ThemeMode.dark
-                            ? CommanColor.darkPrimaryColor
-                            : CommanColor.lightModePrimary;
+                    Provider.of<ThemeProvider>(context, listen: false)
+                        .themeMode ==
+                        ThemeMode.dark
+                        ? CommanColor.darkPrimaryColor
+                        : CommanColor.lightModePrimary;
 
                     return SizedBox(
-                  width: 100,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      FocusScope.of(context).unfocus();
-                      try {
-                        await SharPreferences.setString('OpenAd', '1');
-                        if (controller.adFree.value == false) {
+                      width: 100,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          FocusScope.of(context).unfocus();
+                          try {
+                            await SharPreferences.setString('OpenAd', '1');
+                            if (controller.adFree.value == false) {
                               final countprovider =
-                                  Provider.of<DownloadProvider>(context,
-                              listen: false);
-                          await countprovider.decrementCount(context);
-                        }
-                        final bookmarkProvider =
-                        Provider.of<HomeContentEditProvider>(context,
-                            listen: false);
-                        await bookmarkProvider.toggleNote(
-                          verseData: controller.selectedBookContent[
-                          int.parse(verNum.toString()) - 1],
+                              Provider.of<DownloadProvider>(context,
+                                  listen: false);
+                              await countprovider.decrementCount(context);
+                            }
+                            final bookmarkProvider =
+                            Provider.of<HomeContentEditProvider>(context,
+                                listen: false);
+                            await bookmarkProvider.toggleNote(
+                              verseData: controller.selectedBookContent[
+                              int.parse(verNum.toString()) - 1],
                               noteContent:
-                                  controller.notesController.value.text,
-                          verseId: int.parse(verseBookdata!.id.toString()),
-                          noteModel: SaveNotesModel(
-                                bookNum: int.parse(controller.selectedBookNum.value
+                              controller.notesController.value.text,
+                              verseId: int.parse(verseBookdata!.id.toString()),
+                              noteModel: SaveNotesModel(
+                                bookNum: int.parse(controller
+                                    .selectedBookNum.value
                                     .toString()),
-                            chapterNum: int.parse(
-                                controller.selectedChapter.value.toString()),
-                                content:
-                                    controller.printText.value.toString(),
-                            plaincontent: verseBookdata!.id.toString(),
+                                chapterNum: int.parse(controller
+                                    .selectedChapter.value
+                                    .toString()),
+                                content: controller.printText.value.toString(),
+                                plaincontent: verseBookdata!.id.toString(),
                                 bookName:
-                                    controller.selectedBook.value.toString(),
-                            notes: controller.notesController.value.text,
-                            timestamp: DateTime.now().toString(),
-                            verseNum: int.parse(verNum.toString()),
-                          ),
-                          updateVerseCallback: (updated) {
-                            controller.selectedBookContent[
-                                        int.parse(verNum.toString()) - 1] =
-                                    updated;
-                          },
-                          context: context,
-                          onSuccess: () {
-                            Constants.showToast(controller
-                                .selectedBookContent[
-                            int.parse(verNum.toString()) - 1]
-                                .isNoted ==
-                                "no"
-                                ? "Notes added Successfully"
-                                : "Update notes successfully");
-                            Navigator.of(context).pop(true);
-                            controller.notesController.value.clear();
-                          },
-                          onDelete: () {
-                            // This won't be called for save/update, only for delete
-                          },
-                        );
-                      } catch (e) {
-                        DebugConsole.log("note error - $e");
-                      }
-                    },
-                    style: ButtonStyle(
+                                controller.selectedBook.value.toString(),
+                                notes: controller.notesController.value.text,
+                                timestamp: DateTime.now().toString(),
+                                verseNum: int.parse(verNum.toString()),
+                              ),
+                              updateVerseCallback: (updated) {
+                                controller.selectedBookContent[
+                                int.parse(verNum.toString()) - 1] = updated;
+                              },
+                              context: context,
+                              onSuccess: () {
+                                Constants.showToast(controller
+                                    .selectedBookContent[
+                                int.parse(verNum.toString()) -
+                                    1]
+                                    .isNoted ==
+                                    "no"
+                                    ? "Notes added Successfully"
+                                    : "Update notes successfully");
+                                Navigator.of(context).pop(true);
+                                controller.notesController.value.clear();
+                              },
+                              onDelete: () {
+                                // This won't be called for save/update, only for delete
+                              },
+                            );
+                          } catch (e) {
+                            DebugConsole.log("note error - $e");
+                          }
+                        },
+                        style: ButtonStyle(
                           backgroundColor: WidgetStatePropertyAll(
                             isActive ? primaryColor : const Color(0xfffd5d5d5),
                           ),
-                    ),
-                    child: Text(
+                        ),
+                        child: Text(
                           hasExistingNote ? "Update" : "Save",
-                      style: TextStyle(
-                            color: isActive
-                                ? Colors.white
-                                : Colors.black,
-                        letterSpacing: BibleInfo.letterSpacing,
-                        fontSize: BibleInfo.fontSizeScale * 14,
+                          style: TextStyle(
+                            color: isActive ? Colors.white : Colors.black,
+                            letterSpacing: BibleInfo.letterSpacing,
+                            fontSize: BibleInfo.fontSizeScale * 14,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
                     );
                   },
                 ),
@@ -6228,7 +6232,9 @@ class ImageBottomSheet extends StatelessWidget {
                                             crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                             children: [
-                                              SizedBox(height: 20,),
+                                              SizedBox(
+                                                height: 20,
+                                              ),
                                               Text(
                                                 bibleName,
                                                 style: const TextStyle(

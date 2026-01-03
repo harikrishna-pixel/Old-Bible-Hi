@@ -135,23 +135,26 @@ class _OtpScreenState extends State<OtpScreen> {
                   autoFocus: true,
                   textStyle: screenWidth > 450
                       ? TextStyle(
-                          fontSize: Sizecf.blockSizeVertical! * 2.2,
+                          fontSize: Sizecf.blockSizeVertical! * 2.0,
                           fontWeight: FontWeight.bold,
+                          height: 1.0,
                         )
                       : TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          height: 1.0,
                         ),
                   numberOfFields: 6, // Set the OTP length
                   borderColor: CommanColor.lightDarkPrimary300(context),
                   enabledBorderColor: CommanColor.lightDarkPrimary300(context),
                   focusedBorderColor: CommanColor.lightDarkPrimary300(context),
                   showFieldAsBox: true, // Display the fields as boxes
+                  fieldHeight: screenWidth > 450 ? 65 : 60,
+                  fieldWidth: screenWidth > 450 ? 52 : 46,
                   onCodeChanged: (String code) {
                     // Handle changes
                     otptext = code;
                   },
-                  fieldWidth: screenWidth > 450 ? 52 : 46,
                   onSubmit: (String verificationCode) {
                     // Handle OTP submission
                     debugPrint("Entered OTP: $verificationCode");

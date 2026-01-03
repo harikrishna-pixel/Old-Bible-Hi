@@ -8,8 +8,10 @@ import 'package:biblebookapp/controller/dashboard_controller.dart';
 import 'package:biblebookapp/controller/dpProvider.dart';
 import 'package:biblebookapp/view/screens/dashboard/constants.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:provider/provider.dart';
 
 import '../constants/colors.dart';
+import '../constants/theme_provider.dart';
 
 class VerseItemWidget extends StatefulWidget {
   const VerseItemWidget({
@@ -206,7 +208,10 @@ class _VerseItemWidgetState extends State<VerseItemWidget> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 5.0),
                       child: Image.asset(
-                        "assets/Bookmark icons/stickynote-1.png",
+                        Provider.of<ThemeProvider>(context, listen: false)
+                                .isDarkMode
+                            ? "assets/light_modes/stickynote.png"
+                            : "assets/Bookmark icons/stickynote-1.png",
                         width: screenWidth > 450
                             ? widget.controller.fontSize.value * 1.6
                             : widget.controller.fontSize.value * 1.2,
