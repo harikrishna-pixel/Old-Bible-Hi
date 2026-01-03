@@ -69,13 +69,13 @@ class _SettingScreenState extends State<SettingScreen>
       case AppLifecycleState.resumed:
         await SharPreferences.setString('OpenAd', '1');
         bool? nt =
-        await SharPreferences.getBoolean(SharPreferences.isNotificationOn);
+            await SharPreferences.getBoolean(SharPreferences.isNotificationOn);
 
         bool? nt1 =
-        await SharPreferences.getBoolean(SharPreferences.isNotificationOn1);
+            await SharPreferences.getBoolean(SharPreferences.isNotificationOn1);
 
         bool? nt2 =
-        await SharPreferences.getBoolean(SharPreferences.isNotificationOn2);
+            await SharPreferences.getBoolean(SharPreferences.isNotificationOn2);
         // Check current status
         final status = await Permission.notification.status;
         debugPrint("✅ Notification permission is granted  ${status.isGranted}");
@@ -243,7 +243,7 @@ class _SettingScreenState extends State<SettingScreen>
     try {
       // Fetch all values sequentially using await
       String? hour =
-      await SharPreferences.getString(SharPreferences.notificationTimeHour);
+          await SharPreferences.getString(SharPreferences.notificationTimeHour);
       String? minute = await SharPreferences.getString(
           SharPreferences.notificationTimeMinute);
 
@@ -258,13 +258,13 @@ class _SettingScreenState extends State<SettingScreen>
           SharPreferences.notificationTimeMinute2);
 
       bool? nt =
-      await SharPreferences.getBoolean(SharPreferences.isNotificationOn);
+          await SharPreferences.getBoolean(SharPreferences.isNotificationOn);
 
       bool? nt1 =
-      await SharPreferences.getBoolean(SharPreferences.isNotificationOn1);
+          await SharPreferences.getBoolean(SharPreferences.isNotificationOn1);
 
       bool? nt2 =
-      await SharPreferences.getBoolean(SharPreferences.isNotificationOn2);
+          await SharPreferences.getBoolean(SharPreferences.isNotificationOn2);
       // Check current status
       final status = await Permission.notification.status;
       debugPrint("✅ Notification permission is granted  ${status.isGranted}");
@@ -290,7 +290,7 @@ class _SettingScreenState extends State<SettingScreen>
         selectedTime = (minute == null)
             ? "8:00 AM"
             : DateFormat.jm().format(DateFormat("HH:mm:ss")
-            .parse("$notificationHours:$notificationMinute:00"));
+                .parse("$notificationHours:$notificationMinute:00"));
         selectedNotificationTime = Time(
           hour: int.parse(notificationHours),
           minute: int.parse(notificationMinute),
@@ -302,7 +302,7 @@ class _SettingScreenState extends State<SettingScreen>
         selectedTime1 = (minute1 == null)
             ? "2:00 PM"
             : DateFormat.jm().format(DateFormat("HH:mm:ss")
-            .parse("$notificationHours1:$notificationMinute1:00"));
+                .parse("$notificationHours1:$notificationMinute1:00"));
         selectedNotificationTime1 = Time(
           hour: int.parse(notificationHours1),
           minute: int.parse(notificationMinute1),
@@ -314,7 +314,7 @@ class _SettingScreenState extends State<SettingScreen>
         selectedTime2 = (minute2 == null)
             ? "8:00 PM"
             : DateFormat.jm().format(DateFormat("HH:mm:ss")
-            .parse("$notificationHours2:$notificationMinute2:00"));
+                .parse("$notificationHours2:$notificationMinute2:00"));
         selectedNotificationTime2 = Time(
           hour: int.parse(notificationHours2),
           minute: int.parse(notificationMinute2),
@@ -555,7 +555,7 @@ class _SettingScreenState extends State<SettingScreen>
                       ),
                       const Padding(
                         padding:
-                        EdgeInsets.only(bottom: 20.0, left: 25, right: 25),
+                            EdgeInsets.only(bottom: 20.0, left: 25, right: 25),
                         child: Text(
                             '''Set your best time to get the verse of day every day''',
                             style: TextStyle(
@@ -594,9 +594,9 @@ class _SettingScreenState extends State<SettingScreen>
                                       fontWeight: FontWeight.w500,
                                       letterSpacing: BibleInfo.letterSpacing,
                                       fontSize: BibleInfo.fontSizeScale * 16
-                                    // MediaQuery.of(context).size.width *
-                                    //     0.037
-                                  ),
+                                      // MediaQuery.of(context).size.width *
+                                      //     0.037
+                                      ),
                                 ),
                               )),
                           ElevatedButton(
@@ -720,7 +720,7 @@ class _SettingScreenState extends State<SettingScreen>
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
-                                CommanColor.lightDarkPrimary(context),
+                                    CommanColor.lightDarkPrimary(context),
                                 fixedSize: Size(
                                     MediaQuery.of(context).size.width * 0.3,
                                     35),
@@ -858,7 +858,7 @@ class _SettingScreenState extends State<SettingScreen>
         //   }),
         // );
         Get.offAll(
-                () => HomeScreen(
+            () => HomeScreen(
                 From: "Setting",
                 selectedVerseNumForRead: "",
                 selectedBookForRead: "",
@@ -873,13 +873,13 @@ class _SettingScreenState extends State<SettingScreen>
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             decoration:
-            Provider.of<ThemeProvider>(context).currentCustomTheme ==
-                AppCustomTheme.vintage
-                ? BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(Images.bgImage(context)),
-                    fit: BoxFit.fill))
-                : null,
+                Provider.of<ThemeProvider>(context).currentCustomTheme ==
+                        AppCustomTheme.vintage
+                    ? BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage(Images.bgImage(context)),
+                            fit: BoxFit.fill))
+                    : null,
             child: ListView(
               shrinkWrap: true,
               physics: const ScrollPhysics(),
@@ -893,7 +893,7 @@ class _SettingScreenState extends State<SettingScreen>
                     InkWell(
                       onTap: () {
                         Get.offAll(
-                                () => HomeScreen(
+                            () => HomeScreen(
                                 From: "Setting",
                                 selectedVerseNumForRead: "",
                                 selectedBookForRead: "",
@@ -1015,7 +1015,7 @@ class _SettingScreenState extends State<SettingScreen>
                           if (status.isGranted) {
                             setState(() {
                               notificationButtonValue =
-                              !notificationButtonValue;
+                                  !notificationButtonValue;
                             });
                             SharPreferences.setBoolean(
                                 SharPreferences.isNotificationOn,
@@ -1090,7 +1090,7 @@ class _SettingScreenState extends State<SettingScreen>
                           if (status.isGranted) {
                             setState(() {
                               notificationButtonValue1 =
-                              !notificationButtonValue1;
+                                  !notificationButtonValue1;
                             });
                             SharPreferences.setBoolean(
                                 SharPreferences.isNotificationOn1,
@@ -1163,7 +1163,7 @@ class _SettingScreenState extends State<SettingScreen>
                           if (status.isGranted) {
                             setState(() {
                               notificationButtonValue2 =
-                              !notificationButtonValue2;
+                                  !notificationButtonValue2;
                             });
                             SharPreferences.setBoolean(
                                 SharPreferences.isNotificationOn2,
@@ -1210,8 +1210,8 @@ class _SettingScreenState extends State<SettingScreen>
                   child: GestureDetector(
                     onTap: () {
                       Get.to(() => PreferenceSelectionScreen(
-                        isSetting: true,
-                      ));
+                            isSetting: true,
+                          ));
                     },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1293,13 +1293,13 @@ class _SettingScreenState extends State<SettingScreen>
                           height: screenWidth < 380 ? 27 : 32,
                           decoration: BoxDecoration(
                             image: Provider.of<ThemeProvider>(context)
-                                .currentCustomTheme ==
-                                AppCustomTheme.vintage
+                                        .currentCustomTheme ==
+                                    AppCustomTheme.vintage
                                 ? DecorationImage(
-                              image:
-                              AssetImage(Images.bgImage((context))),
-                              fit: BoxFit.cover,
-                            )
+                                    image:
+                                        AssetImage(Images.bgImage((context))),
+                                    fit: BoxFit.cover,
+                                  )
                                 : null,
                             color: Provider.of<ThemeProvider>(context)
                                 .backgroundColor,
@@ -1413,8 +1413,9 @@ class _SettingScreenState extends State<SettingScreen>
                       await SharPreferences.setString('OpenAd', '1');
                       // Check actual internet access (not just network interface)
                       // This is more reliable than Connectivity() which can give false negatives
-                      final hasInternet = await InternetConnection().hasInternetAccess;
-                      
+                      final hasInternet =
+                          await InternetConnection().hasInternetAccess;
+
                       // Only show toast if actually offline - don't show when online
                       if (!hasInternet) {
                         Constants.showToast('Check Your Internet Connection');
@@ -1687,8 +1688,8 @@ class _SettingScreenState extends State<SettingScreen>
                         fontSize: screenWidth < 380
                             ? 19
                             : screenWidth > 450
-                            ? 22
-                            : 24,
+                                ? 22
+                                : 24,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
                       ),
@@ -1704,8 +1705,8 @@ class _SettingScreenState extends State<SettingScreen>
                           fontSize: screenWidth < 380
                               ? 13
                               : screenWidth > 450
-                              ? 16
-                              : 14,
+                                  ? 16
+                                  : 14,
                           color: Colors.black87),
                     ),
 
@@ -1719,8 +1720,8 @@ class _SettingScreenState extends State<SettingScreen>
                             fontSize: screenWidth < 380
                                 ? 13
                                 : screenWidth > 450
-                                ? 16
-                                : 14,
+                                    ? 16
+                                    : 14,
                             color: Colors.black),
                         children: [
                           TextSpan(text: "Go to "),
@@ -1775,7 +1776,7 @@ class _SettingScreenState extends State<SettingScreen>
       if (Platform.isAndroid) {
         // Check for Android 12+ (API 31+) - exact alarm permission
         final ProcessResult result =
-        await Process.run('getprop', ['ro.build.version.sdk']);
+            await Process.run('getprop', ['ro.build.version.sdk']);
         final int sdkInt = int.tryParse(result.stdout.toString().trim()) ?? 0;
 
         debugPrint("Android SDK Version: $sdkInt");
@@ -1828,7 +1829,6 @@ class _SettingScreenState extends State<SettingScreen>
     );
   }
 
-
   Future<void> showPermissionSettingsDialog(BuildContext context) async {
     final screenWidth = MediaQuery.of(context).size.width;
     await showDialog(
@@ -1858,88 +1858,90 @@ class _SettingScreenState extends State<SettingScreen>
           ],
         ),
         actions: [
-          ElevatedButton(
-            onPressed: () async {
-              await SharPreferences.setString('OpenAd', '1');
-              await openAppSettings(); // Opens settings
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await SharPreferences.setString('OpenAd', '1');
+                    await openAppSettings(); // Opens settings
 
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF875736), // Brown
-              padding: EdgeInsets.symmetric(
-                  vertical: screenWidth < 380
-                      ? 11
-                      : screenWidth > 450
-                      ? 13
-                      : 12,
-                  horizontal: screenWidth < 380
-                      ? 14.0
-                      : screenWidth > 450
-                      ? 21.0
-                      : 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF875736), // Brown
+                    padding: EdgeInsets.symmetric(
+                        vertical: screenWidth < 380
+                            ? 11
+                            : screenWidth > 450
+                                ? 13
+                                : 12,
+                        horizontal: screenWidth < 380
+                            ? 14.0
+                            : screenWidth > 450
+                                ? 21.0
+                                : 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Open Settings',
+                    style: TextStyle(
+                      fontSize: screenWidth < 380
+                          ? 14.0
+                          : screenWidth > 450
+                              ? 17
+                              : 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              'Open Settings',
-              style: TextStyle(
-                fontSize: screenWidth < 380
-                    ? 14.0
-                    : screenWidth > 450
-                    ? 17
-                    : 16,
-                color: Colors.white,
+              SizedBox(
+                width: 10,
               ),
-            ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    //  openAppSettings(); // Opens settings
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: CommanColor.lightGrey1, // Brown
+                    padding: EdgeInsets.symmetric(
+                        vertical: screenWidth < 380
+                            ? 11
+                            : screenWidth > 450
+                                ? 13
+                                : 12,
+                        horizontal: screenWidth < 380
+                            ? 14.0
+                            : screenWidth > 450
+                                ? 21.0
+                                : 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      fontSize: screenWidth < 380
+                          ? 14.0
+                          : screenWidth > 450
+                              ? 17
+                              : 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(
-            width: 5,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              //  openAppSettings(); // Opens settings
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: CommanColor.lightGrey1, // Brown
-              padding: EdgeInsets.symmetric(
-                  vertical: screenWidth < 380
-                      ? 11
-                      : screenWidth > 450
-                      ? 13
-                      : 12,
-                  horizontal: screenWidth < 380
-                      ? 14.0
-                      : screenWidth > 450
-                      ? 21.0
-                      : 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                fontSize: screenWidth < 380
-                    ? 14.0
-                    : screenWidth > 450
-                    ? 17
-                    : 16,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          // TextButton(
-          //   onPressed: () => Navigator.pop(context), // Dismiss
-          //   child: Text(
-          //     "Cancel",
-          //     style: TextStyle(color: CommanColor.black),
-          //   ),
-          // ),
         ],
       ),
     );
@@ -2082,9 +2084,9 @@ class _ThemeDialogState extends State<ThemeDialog> {
             color: color,
             image: theme == AppCustomTheme.vintage
                 ? DecorationImage(
-              image: AssetImage(Images.bgImage((context))),
-              fit: BoxFit.cover,
-            )
+                    image: AssetImage(Images.bgImage((context))),
+                    fit: BoxFit.cover,
+                  )
                 : null,
             border: Border.all(
               color: _selectedTheme == theme
@@ -2114,7 +2116,7 @@ class _ThemeDialogState extends State<ThemeDialog> {
             child: const Text(
               "Theme",
               style:
-              TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
           ),
@@ -2133,12 +2135,13 @@ class _ThemeDialogState extends State<ThemeDialog> {
                 ),
                 onPressed: () => Navigator.pop(context),
                 child:
-                const Text("Close", style: TextStyle(color: Colors.black)),
+                    const Text("Close", style: TextStyle(color: Colors.black)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
                 onPressed: () async {
-                  final provider = Provider.of<ThemeProvider>(context, listen: false);
+                  final provider =
+                      Provider.of<ThemeProvider>(context, listen: false);
                   if (_selectedTheme == provider.currentCustomTheme) {
                     Constants.showToast("This theme is already applied");
                     return;

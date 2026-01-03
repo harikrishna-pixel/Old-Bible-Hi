@@ -796,7 +796,7 @@ class floatingButtonState extends State<floatingButton>
           ),
           child: GestureDetector(
             child: Center(
-                child: isSpeech || isAudioPlaying
+                child: (isSpeech || ttsState == TtsState.playing) || isAudioPlaying
                     ? Icon(Icons.pause,
                         size: screenWidth > 450 ? 44 : 24,
                         color: CommanColor.darkModePrimaryWhite(context))
@@ -830,8 +830,9 @@ class floatingButtonState extends State<floatingButton>
                 });
               }
               
-              if (isSpeech) {
-                _stop();
+              // Check both isSpeech flag and actual TTS state to handle cases where state is out of sync
+              if (isSpeech || ttsState == TtsState.playing) {
+                await _stop();
                 setState(() {
                   isSpeech = false;
                 });
@@ -988,7 +989,7 @@ class floatingButtonState extends State<floatingButton>
             ),
             child: GestureDetector(
               child: Center(
-                  child: isSpeech || isAudioPlaying
+                  child: (isSpeech || ttsState == TtsState.playing) || isAudioPlaying
                       ? Icon(Icons.pause,
                           size: 24,
                           color: CommanColor.darkModePrimaryWhite(context))
@@ -1020,8 +1021,9 @@ class floatingButtonState extends State<floatingButton>
                   });
                 }
                 
-                if (isSpeech) {
-                  _stop();
+                // Check both isSpeech flag and actual TTS state to handle cases where state is out of sync
+                if (isSpeech || ttsState == TtsState.playing) {
+                  await _stop();
                   setState(() {
                     isSpeech = false;
                   });
@@ -1048,7 +1050,7 @@ class floatingButtonState extends State<floatingButton>
         ),
         child: GestureDetector(
           child: Center(
-              child: isSpeech || isAudioPlaying
+              child: (isSpeech || ttsState == TtsState.playing) || isAudioPlaying
                   ? Icon(Icons.pause,
                       size: screenWidth > 450 ? 44 : 24,
                       color: CommanColor.darkModePrimaryWhite(context))

@@ -4960,12 +4960,16 @@ class HomeContentEditBottomSheetState
                   .isNoted ==
                   "no"
                   ? Image.asset(
-                "assets/Bookmark icons/stickynote.png",
+                Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+                    ? "assets/light_modes/stickynote.png"
+                    : "assets/Bookmark icons/stickynote.png",
                 height: screenWidth > 450 ? 60 : 50,
                 width: screenWidth > 450 ? 45 : 35,
               )
                   : Image.asset(
-                "assets/Bookmark icons/stickynote-1.png",
+                Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+                    ? "assets/light_modes/stickynote.png"
+                    : "assets/Bookmark icons/stickynote-1.png",
                 height: screenWidth > 450 ? 60 : 50,
                 width: screenWidth > 450 ? 45 : 35,
               ),

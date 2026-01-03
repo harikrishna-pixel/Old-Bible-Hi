@@ -790,8 +790,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       debugPrint("Purchase State: ${purchaseDetails.status}");
       await SharPreferences.setString('OpenAd', '1');
 
-      // Check pendingCompletePurchase FIRST - this indicates purchase succeeded
-      if (purchaseDetails.pendingCompletePurchase) {
+      // Check for cancelled or error status FIRST - user closed the sheet
+      if (purchaseDetails.status == PurchaseStatus.canceled) {
+        debugPrint("❌ Purchase cancelled by user - Product ID: ${purchaseDetails.productID}");
+        EasyLoading.dismiss();
+        await SharPreferences.setBoolean('startpurches', false);
+        // Check if this is the first time showing paywall and user canceled
+        await _checkAndShowExitOffer(controller);
+        return; // Exit early - don't process cancelled purchases
+      }
+
+      if (purchaseDetails.status == PurchaseStatus.error) {
+        debugPrint('❌ Purchase Error: ${purchaseDetails.error}');
+        DebugConsole.log(" purchases error - $purchaseDetails");
+        EasyLoading.dismiss();
+        await SharPreferences.setBoolean('startpurches', false);
+        return; // Exit early - don't process error purchases
+      }
+
+      // Check pendingCompletePurchase only if status is purchased - this indicates purchase succeeded
+      if (purchaseDetails.pendingCompletePurchase && 
+          purchaseDetails.status == PurchaseStatus.purchased) {
         // Purchase succeeded but needs completion - complete it and process
         debugPrint(
             "✅ Purchase pending completion - Product ID: ${purchaseDetails.productID}");
@@ -882,8 +901,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           } catch (e) {
             debugPrint('Error processing pending purchase: $e');
           }
+        } else {
+          // pendingCompletePurchase is true but startpurches is false - complete without processing
+          debugPrint("⚠️ Purchase pending completion but startpurches is false - completing without processing");
+          await InAppPurchase.instance.completePurchase(purchaseDetails);
         }
         EasyLoading.dismiss();
+        return;
+      }
+
+      // Handle pendingCompletePurchase for non-purchased status (shouldn't happen, but safety check)
+      if (purchaseDetails.pendingCompletePurchase && 
+          purchaseDetails.status != PurchaseStatus.purchased) {
+        debugPrint("⚠️ pendingCompletePurchase is true but status is not purchased - completing without processing");
+        await InAppPurchase.instance.completePurchase(purchaseDetails);
+        EasyLoading.dismiss();
+        await SharPreferences.setBoolean('startpurches', false);
         return;
       }
 
@@ -1057,8 +1090,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             }
           }
         } else if (purchaseDetails.status == PurchaseStatus.canceled) {
+          debugPrint("❌ Purchase cancelled by user in status check - Product ID: ${purchaseDetails.productID}");
           EasyLoading.dismiss();
-          Constants.showToast('Something went wrong');
           await SharPreferences.setBoolean('startpurches', false);
 
           // Check if this is the first time showing paywall and user canceled
@@ -2641,3 +2674,4 @@ class _ExitOfferBottomSheetContentState
     );
   }
 }
+

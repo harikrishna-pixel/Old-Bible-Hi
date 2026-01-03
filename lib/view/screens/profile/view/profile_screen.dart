@@ -27,95 +27,99 @@ void confirmLogoutAccount(BuildContext context) {
   double screenWidth = MediaQuery.of(context).size.width;
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (context) {
-      return Dialog(
-          backgroundColor: CommanColor.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 16,
-          insetPadding:
-              screenWidth > 450 ? EdgeInsets.symmetric(horizontal: 260) : null,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Are you sure you want to logout?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: CommanColor.black,
-                      fontSize: screenWidth > 450 ? 19 : null),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () async {
-                    final cacheprovider =
-                        P.Provider.of<CacheNotifier>(context, listen: false);
+      return PopScope(
+        canPop: false,
+        child: Dialog(
+            backgroundColor: CommanColor.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 16,
+            insetPadding:
+                screenWidth > 450 ? EdgeInsets.symmetric(horizontal: 260) : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Are you sure you want to logout?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: CommanColor.black,
+                        fontSize: screenWidth > 450 ? 19 : null),
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () async {
+                      final cacheprovider =
+                          P.Provider.of<CacheNotifier>(context, listen: false);
 
-                    await cacheprovider.removeCache(key: 'userid');
-                    await cacheprovider.removeCache(key: 'user');
-                    await cacheprovider.removeCache(key: 'name');
-                    await cacheprovider.removeCache(key: 'authtoken');
-                    //   FirebaseAuth.instance.signOut();
-                    Constants.showToast("Logged Out Successfully");
-                    Get.offAll(() => HomeScreen(
-                        From: "splash",
-                        selectedVerseNumForRead: "",
-                        selectedBookForRead: "",
-                        selectedChapterForRead: "",
-                        selectedBookNameForRead: "",
-                        selectedVerseForRead: ""));
-                  },
-                  child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: CommanColor.darkPrimaryColor,
-                        borderRadius: BorderRadius.all(Radius.circular(5)),
-                      ),
-                      child: Text(
-                        'Yes, Logout',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            letterSpacing: BibleInfo.letterSpacing,
-                            fontSize: screenWidth > 450
-                                ? BibleInfo.fontSizeScale * 19
-                                : BibleInfo.fontSizeScale * 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white),
-                      )),
-                ),
-                const SizedBox(height: 17),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: CommanColor.lightGrey1,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(5)),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 2)
-                        ],
-                      ),
-                      child: Text(
-                        'Cancel',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            letterSpacing: BibleInfo.letterSpacing,
-                            fontSize: screenWidth > 450
-                                ? BibleInfo.fontSizeScale * 19
-                                : BibleInfo.fontSizeScale * 14,
-                            fontWeight: FontWeight.w400,
-                            color: CommanColor.black),
-                      )),
-                )
-              ],
-            ),
-          ));
+                      await cacheprovider.removeCache(key: 'userid');
+                      await cacheprovider.removeCache(key: 'user');
+                      await cacheprovider.removeCache(key: 'name');
+                      await cacheprovider.removeCache(key: 'authtoken');
+                      //   FirebaseAuth.instance.signOut();
+                      Constants.showToast("Logged Out Successfully");
+                      Get.offAll(() => HomeScreen(
+                          From: "splash",
+                          selectedVerseNumForRead: "",
+                          selectedBookForRead: "",
+                          selectedChapterForRead: "",
+                          selectedBookNameForRead: "",
+                          selectedVerseForRead: ""));
+                    },
+                    child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: CommanColor.darkPrimaryColor,
+                          borderRadius: BorderRadius.all(Radius.circular(5)),
+                        ),
+                        child: Text(
+                          'Yes, Logout',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              letterSpacing: BibleInfo.letterSpacing,
+                              fontSize: screenWidth > 450
+                                  ? BibleInfo.fontSizeScale * 19
+                                  : BibleInfo.fontSizeScale * 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white),
+                        )),
+                  ),
+                  const SizedBox(height: 17),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: CommanColor.lightGrey1,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(5)),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 2)
+                          ],
+                        ),
+                        child: Text(
+                          'Cancel',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              letterSpacing: BibleInfo.letterSpacing,
+                              fontSize: screenWidth > 450
+                                  ? BibleInfo.fontSizeScale * 19
+                                  : BibleInfo.fontSizeScale * 14,
+                              fontWeight: FontWeight.w400,
+                              color: CommanColor.black),
+                        )),
+                  )
+                ],
+              ),
+            )),
+      );
     },
   );
 }
@@ -234,8 +238,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           title: "Underline"),
       LibraryStatusModel(
           count: notesCount,
-          leading: Icon(Icons.sticky_note_2_sharp,
-              size: 32, color: CommanColor.whiteBlack(context)),
+          leading: Image.asset("assets/dark_modes/stickynote.png",height: 32, color: CommanColor.whiteBlack(context)),
           title: "Notes"),
       LibraryStatusModel(
           count: imageCount,
